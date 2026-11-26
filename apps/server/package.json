@@ -1,0 +1,25 @@
+{
+  "name": "@lingua/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "build": "tsup src/index.ts --format esm --platform node --target node20 --out-dir dist --clean --no-splitting --noExternal @lingua/shared --noExternal @lingua/content --noExternal @lingua/learning",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@lingua/content": "workspace:*",
+    "@lingua/learning": "workspace:*",
+    "@lingua/shared": "workspace:*",
+    "@supabase/supabase-js": "2.119.2",
+    "jose": "6.2.18",
+    "ws": "8.23.0",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@types/ws": "8.18.2",
+    "tsup": "8.5.1"
+  }
+}

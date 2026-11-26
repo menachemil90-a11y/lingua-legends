@@ -1,0 +1,38 @@
+{
+  "name": "lingua-legends",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Lingua Legends — a competitive English-learning game (web + PWA).",
+  "type": "module",
+  "packageManager": "pnpm@10.28.0",
+  "engines": {
+    "node": ">=20.19"
+  },
+  "scripts": {
+    "dev": "pnpm -r --parallel --filter @lingua/web --filter @lingua/server dev",
+    "dev:web": "pnpm --filter @lingua/web dev",
+    "dev:server": "pnpm --filter @lingua/server dev",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "pnpm --filter @lingua/web test:e2e",
+    "content:validate": "tsx scripts/validate-content.ts",
+    "db:test": "bash scripts/test-migrations.sh",
+    "format": "prettier --write .",
+    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm content:validate && pnpm build"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.39.5",
+    "@types/node": "24.19.4",
+    "eslint": "9.39.5",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "globals": "17.14.0",
+    "prettier": "3.10.1",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.74.0",
+    "vitest": "4.1.12"
+  }
+}
