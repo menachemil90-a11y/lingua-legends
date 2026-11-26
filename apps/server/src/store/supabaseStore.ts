@@ -42,6 +42,7 @@ export class SupabaseStore implements ServerStore {
         id: p.id,
         nickname: p.nickname,
         account_kind: p.kind,
+        auth_user_id: p.kind === 'registered' ? p.id : null,
         friend_code: p.friendCode,
         created_at: new Date(p.createdAt).toISOString(),
         last_seen_at: new Date(p.lastSeenAt).toISOString(),

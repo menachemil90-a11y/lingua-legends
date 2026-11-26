@@ -64,7 +64,7 @@ export function BagrutHub() {
                 {c.passageIds.map((pid) => {
                   const p = passageById(pid);
                   return p ? (
-                    <Button key={pid} size="sm" icon="book" onClick={() => go({ id: 'reading', passageId: pid })}>
+                    <Button key={pid} size="sm" icon="book" className="btn--wrap" onClick={() => go({ id: 'reading', passageId: pid })}>
                       <En>{p.title}</En>
                     </Button>
                   ) : null;
@@ -73,7 +73,7 @@ export function BagrutHub() {
                   const task = OPEN_TASKS.find((x) => x.id === tid);
                   if (!task) return null;
                   return (
-                    <Button key={tid} size="sm" variant={bagrut.completed.includes(tid) ? 'ghost' : 'secondary'} icon={task.kind === 'speaking' ? 'mic' : 'pen'} onClick={() => go({ id: 'bagrut-task', taskId: tid })}>
+                    <Button key={tid} size="sm" className="btn--wrap" variant={bagrut.completed.includes(tid) ? 'ghost' : 'secondary'} icon={task.kind === 'speaking' ? 'mic' : 'pen'} onClick={() => go({ id: 'bagrut-task', taskId: tid })}>
                       {bagrut.completed.includes(tid) && <Icon name="check" className="btn__icon" />}
                       <En>{task.title}</En>
                     </Button>
@@ -109,10 +109,12 @@ export function BagrutHub() {
   );
 }
 
+const NO_CHECKS: number[] = [];
+
 function Checklist({ task }: { task: OpenTask }) {
   const t = useT();
   const lang = useLang();
-  const checks = usePlayer((s) => s.bagrut.checks[task.id] ?? []);
+  const checks = usePlayer((s) => s.bagrut.checks[task.id] ?? NO_CHECKS);
   const save = usePlayer((s) => s.saveBagrut);
   const all = usePlayer((s) => s.bagrut.checks);
   return (

@@ -1,11 +1,13 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { usePlayer } from '../state/player';
 import { useNav, type LocalMatchParams, type OnlineMatchParams } from '../state/nav';
 import { createLocalMatch } from '../net/localMatch';
 import { createOnlineMatch } from '../net/onlineMatch';
+import type { MatchTransport } from '../net/transport';
 import { connection, useConnection } from '../net/connection';
 import { sfx } from '../audio/sfx';
 import { useT } from '../i18n';
+import { Loading } from '../design';
 import { finalizeMatch, type MatchSummary } from './shared/finalize';
 import { PostMatch } from './shared/PostMatch';
 import type { MatchView } from './shared/useMatch';
@@ -23,43 +25,44 @@ export function MatchScreen({ params }: { params: LocalMatchParams | OnlineMatch
   const finalized = useRef(false);
   const connPlayerId = useConnection((s) => s.playerId);
 
-  const transport = useMemo(() => {
-    const p = usePlayer.getState();
-    if (params.kind === 'local') {
-      return createLocalMatch({
-        mode: params.mode,
-        levels: params.levels,
-        botTier: params.botTier,
-        ...(params.setId ? { setId: params.setId } : {}),
-        learner: p.learner,
-        me: {
-          playerId: 'me',
-          nickname: p.nickname,
-          isBot: false,
-          characterId: p.loadout.characterId,
-          vehicleId: p.loadout.vehicleId,
-          titleId: p.loadout.titleId,
-          frameId: p.loadout.frameId,
-        },
-      });
-    }
-    return createOnlineMatch(params.matchId, params.mode, params.players);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [attempt, params.kind === 'online' ? params.matchId : params]);
+  const matchKey = params.kind === 'online' ? params.matchId : `${attempt}:${params.mode}:${params.levels.join(',')}:${params.setId ?? ''}`;
+  const [transport, setTransport] = useState<MatchTransport | null>(null);
 
+  // Created inside an effect (not useMemo) so React StrictMode's mount/unmount/mount cycle
+  // disposes the first instance cleanly and keeps a live second one.
   useEffect(() => {
+    const p = usePlayer.getState();
+    const t =
+      params.kind === 'local'
+        ? createLocalMatch({
+            mode: params.mode,
+            levels: params.levels,
+            botTier: params.botTier,
+            ...(params.setId ? { setId: params.setId } : {}),
+            learner: p.learner,
+            me: {
+              playerId: 'me',
+              nickname: p.nickname,
+              isBot: false,
+              characterId: p.loadout.characterId,
+              vehicleId: p.loadout.vehicleId,
+              titleId: p.loadout.titleId,
+              frameId: p.loadout.frameId,
+            },
+          })
+        : createOnlineMatch(params.matchId, params.mode, params.players);
     finalized.current = false;
+    setTransport(t);
     sfx.setMusic('battle');
-    return () => {
-      transport.dispose();
-    };
-  }, [transport]);
+    return () => t.dispose();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [matchKey]);
 
   useEffect(() => () => sfx.setMusic('lobby'), []);
 
   const onEnd = useCallback(
     (view: MatchView) => {
-      if (finalized.current || !view.end) return;
+      if (finalized.current || !view.end || !transport) return;
       finalized.current = true;
       const summary = finalizeMatch({
         mode: params.mode,
@@ -80,6 +83,8 @@ export function MatchScreen({ params }: { params: LocalMatchParams | OnlineMatch
     if (params.kind === 'online') connection.clearPendingMatch();
     home();
   }, [params.kind, home]);
+
+  if (!transport) return <Loading />;
 
   if (ended && ended.view.end) {
     const view = ended.view;

@@ -90,6 +90,15 @@
 .btn--block {
   width: 100%;
 }
+.btn--wrap {
+  white-space: normal;
+  justify-content: flex-start;
+  text-align: start;
+  height: auto;
+  min-height: 44px;
+  padding-block: 8px;
+  line-height: 1.25;
+}
 .btn--icon {
   padding: 0;
   width: var(--tap-min);

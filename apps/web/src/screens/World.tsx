@@ -57,7 +57,7 @@ export function Adventure() {
               key={r.id}
               type="button"
               className={`region ${regionId === r.id ? 'region--on' : ''} ${open ? '' : 'region--locked'}`}
-              style={{ insetInlineStart: `${lang === 'he' ? 100 - r.x : r.x}%`, top: `${r.y}%`, ['--rc' as string]: r.color }}
+              style={{ insetInlineStart: `${r.x}%`, top: `${r.y}%`, ['--rc' as string]: r.color }}
               onClick={() => setRegionId(r.id)}
             >
               <span className="region__orb">
@@ -70,7 +70,7 @@ export function Adventure() {
             </button>
           );
         })}
-        <div className="worldmap__hero" style={{ insetInlineStart: `${lang === 'he' ? 100 - currentRegion.x : currentRegion.x}%`, top: `${currentRegion.y}%` }} aria-hidden="true">
+        <div className="worldmap__hero" style={{ insetInlineStart: `${currentRegion.x}%`, top: `${currentRegion.y}%` }} aria-hidden="true">
           <Hero id={character} animated />
         </div>
       </div>

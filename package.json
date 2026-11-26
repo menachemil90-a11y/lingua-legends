@@ -2,7 +2,7 @@
   "name": "lingua-legends",
   "private": true,
   "version": "0.1.0",
-  "description": "Lingua Legends — a competitive English-learning game (web + PWA).",
+  "description": "Lingua Legends \u2014 a competitive English-learning game (web + PWA).",
   "type": "module",
   "packageManager": "pnpm@10.28.0",
   "engines": {
@@ -21,7 +21,8 @@
     "content:validate": "tsx scripts/validate-content.ts",
     "db:test": "bash scripts/test-migrations.sh",
     "format": "prettier --write .",
-    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm content:validate && pnpm build"
+    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm content:validate && pnpm build",
+    "content:export": "tsx scripts/export-content-sql.ts"
   },
   "devDependencies": {
     "@eslint/js": "9.39.5",
