@@ -6,7 +6,7 @@
  * after each round ends. The pool must be expanded and rotated before public release.
  */
 import { contentItemSchema, type ContentItem, type ContentItemInput } from '@lingua/shared';
-import { q } from '@lingua/content';
+import { q, sb } from '@lingua/content';
 
 const RANKED = ['word-battle', 'grammar-race'] as const;
 const R = (s: Parameters<typeof q>[0]) => q({ ...s, modes: s.modes ?? [...RANKED] });
@@ -54,6 +54,22 @@ export const RANKED_RAW_ITEMS: ContentItemInput[] = [
   R({ id: 'rk-c2-lest', level: 'C2', cat: 'connector', d: 5, p: 'He spoke quietly ___ he wake the baby.', ans: 'lest', wrong: ['unless', 'whereby', 'insofar'], en: "'Lest' (formal) = in order to avoid; followed by the base form.", he: 'lest (רשמי) = פן, כדי שלא.', v: ['lest'] }),
   R({ id: 'rk-c2-on-no-account', level: 'C2', cat: 'sentence-completion', d: 4, p: 'On no account ___ this door be left open.', ans: 'should', wrong: ['is', 'it should', 'does'], en: "Inversion after 'On no account': On no account + auxiliary + subject.", he: 'היפוך אחרי On no account: פועל עזר + נושא.', g: ['inversion'] }),
   R({ id: 'rk-c2-pragmatic', level: 'C2', cat: 'reading-inference', d: 5, ctx: "Asked whether the project would finish on time, the director replied, 'We remain cautiously optimistic,' and quickly changed the subject.", p: "What does the director's response most likely suggest?", ans: 'The project may well be delayed.', wrong: ['The project is ahead of schedule.', 'The director is certain of success.', 'The project has been cancelled.'], en: "'Cautiously optimistic' plus changing the subject signals doubt.", he: 'cautiously optimistic יחד עם החלפת נושא מרמזים על ספק.', v: ['cautiously optimistic'] }),
+  // Sentence Master (server-only puzzles for ranked duels)
+  sb({ id: 'rk-sb-a1-cat', level: 'A1', d: 1, p: 'Describe the pet.', accept: ['My cat is very small.'], en: 'Subject + to be + adverb + adjective.', he: 'נושא + to be + תואר פועל + שם תואר.', g: ['verb-to-be'] }),
+  sb({ id: 'rk-sb-a1-swim', level: 'A1', d: 2, p: 'Say what they can do.', accept: ['They can swim very well.'], en: "'Can' + base verb; 'very well' comes at the end.", he: 'can + פועל בסיס; very well בסוף המשפט.', g: ['modal-can'] }),
+  sb({ id: 'rk-sb-a2-bus', level: 'A2', d: 2, p: 'Say how you got to school yesterday.', accept: ['I took the bus to school yesterday.', 'Yesterday I took the bus to school.'], en: 'Past Simple; time expressions at the end or the start.', he: 'עבר פשוט; ביטוי זמן בסוף או בהתחלה.', g: ['past-simple-irregular', 'word-order-time'] }),
+  sb({ id: 'rk-sb-a2-never', level: 'A2', d: 2, p: 'Describe a habit.', accept: ['She never drinks coffee at night.'], en: "Frequency adverbs go before the main verb.", he: 'תארי תדירות באים לפני הפועל העיקרי.', g: ['adverbs-of-frequency'] }),
+  sb({ id: 'rk-sb-a2-going', level: 'A2', d: 3, p: 'Talk about a plan.', accept: ['We are going to visit Eilat next month.', 'Next month we are going to visit Eilat.'], en: "'Be going to' for plans.", he: 'be going to לתוכניות.', g: ['future-going-to'] }),
+  sb({ id: 'rk-sb-b1-since', level: 'B1', d: 3, p: 'Say how long they have known each other.', accept: ['They have known each other since 2015.'], en: "Present Perfect with 'since' + a point in time.", he: 'Present Perfect עם since ונקודת זמן.', g: ['present-perfect-since-for'] }),
+  sb({ id: 'rk-sb-b1-who', level: 'B1', d: 3, p: 'Describe the teacher.', accept: ['The teacher who helped me lives nearby.'], en: 'A defining relative clause follows the noun it describes.', he: 'משפט זיקה מגדיר בא אחרי שם העצם שהוא מתאר.', g: ['relative-clauses-defining'] }),
+  sb({ id: 'rk-sb-b1-unless', level: 'B1', d: 3, p: 'Give a warning.', accept: ["You won't pass unless you study."], en: "'Unless' = 'if not'.", he: 'unless = אלא אם כן.', g: ['first-conditional'] }),
+  sb({ id: 'rk-sb-b2-passive', level: 'B2', d: 4, p: 'Report the news in the passive.', accept: ['The new bridge will be opened next week.', 'Next week the new bridge will be opened.'], en: 'Future passive: will be + past participle.', he: 'סביל בעתיד: will be + צורה שלישית.', g: ['passive-future'] }),
+  sb({ id: 'rk-sb-b2-wish', level: 'B2', d: 4, p: 'Express a regret about the past.', accept: ['I wish I had studied harder.'], en: "'Wish' + Past Perfect for regrets about the past.", he: 'wish + Past Perfect לחרטה על העבר.', g: ['wish'] }),
+  sb({ id: 'rk-sb-c1-rarely', level: 'C1', d: 4, p: 'Emphasise how unusual it is.', accept: ['Rarely have I seen such talent.'], en: "Inversion after 'Rarely'.", he: 'היפוך אחרי Rarely.', g: ['inversion'] }),
+  sb({ id: 'rk-sb-c1-should', level: 'C1', d: 5, p: 'Formal conditional.', accept: ['Should you need help, please call us.'], en: "'Should' inversion replaces 'If you need help'.", he: 'היפוך עם Should במקום If you need help.', g: ['conditional-inversion'] }),
+  sb({ id: 'rk-sb-c1-what', level: 'C1', d: 4, p: 'Emphasise what surprised you.', accept: ['What surprised me was his honesty.'], en: "Cleft sentence: What + clause + was + focus.", he: 'משפט שסע: What + משפט + was + המוקד.', g: ['cleft-sentences'] }),
+  sb({ id: 'rk-sb-c2-only', level: 'C2', d: 5, p: 'Emphasise when they understood.', accept: ['Only later did they realise the mistake.'], en: "Inversion after 'Only later'.", he: 'היפוך אחרי Only later.', g: ['inversion'] }),
+  sb({ id: 'rk-sb-c2-hardly', level: 'C2', d: 5, p: 'Two events in quick succession.', accept: ['Hardly had we arrived when it started raining.'], en: "Hardly had + subject + past participle ... when ...", he: 'Hardly had + נושא + צורה שלישית ... when ...', g: ['inversion'] }),
 ];
 
 export const RANKED_ITEMS: ContentItem[] = RANKED_RAW_ITEMS.map((i) => contentItemSchema.parse(i));

@@ -1,0 +1,117 @@
+/*
+ * Lingua Legends design tokens. Every screen and game mode uses these variables —
+ * never hard-code colours, radii, shadows or durations in components.
+ */
+:root {
+  /* Surfaces: deep navy universe */
+  --c-bg-0: #040918;
+  --c-bg-1: #081331;
+  --c-bg-2: #0d1d47;
+  --c-bg-3: #142a5e;
+  --c-panel: rgba(13, 27, 64, 0.78);
+  --c-panel-strong: rgba(10, 20, 50, 0.94);
+  --c-panel-glass: rgba(20, 40, 92, 0.42);
+  --c-line: rgba(127, 243, 255, 0.16);
+  --c-line-strong: rgba(127, 243, 255, 0.34);
+
+  /* Brand accents */
+  --c-cyan: #38e1ff;
+  --c-cyan-2: #7ff3ff;
+  --c-cyan-deep: #0b7fb3;
+  --c-purple: #8b4dff;
+  --c-purple-2: #b26bff;
+  --c-purple-deep: #4a1fa8;
+  --c-gold: #f5c451;
+  --c-gold-2: #ffe7a3;
+  --c-gold-deep: #b5801f;
+
+  /* Text */
+  --c-text: #eef4ff;
+  --c-text-dim: #a8bce3;
+  --c-text-mute: #6f84ad;
+  --c-text-on-gold: #2a1a02;
+
+  /* Feedback (colour-blind friendly: always paired with icon + shape) */
+  --c-good: #36e0b0;
+  --c-good-deep: #0d7a5e;
+  --c-bad: #ff6f8e;
+  --c-bad-deep: #9b2244;
+  --c-warn: #ffb347;
+  --c-info: var(--c-cyan);
+
+  /* Gradients */
+  --g-gold: linear-gradient(180deg, #ffe7a3 0%, #f5c451 42%, #c98d22 100%);
+  --g-cyan: linear-gradient(180deg, #8af5ff 0%, #38e1ff 45%, #0b8fc7 100%);
+  --g-purple: linear-gradient(180deg, #d2a8ff 0%, #8b4dff 50%, #4a1fa8 100%);
+  --g-panel: linear-gradient(180deg, rgba(24, 46, 104, 0.82) 0%, rgba(10, 20, 52, 0.9) 100%);
+  --g-sky: radial-gradient(120% 80% at 50% 0%, #1a2f6e 0%, #0a1536 45%, #040918 100%);
+
+  /* Typography */
+  --font-ui: 'Rubik Variable', 'Rubik', system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
+  --font-display: 'Cinzel', 'Rubik Variable', Georgia, serif;
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.875rem;
+  --fs-md: 1rem;
+  --fs-lg: 1.25rem;
+  --fs-xl: 1.6rem;
+  --fs-2xl: 2.1rem;
+  --fs-3xl: clamp(2.2rem, 6vw, 3.6rem);
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-bold: 700;
+  --fw-black: 850;
+
+  /* Spacing (4px grid) */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 20px;
+  --s-6: 24px;
+  --s-8: 32px;
+  --s-10: 40px;
+  --s-12: 48px;
+
+  /* Radii */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 18px;
+  --r-xl: 26px;
+  --r-pill: 999px;
+
+  /* Elevation */
+  --sh-1: 0 2px 0 rgba(0, 0, 0, 0.35), 0 6px 18px rgba(0, 0, 0, 0.35);
+  --sh-2: 0 4px 0 rgba(0, 0, 0, 0.4), 0 14px 34px rgba(0, 0, 0, 0.45);
+  --sh-glow-cyan: 0 0 0 1px rgba(127, 243, 255, 0.4), 0 0 24px rgba(56, 225, 255, 0.35);
+  --sh-glow-gold: 0 0 0 1px rgba(255, 231, 163, 0.5), 0 0 28px rgba(245, 196, 81, 0.4);
+  --sh-inset: inset 0 1px 0 rgba(255, 255, 255, 0.25), inset 0 -3px 0 rgba(0, 0, 0, 0.25);
+
+  /* Motion */
+  --t-fast: 120ms;
+  --t-med: 220ms;
+  --t-slow: 420ms;
+  --ease-out: cubic-bezier(0.2, 0.9, 0.3, 1.1);
+  --ease-snap: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Layout */
+  --header-h: 64px;
+  --tap-min: 48px;
+  --page-max: 1180px;
+  --gutter: 16px;
+
+  color-scheme: dark;
+}
+
+:root[data-contrast='high'] {
+  --c-panel: rgba(4, 10, 28, 0.96);
+  --c-line: rgba(255, 255, 255, 0.5);
+  --c-line-strong: rgba(255, 255, 255, 0.8);
+  --c-text-dim: #dbe6ff;
+  --c-text-mute: #b8c7e6;
+}
+
+@media (min-width: 720px) {
+  :root {
+    --gutter: 24px;
+  }
+}
