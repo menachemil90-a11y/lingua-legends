@@ -13,8 +13,10 @@ import {
   isUnlocked,
   levelFromXp,
   VEHICLES,
+  type BotTier,
   type CefrLevel,
   type GameModeId,
+  type OnlineModeId,
 } from '@lingua/shared';
 import {
   createLearnerProfile,
@@ -60,6 +62,26 @@ export interface Loadout {
   effectId: string;
 }
 
+/** Offline Champion's Cup: three knockout rounds against labelled bots of rising strength. */
+export interface CupRun {
+  mode: OnlineModeId;
+  levels: CefrLevel[];
+  tiers: BotTier[];
+  /** One entry per played match (a draw replays the same round). */
+  results: ('win' | 'loss' | 'draw')[];
+  startedAt: number;
+}
+
+export const CUP_ROUNDS = 3;
+
+export function cupRound(run: CupRun): number {
+  return run.results.filter((r) => r === 'win').length;
+}
+export function cupStatus(run: CupRun): 'playing' | 'champion' | 'out' {
+  if (run.results.includes('loss')) return 'out';
+  return cupRound(run) >= CUP_ROUNDS ? 'champion' : 'playing';
+}
+
 export interface PlayerState {
   playerId: string;
   nickname: string;
@@ -76,6 +98,11 @@ export interface PlayerState {
   bagrut: BagrutProgress;
   adventure: Record<string, number>;
   selectedMode: GameModeId;
+  cup: CupRun | null;
+  cupTitles: number;
+  startCup: (run: Omit<CupRun, 'results' | 'startedAt'>) => void;
+  recordCupResult: (result: 'win' | 'loss' | 'draw') => string[];
+  endCup: () => void;
   setNickname: (name: string) => void;
   setOnboarded: () => void;
   setSelfLevel: (level: CefrLevel) => void;
@@ -102,6 +129,8 @@ export const ACHIEVEMENTS = [
   'bagrut-first',
   'placement',
   'reviewer',
+  'cup-champion',
+  'tournament-champion',
 ] as const;
 
 function today(): string {
@@ -143,6 +172,8 @@ function initial(): Omit<PlayerState, keyof PlayerActions> {
     bagrut: { notes: {}, checks: {}, completed: [], mockScores: {} },
     adventure: {},
     selectedMode: 'word-battle',
+    cup: null,
+    cupTitles: 0,
   };
 }
 
@@ -161,6 +192,9 @@ type PlayerActions = Pick<
   | 'setAdventureStars'
   | 'incrementCounter'
   | 'unlockAchievement'
+  | 'startCup'
+  | 'recordCupResult'
+  | 'endCup'
   | 'reset'
 >;
 
@@ -243,6 +277,20 @@ export const usePlayer = create<PlayerState>()(
           return unlock(ids);
         },
         unlockAchievement: (id) => unlock([id]).length > 0,
+        startCup: (run) => set({ cup: { ...run, results: [], startedAt: Date.now() } }),
+        recordCupResult: (result) => {
+          const cup = get().cup;
+          if (!cup || cupStatus(cup) !== 'playing') return [];
+          const next = { ...cup, results: [...cup.results, result] };
+          set({ cup: next });
+          if (cupStatus(next) === 'champion') {
+            // A small, fixed bonus for finishing the cup — earned only by playing.
+            set({ cupTitles: get().cupTitles + 1, xp: get().xp + 50, shards: get().shards + 20 });
+            return unlock(['cup-champion']);
+          }
+          return [];
+        },
+        endCup: () => set({ cup: null }),
         reset: () => set({ ...initial() }),
       };
     },

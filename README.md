@@ -24,6 +24,7 @@ CEFR A1–C2, Israeli 5-unit Bagrut preparation, and real authoritative multipla
 | Listening lab — 12 listening items using free on-device browser text-to-speech; transcript hidden until answered | ✅ (falls back to reading when TTS is unavailable, and is then not counted as listening evidence) |
 | **Real Life** — 8 branching text conversations A2–C1 (airport, hotel, shop return, restaurant, support call, job interview, university office hours, tech stand-up) | ✅ text mode (speech recognition not enabled) |
 | **English Detective** — 3 cases (A2, B1, B2): read evidence, answer shuffled questions, name who is responsible | ✅ |
+| **Tournaments** — offline Champion's Cup (3 knockout rounds vs labelled bots of rising strength) and friends' knockouts online (3–8 players, byes, automatic rounds, explainable tie-breaks, walkovers, server rewards) | ✅ cup offline, ✅ online locally (unranked) |
 | Authoritative WebSocket server — auth, rooms, queues, ready check, reconnection, rematch, Elo ranking, friends, block/report, rate limits, replay protection, **server-computed XP/shards/achievements persisted per player** (`/api/me/wallet`) | ✅ locally (not deployed) |
 | Supabase schema + RLS | ✅ tested on local PostgreSQL; 🟡 not yet applied to a real project |
 | Registered accounts / cloud sync / AI / speech | 🟡 / ⛔ — see `HANDOFF.md` |

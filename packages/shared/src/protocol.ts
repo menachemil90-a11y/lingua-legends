@@ -88,6 +88,11 @@ export const clientMessageSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('ABILITY_USE'), ...base, matchId: id, ability: abilitySchema }),
   z.object({ type: z.literal('CONQUEST_ACTION'), ...base, matchId: id, action: conquestActionSchema }),
   z.object({ type: z.literal('ESCAPE_ACTION'), ...base, matchId: id, action: escapeActionSchema }),
+  /** Friends' single-elimination tournaments (1v1 modes, 3–8 players, unranked). */
+  z.object({ type: z.literal('TOURNAMENT_CREATE'), ...base, mode: queueModeSchema, bracket: bracketSchema }),
+  z.object({ type: z.literal('TOURNAMENT_JOIN'), ...base, code: z.string().regex(/^[A-Z0-9]{6}$/) }),
+  z.object({ type: z.literal('TOURNAMENT_START'), ...base }),
+  z.object({ type: z.literal('TOURNAMENT_LEAVE'), ...base }),
   z.object({ type: z.literal('REMATCH_REQUEST'), ...base, matchId: id }),
   z.object({ type: z.literal('MATCH_LEAVE'), ...base, matchId: id }),
   z.object({ type: z.literal('QUICK_CHAT'), ...base, matchId: id, phraseId: z.enum(QUICK_CHAT_IDS) }),
@@ -385,6 +390,23 @@ export const serverMessageSchema = z.discriminatedUnion('type', [
     ranked: z.boolean(),
   }),
   z.object({ type: z.literal('MATCH_CANCELLED'), matchId: id, reason: z.string() }),
+  z.object({
+    type: z.literal('TOURNAMENT_STATE'),
+    code: z.string(),
+    mode: queueModeSchema,
+    bracket: bracketSchema,
+    hostId: id,
+    status: z.enum(['open', 'running', 'finished', 'closed']),
+    players: z.array(publicPlayerSchema),
+    /** Players who left; their remaining matches are walkovers. */
+    left: z.array(id),
+    rounds: z.array(
+      z.array(z.object({ a: id.nullable(), b: id.nullable(), winnerId: id.nullable(), status: z.enum(['pending', 'live', 'done', 'bye']), matchId: id.optional() })),
+    ),
+    championId: id.nullable(),
+    maxPlayers: z.number(),
+    expiresAt: z.number(),
+  }),
   z.object({ type: z.literal('REMATCH_STATE'), matchId: id, requestedBy: z.array(id), newMatchId: id.optional() }),
   z.object({ type: z.literal('QUICK_CHAT'), matchId: id, from: id, phraseId: z.enum(QUICK_CHAT_IDS) }),
   z.object({

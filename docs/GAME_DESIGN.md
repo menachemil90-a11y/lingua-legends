@@ -61,6 +61,18 @@ and stores them per player; a player who forfeits earns no shards. Offline (vs b
 After any match, **Practise my mistakes** replays the public items that were missed; ranked (server-only) items are
 replaced by public items that share their vocabulary/grammar tags at a nearby level, so the answer keys stay private.
 
+## Tournaments
+**Champion's Cup (offline):** pick a 1v1 mode, a language bracket and a difficulty; play a quarter-final, semi-final and
+final against labelled bots that get stronger each round (standard: Rookie → Adept → Veteran; hard: Adept → Veteran →
+Champion). A draw replays the round; a loss ends the run without penalties. Winning grants the *Cup Champion* title.
+
+**Friends' tournaments (online, unranked):** 3–8 players join by code or invite link; the host starts. The server seeds a
+single-elimination bracket (4 or 8 slots, byes for top seeds), launches every match automatically (8 s after the previous
+round so players can read their results), and advances winners. Draws go to more correct answers, then the faster average
+answer, then the better seed — never chance. Missing a ready check or leaving gives a walkover. The champion earns
+60 XP + 30 shards and the *Tournament Champion* achievement/title; the finalist 30 XP + 15 shards (all server-side).
+While in a tournament a player cannot join queues, rooms or challenges, so nobody is double-booked.
+
 ## Adventure
 Regions: Word Arena, Grammar Circuit, Sentence Citadel, Mystery District, Academic Summit. Chapters unlock in order,
 bosses reuse earlier material, stars from accuracy thresholds. All content remains available in Practice regardless of progress.

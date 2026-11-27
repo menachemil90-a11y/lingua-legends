@@ -79,6 +79,8 @@ export const COSMETICS: CosmeticDef[] = [
   { id: 'title-grammarian', kind: 'title', name: 'Grammar Ace', unlock: { kind: 'achievement', achievementId: 'race-winner' } },
   { id: 'title-architect', kind: 'title', name: 'Sentence Architect', unlock: { kind: 'achievement', achievementId: 'sentence-10' } },
   { id: 'title-scholar', kind: 'title', name: 'Scholar', unlock: { kind: 'achievement', achievementId: 'bagrut-first' } },
+  { id: 'title-cup', kind: 'title', name: 'Cup Champion', unlock: { kind: 'achievement', achievementId: 'cup-champion' } },
+  { id: 'title-tournament', kind: 'title', name: 'Tournament Champion', unlock: { kind: 'achievement', achievementId: 'tournament-champion' } },
   { id: 'frame-azure', kind: 'frame', name: 'Azure Ring', unlock: { kind: 'default' } },
   { id: 'frame-gilded', kind: 'frame', name: 'Gilded Crest', unlock: { kind: 'level', level: 5 } },
   { id: 'frame-arcane', kind: 'frame', name: 'Arcane Halo', unlock: { kind: 'achievement', achievementId: 'combo-master' } },

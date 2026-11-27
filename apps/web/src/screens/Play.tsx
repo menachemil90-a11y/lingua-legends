@@ -123,6 +123,13 @@ export function Play({ initialMode }: { initialMode?: GameModeId }) {
           </div>
         </Panel>
 
+        <Panel title={t('tournament.entry')}>
+          <p className="small muted">{t('tournament.entrySub')}</p>
+          <Button variant="secondary" icon="trophy" onClick={() => go({ id: 'tournament' })} data-testid="open-tournaments">
+            {t('tournament.entry')}
+          </Button>
+        </Panel>
+
         <Panel title={t('common.online')}>
           {server === 'down' ? (
             <StateMessage icon="wifiOff" title={t('common.offline')}>

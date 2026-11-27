@@ -144,6 +144,38 @@ test('English Detective: solve the A2 case by reading the evidence (options are 
   await expect(page.locator('.feedback--good')).toBeVisible();
 });
 
+test("Champion's Cup: start a cup and play the quarter-final against a labelled bot", async ({ page }) => {
+  await skipOnboarding(page);
+  await page.locator('.lobby-tile').first().click();
+  await page.getByTestId('open-tournaments').click();
+  await page.getByTestId('cup-start').click();
+  await expect(page.getByTestId('cup-round-0')).toHaveClass(/cup-node--next/);
+  await expect(page.getByTestId('cup-round-2')).toHaveClass(/cup-node--locked/);
+  await page.getByTestId('cup-play').click();
+  await expect(page.locator('canvas')).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText(/בוט|Bot/).first()).toBeVisible();
+});
+
+test('three browsers start a friends tournament; exactly two are called to the first match', async ({ browser }) => {
+  const ctxs = await Promise.all([browser.newContext(), browser.newContext(), browser.newContext()]);
+  const [a, b, c] = await Promise.all(ctxs.map((x) => x.newPage()));
+  for (const p of [a!, b!, c!]) await skipOnboarding(p);
+  await a!.locator('.lobby-tile').first().click();
+  await a!.getByTestId('open-tournaments').click();
+  await a!.getByRole('button', { name: /^(עם חברים|With friends)$/ }).click();
+  await a!.getByTestId('tournament-create').click({ timeout: 15_000 });
+  const code = (await a!.getByTestId('tournament-code').textContent())!.trim();
+  for (const p of [b!, c!]) await p.goto(`/?tournament=${code}`);
+  await expect(a!.getByTestId('tournament-start')).toBeEnabled({ timeout: 15_000 });
+  await a!.getByTestId('tournament-start').click();
+  for (const p of [a!, b!, c!]) await expect(p.getByTestId('bracket')).toBeVisible({ timeout: 15_000 });
+  // The server launches the semi-final for the two players without a bye.
+  const accept = (p: Page) => p.getByRole('button', { name: /אישור|Accept/ });
+  await expect.poll(async () => (await accept(a!).count()) + (await accept(b!).count()) + (await accept(c!).count()), { timeout: 20_000 }).toBe(2);
+  await expect(a!.locator('.chip--bot')).toHaveCount(0);
+  for (const x of ctxs) await x.close();
+});
+
 test('two browsers play English Conquest online: question for the active player, turn passes', async ({ browser }) => {
   const ctxA = await browser.newContext();
   const ctxB = await browser.newContext();

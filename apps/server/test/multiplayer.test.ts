@@ -288,6 +288,57 @@ describe('co-op Escape Room', () => {
   }, 30_000);
 });
 
+describe('friends tournaments', () => {
+  it('runs a 3-player bracket with a bye, walkovers and a champion with server rewards', async () => {
+    const a = await client('Tal');
+    const b = await client('Roni');
+    const c = await client('Shir');
+    a.send({ type: 'TOURNAMENT_CREATE', mode: 'word-battle', bracket: 'core' });
+    const open = await a.waitFor('TOURNAMENT_STATE', (m) => m.status === 'open');
+    b.send({ type: 'TOURNAMENT_JOIN', code: open.code });
+    await a.waitFor('TOURNAMENT_STATE', (m) => m.players.length === 2);
+    // Too few players and non-host starts are refused.
+    a.send({ type: 'TOURNAMENT_START' });
+    expect((await a.waitFor('ERROR', (e) => e.code === 'INVALID_STATE')).code).toBe('INVALID_STATE');
+    c.send({ type: 'TOURNAMENT_JOIN', code: open.code });
+    await a.waitFor('TOURNAMENT_STATE', (m) => m.players.length === 3);
+    b.send({ type: 'TOURNAMENT_START' });
+    expect((await b.waitFor('ERROR', (e) => e.code === 'FORBIDDEN')).code).toBe('FORBIDDEN');
+    // Members cannot wander off into queues while the tournament is active.
+    c.send({ type: 'QUEUE_JOIN', mode: 'word-battle', queue: 'casual', bracket: 'core' });
+    expect((await c.waitFor('ERROR', (e) => e.code === 'INVALID_STATE')).code).toBe('INVALID_STATE');
+    a.send({ type: 'TOURNAMENT_START' });
+    const running = await a.waitFor('TOURNAMENT_STATE', (m) => m.status === 'running');
+    expect(running.rounds[0]!.filter((m) => m.status === 'bye')).toHaveLength(1);
+    const byClient = (id: string | null) => [a, b, c].find((x) => x.playerId === id)!;
+    // Semi-final: the two non-bye players meet; one leaves the match → the other advances.
+    const semi = running.rounds[0]!.find((m) => m.status === 'pending')!;
+    const p1 = byClient(semi.a);
+    const p2 = byClient(semi.b);
+    const found = await p1.waitFor('MATCH_FOUND', () => true, 9000);
+    for (const p of [p1, p2]) p.send({ type: 'READY', matchId: found.matchId });
+    await p1.waitFor('MATCH_START', () => true, 9000);
+    p2.send({ type: 'MATCH_LEAVE', matchId: found.matchId });
+    await p1.waitFor('MATCH_END', () => true, 9000);
+    const afterSemi = await a.waitFor('TOURNAMENT_STATE', (m) => m.rounds[1]![0]!.a !== null && m.rounds[1]![0]!.b !== null);
+    expect([afterSemi.rounds[1]![0]!.a, afterSemi.rounds[1]![0]!.b]).toContain(p1.playerId);
+    // Final: the bye seed against the semi-final winner; the bye seed misses nothing, the other leaves the tournament.
+    const finalA = byClient(afterSemi.rounds[1]![0]!.a);
+    const finalB = byClient(afterSemi.rounds[1]![0]!.b);
+    const fin = await finalA.waitFor('MATCH_FOUND', (m) => m.matchId !== found.matchId, 9000);
+    finalA.send({ type: 'READY', matchId: fin.matchId });
+    finalB.send({ type: 'READY', matchId: fin.matchId });
+    await finalA.waitFor('MATCH_START', (m) => m.matchId === fin.matchId, 9000);
+    finalB.send({ type: 'TOURNAMENT_LEAVE' });
+    const done = await finalA.waitFor('TOURNAMENT_STATE', (m) => m.status === 'finished', 9000);
+    expect(done.championId).toBe(finalA.playerId);
+    await new Promise((r) => setTimeout(r, 300));
+    const wallet = (await (await fetch(`http://127.0.0.1:${server.port}/api/me/wallet`, { headers: { authorization: `Bearer ${finalA.token}` } })).json()) as { shards: number; achievements: string[] };
+    expect(wallet.achievements).toContain('tournament-champion');
+    expect(wallet.shards).toBeGreaterThanOrEqual(30);
+  }, 45_000);
+});
+
 describe('ranked matchmaking', () => {
   it('matches two real players, updates MMR server-side and shows them on the leaderboard', async () => {
     const a = await client('Rina');

@@ -76,16 +76,28 @@ export function MatchScreen({ params }: { params: LocalMatchParams | OnlineMatch
         end: view.end,
         ...(params.kind === 'local' && params.chapterId ? { chapterId: params.chapterId } : {}),
       });
+      if (params.kind === 'local' && params.cup) {
+        const r = summary.result === 'win' ? 'win' : summary.result === 'loss' ? 'loss' : 'draw';
+        summary.unlocked.push(...usePlayer.getState().recordCupResult(r));
+      }
       setEnded({ view, summary });
       sfx.setMusic('lobby');
     },
     [params, transport],
   );
 
+  // Cup and tournament matches return to the tournament screen instead of the lobby.
+  const tour = useConnection((s) => s.tournament);
+  const inTournament = (params.kind === 'local' && !!params.cup) || (params.kind === 'online' && !!tour && tour.status !== 'open' && tour.rounds.some((r) => r.some((m) => m.matchId === params.matchId)));
+  const leaveToHub = useCallback(() => {
+    if (inTournament) useNav.getState().replace({ id: 'tournament', tab: params.kind === 'local' ? 'cup' : 'friends' });
+    else home();
+  }, [inTournament, params.kind, home]);
+
   const onExit = useCallback(() => {
     if (params.kind === 'online') connection.clearPendingMatch();
-    home();
-  }, [params.kind, home]);
+    leaveToHub();
+  }, [params.kind, leaveToHub]);
 
   if (!transport) return <Loading />;
 
@@ -103,7 +115,8 @@ export function MatchScreen({ params }: { params: LocalMatchParams | OnlineMatch
           selfId={transport.selfId}
           rematchPending={rematchSent}
           rematchRequestedByOpponent={oppRequested && !rematchSent}
-          onRematch={() => {
+          {...(inTournament ? {} : {
+          onRematch: () => {
             if (params.kind === 'local') {
               setEnded(null);
               setAttempt((n) => n + 1);
@@ -111,10 +124,10 @@ export function MatchScreen({ params }: { params: LocalMatchParams | OnlineMatch
               setRematchSent(true);
               connection.send({ type: 'REMATCH_REQUEST', matchId: params.matchId });
             }
-          }}
+          } })}
           onLobby={() => {
             if (params.kind === 'online') connection.clearPendingMatch();
-            home();
+            leaveToHub();
           }}
           {...(params.mode === 'sentence-master' && params.kind === 'local'
             ? {

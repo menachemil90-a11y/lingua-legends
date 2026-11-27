@@ -28,6 +28,7 @@ interface ConnState {
   lastError: string | null;
   queue: ServerMessageOf<'QUEUE_STATE'> | null;
   room: ServerMessageOf<'ROOM_STATE'> | null;
+  tournament: ServerMessageOf<'TOURNAMENT_STATE'> | null;
   friends: ServerMessageOf<'FRIENDS_STATE'> | null;
   invites: ServerMessageOf<'INVITE'>[];
   pendingMatch: ServerMessageOf<'MATCH_FOUND'> | null;
@@ -44,6 +45,7 @@ export const useConnection = create<ConnState>(() => ({
   lastError: null,
   queue: null,
   room: null,
+  tournament: null,
   friends: null,
   invites: [],
   pendingMatch: null,
@@ -224,6 +226,9 @@ class Connection {
         break;
       case 'ROOM_STATE':
         useConnection.setState({ room: msg.status === 'closed' ? null : msg });
+        break;
+      case 'TOURNAMENT_STATE':
+        useConnection.setState({ tournament: msg.status === 'closed' ? null : msg });
         break;
       case 'FRIENDS_STATE':
         useConnection.setState({ friends: msg });

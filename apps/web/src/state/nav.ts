@@ -13,6 +13,8 @@ export interface LocalMatchParams {
   racers?: number;
   /** Adventure chapter that launched the match, if any. */
   chapterId?: string;
+  /** Part of the offline Champion's Cup. */
+  cup?: boolean;
 }
 
 export interface OnlineMatchParams {
@@ -45,6 +47,7 @@ export type Screen =
   | { id: 'detective'; caseId?: string }
   | { id: 'escape-room'; roomId?: string }
   | { id: 'conquest' }
+  | { id: 'tournament'; tab?: 'cup' | 'friends'; code?: string }
   | { id: 'debate'; topicId?: string }
   | { id: 'mode-info'; mode: GameModeId };
 

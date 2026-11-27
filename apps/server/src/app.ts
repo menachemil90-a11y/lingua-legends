@@ -25,6 +25,7 @@ import { KeyedLimiter, RecentIds, TokenBucket } from './rateLimit';
 import { MatchManager } from './matches';
 import { Matchmaker, Rooms } from './lobby';
 import { Friends } from './friends';
+import { Tournaments } from './tournaments';
 import type { ServerStore } from './store/types';
 import { loadRankedPool } from './content/rankedPool';
 import { rankedAvailable, rankedPoolInfo, setRankedPool } from './content/sources';
@@ -92,6 +93,7 @@ export async function startServer(cfg: Config, store: ServerStore, port = cfg.PO
   const matchmaker = new Matchmaker(hub, matches, store);
   const rooms = new Rooms(hub, matches, store, cfg.ROOM_TTL_MS);
   const friends = new Friends(hub, store, matches);
+  const tournaments = new Tournaments(hub, matches, store, { ttlMs: cfg.ROOM_TTL_MS, roundPauseMs: cfg.NODE_ENV === 'test' ? 400 : 8000 });
   const guestLimiter = new KeyedLimiter(cfg.GUEST_TOKENS_PER_MINUTE, cfg.GUEST_TOKENS_PER_MINUTE / 60);
   const httpLimiter = new KeyedLimiter(60, 2);
   const connPerIp = new Map<string, number>();
@@ -266,6 +268,7 @@ export async function startServer(cfg: Config, store: ServerStore, port = cfg.PO
         matchmaker.leave(session.playerId);
         rooms.leave(session.playerId);
         matches.onDisconnect(session.playerId);
+        tournaments.onDisconnect(session.playerId);
         void friends.presence(session.playerId);
       }
     });
@@ -300,6 +303,7 @@ export async function startServer(cfg: Config, store: ServerStore, port = cfg.PO
       }
       hub.sendSession(s, { type: 'WELCOME', playerId: record.id, nickname: record.nickname, friendCode: record.friendCode, serverTime: Date.now(), accountKind: identity.kind });
       matches.onReconnect(record.id);
+      tournaments.onReconnect(record.id);
       void friends.presence(record.id);
       return;
     }
@@ -314,6 +318,7 @@ export async function startServer(cfg: Config, store: ServerStore, port = cfg.PO
         return hub.sendSession(s, { type: 'PONG', clientTime: msg.clientTime, serverTime: Date.now() });
       case 'QUEUE_JOIN':
         if (matches.isBusy(playerId)) return fail(ERROR_CODES.INVALID_STATE, 'Already in a match');
+        if (tournaments.isActive(playerId)) return fail(ERROR_CODES.INVALID_STATE, 'You are in a tournament');
         if (msg.queue === 'ranked' && !rankedAvailable(msg.mode, msg.bracket)) return fail(ERROR_CODES.RANKED_UNAVAILABLE, 'Ranked play is not available on this server yet');
         rooms.leave(playerId);
         return matchmaker.join(playerId, msg.mode, msg.queue, msg.bracket);
@@ -321,11 +326,13 @@ export async function startServer(cfg: Config, store: ServerStore, port = cfg.PO
         return matchmaker.leave(playerId);
       case 'ROOM_CREATE':
         if (matches.isBusy(playerId)) return fail(ERROR_CODES.INVALID_STATE, 'Already in a match');
+        if (tournaments.isActive(playerId)) return fail(ERROR_CODES.INVALID_STATE, 'You are in a tournament');
         matchmaker.leave(playerId);
         rooms.create(playerId, msg.mode, msg.bracket);
         return;
       case 'ROOM_JOIN':
         if (matches.isBusy(playerId)) return fail(ERROR_CODES.INVALID_STATE, 'Already in a match');
+        if (tournaments.isActive(playerId)) return fail(ERROR_CODES.INVALID_STATE, 'You are in a tournament');
         matchmaker.leave(playerId);
         return fail(await rooms.join(playerId, msg.code), 'Room unavailable');
       case 'ROOM_LEAVE':
@@ -338,6 +345,26 @@ export async function startServer(cfg: Config, store: ServerStore, port = cfg.PO
         const err = matches.answer(playerId, msg.matchId, msg.roundId, msg.answer);
         return err ? fail(err.code, err.message) : undefined;
       }
+      case 'TOURNAMENT_CREATE': {
+        if (matches.isBusy(playerId)) return fail(ERROR_CODES.INVALID_STATE, 'Already in a match');
+        rooms.leave(playerId);
+        matchmaker.leave(playerId);
+        const err = tournaments.create(playerId, msg.mode, msg.bracket);
+        return err ? fail(err, 'Cannot create a tournament now') : undefined;
+      }
+      case 'TOURNAMENT_JOIN': {
+        if (matches.isBusy(playerId)) return fail(ERROR_CODES.INVALID_STATE, 'Already in a match');
+        rooms.leave(playerId);
+        matchmaker.leave(playerId);
+        const err = await tournaments.join(playerId, msg.code);
+        return err ? fail(err, err === 'ROOM_FULL' ? 'The tournament is full' : 'Tournament not found') : undefined;
+      }
+      case 'TOURNAMENT_START': {
+        const err = tournaments.start(playerId);
+        return err ? fail(err, err === 'FORBIDDEN' ? 'Only the host can start' : 'A tournament needs at least 3 players') : undefined;
+      }
+      case 'TOURNAMENT_LEAVE':
+        return tournaments.leave(playerId);
       case 'ESCAPE_ACTION': {
         const err = matches.escape(playerId, msg.matchId, msg.action);
         return err ? fail(err.code, err.message) : undefined;
@@ -366,8 +393,10 @@ export async function startServer(cfg: Config, store: ServerStore, port = cfg.PO
       case 'FRIEND_REMOVE':
         return friends.remove(playerId, msg.playerId);
       case 'FRIEND_CHALLENGE':
+        if (tournaments.isActive(playerId)) return fail(ERROR_CODES.INVALID_STATE, 'You are in a tournament');
         return fail(await friends.challenge(playerId, msg.playerId, msg.mode, msg.bracket), 'Cannot challenge this player now');
       case 'INVITE_RESPOND':
+        if (msg.accept && tournaments.isActive(playerId)) return fail(ERROR_CODES.INVALID_STATE, 'You are in a tournament');
         return fail(await friends.respondInvite(playerId, msg.inviteId, msg.accept), 'Invite unavailable');
       case 'BLOCK':
         return friends.block(playerId, msg.playerId);
@@ -405,6 +434,7 @@ export async function startServer(cfg: Config, store: ServerStore, port = cfg.PO
       clearInterval(heartbeat);
       matchmaker.dispose();
       rooms.dispose();
+      tournaments.dispose();
       matches.disposeAll();
       for (const ws of wss.clients) ws.terminate();
       await new Promise<void>((resolve) => wss.close(() => resolve()));

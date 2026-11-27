@@ -39,6 +39,9 @@ export function Lobby() {
   const p = usePlayer();
   const lvl = playerLevel(p.xp);
   const connStatus = useConnection((s) => s.status);
+  const tour = useConnection((s) => s.tournament);
+  const myId = useConnection((s) => s.playerId);
+  const inTour = !!tour && (tour.status === 'open' || tour.status === 'running') && tour.players.some((x) => x.playerId === myId) && !tour.left.includes(myId ?? '');
   const [ratings, setRatings] = useState<RemoteRating[] | null>(null);
   const [modeOpen, setModeOpen] = useState(false);
   const est = overallEstimate(p.learner);
@@ -147,6 +150,15 @@ export function Lobby() {
             </div>
             <Hero id={p.loadout.characterId} animated className="lobby__hero" label={p.loadout.characterId} />
           </div>
+          {inTour && (
+            <button type="button" className="info-pill info-pill--gold" onClick={() => go({ id: 'tournament', tab: 'friends' })} data-testid="return-tournament">
+              <Icon name="trophy" />
+              <span>
+                <span className="tiny muted">{t('tournament.entry')}</span>
+                <strong>{t(`tournament.status.${tour!.status}` as MessageKey)}</strong>
+              </span>
+            </button>
+          )}
           <div className="lobby__badges">
             <button type="button" className="info-pill" onClick={() => go({ id: 'leaderboard' })}>
               {best ? <RankEmblem tier={best.tier as 'gold'} division={best.division} size={34} /> : <Icon name="trophy" />}

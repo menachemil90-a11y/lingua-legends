@@ -66,6 +66,20 @@ export interface MatchOptions {
 export class MatchManager {
   private matches = new Map<string, LiveMatch>();
   private byPlayer = new Map<string, string>();
+  private endListeners: ((matchId: string, outcome: MatchOutcome) => void)[] = [];
+  private cancelListeners: ((matchId: string, readyIds: string[]) => void)[] = [];
+
+  /** Called after a match result has been sent and stored (used by tournaments). */
+  onMatchEnd(fn: (matchId: string, outcome: MatchOutcome) => void): void {
+    this.endListeners.push(fn);
+  }
+  /** Called when a match is cancelled before it starts (ready check failed or a player left). */
+  onMatchCancelled(fn: (matchId: string, readyIds: string[]) => void): void {
+    this.cancelListeners.push(fn);
+  }
+  private emitCancelled(m: LiveMatch): void {
+    for (const fn of this.cancelListeners) fn(m.id, [...m.ready]);
+  }
 
   constructor(
     private readonly hub: Hub,
@@ -157,6 +171,7 @@ export class MatchManager {
     if (!m || m.state !== 'ready-check') return;
     m.state = 'ended';
     this.broadcast(m, { type: 'MATCH_CANCELLED', matchId, reason: 'ready-timeout' });
+    this.emitCancelled(m);
     this.cleanup(matchId);
   }
 
@@ -282,6 +297,13 @@ export class MatchManager {
     } catch (e) {
       console.error('[matches] failed to persist match', m.id, e);
     }
+    for (const fn of this.endListeners) {
+      try {
+        fn(m.id, o);
+      } catch (e) {
+        console.error('[matches] end listener failed', e);
+      }
+    }
     // Keep the ended match briefly so rematch requests can find it.
     setTimeout(() => this.cleanup(m.id), 90_000);
   }
@@ -325,6 +347,7 @@ export class MatchManager {
       m.state = 'ended';
       if (m.readyTimer) clearTimeout(m.readyTimer);
       this.broadcast(m, { type: 'MATCH_CANCELLED', matchId, reason: 'player-left' });
+      this.emitCancelled(m);
       this.cleanup(matchId);
     } else if (m.state === 'live') {
       m.host?.forfeit(playerId);

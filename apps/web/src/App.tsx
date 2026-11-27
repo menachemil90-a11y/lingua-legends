@@ -19,6 +19,7 @@ import { MatchScreen } from './games/MatchScreen';
 import { EscapeRoomScreen } from './screens/EscapeRoom';
 import { ConquestScreen } from './screens/Conquest';
 import { DebateScreen } from './screens/Debate';
+import { TournamentScreen } from './screens/Tournament';
 import { SentencePracticeScreen } from './games/sentenceMaster/SentencePracticeScreen';
 
 /**
@@ -74,6 +75,8 @@ function ScreenFor({ s }: { s: Screen }) {
       return <EscapeRoomScreen {...(s.roomId ? { roomId: s.roomId } : {})} />;
     case 'conquest':
       return <ConquestScreen />;
+    case 'tournament':
+      return <TournamentScreen {...(s.tab ? { tab: s.tab } : {})} {...(s.code ? { code: s.code } : {})} />;
     case 'debate':
       return <DebateScreen {...(s.topicId ? { topicId: s.topicId } : {})} />;
     case 'mode-info':
@@ -161,6 +164,12 @@ export function App() {
     if (room && /^[A-Z0-9]{6}$/.test(room)) {
       history.replaceState(null, '', window.location.pathname);
       useNav.getState().go({ id: 'online', mode: 'word-battle', flow: 'room', bracket: 'core', roomCode: room });
+    }
+    // Tournament invitations: ?tournament=CODE
+    const tcode = params.get('tournament')?.toUpperCase();
+    if (tcode && /^[A-Z0-9]{6}$/.test(tcode)) {
+      history.replaceState(null, '', window.location.pathname);
+      useNav.getState().go({ id: 'tournament', tab: 'friends', code: tcode });
     }
     const offline = () => toast(t('offline.notice'));
     window.addEventListener('offline', offline);

@@ -58,6 +58,7 @@ Status as of development session 2 (2026-11-27).
 ## Ongoing
 - [x] Ranked pool expanded from 54 to 120 server-only items, with a test that it never overlaps the public bank
 - [ ] Teacher review of all content (`reviewStatus`), grow the bank substantially (quality over quantity)
-- [ ] Tournaments, seasons rollover tooling
+- [x] Tournaments: offline Champion's Cup vs bots; friends' knockout brackets online (3–8 players)
+- [ ] Public scheduled tournaments, seasons rollover tooling
 - [ ] Android packaging (TWA/Capacitor) from the PWA
 - [ ] Analytics for `docs/METRICS.md` (privacy-preserving, opt-in where required)
