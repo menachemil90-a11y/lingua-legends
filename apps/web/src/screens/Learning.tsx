@@ -2,7 +2,7 @@
 import { useMemo, useState } from 'react';
 import { CEFR_LEVELS, prepareRoundQuestion, gradeAnswer, type ContentItem, type GradeResult } from '@lingua/shared';
 import { PlacementSession, dueReviews, eventFromItem, recommendedLevel, selectItems, weakTopics } from '@lingua/learning';
-import { CONTENT_ITEMS, itemsFor, itemsForPassage, passageById, READING_PASSAGES } from '@lingua/content';
+import { CONTENT_ITEMS, itemsFor, itemsForPassage, listeningPool, passageById, READING_PASSAGES } from '@lingua/content';
 import { Icon } from '../art/icons';
 import { Button, Chip, En, Panel, ProgressBar, StateMessage } from '../design';
 import { useT } from '../i18n';
@@ -11,6 +11,52 @@ import { usePlayer } from '../state/player';
 import { useNav } from '../state/nav';
 import { uid } from '../state/storage';
 import { Explanation, Prompt } from '../games/shared/components';
+
+const ttsAvailable = () => typeof window !== 'undefined' && 'speechSynthesis' in window && typeof SpeechSynthesisUtterance !== 'undefined';
+
+/** Plays a listening script with the browser's on-device text-to-speech (free, no data sent by us). */
+export function ListenControl({ script, revealed }: { script: string; revealed: boolean }) {
+  const t = useT();
+  const [plays, setPlays] = useState(0);
+  const speak = (rate: number) => {
+    if (!ttsAvailable()) return;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(script);
+    u.lang = 'en-US';
+    u.rate = rate;
+    window.speechSynthesis.speak(u);
+    setPlays((n) => n + 1);
+  };
+  if (!ttsAvailable()) {
+    return (
+      <div className="stack">
+        <p className="tiny muted">{t('listening.unavailable')}</p>
+        <En as="div" className="q-context">
+          {script}
+        </En>
+      </div>
+    );
+  }
+  return (
+    <div className="listen">
+      <div className="row">
+        <Button variant="secondary" icon="volume" onClick={() => speak(0.95)} data-testid="listen-play">
+          {plays ? t('listening.again') : t('listening.play')}
+        </Button>
+        <Button size="sm" variant="ghost" icon="hourglass" onClick={() => speak(0.7)}>
+          {t('listening.slow')}
+        </Button>
+      </div>
+      {revealed ? (
+        <En as="div" className="q-context">
+          {script}
+        </En>
+      ) : (
+        <p className="tiny muted">{t('listening.hidden')}</p>
+      )}
+    </div>
+  );
+}
 
 /** Runs a list of option-graded items with immediate, detailed feedback. */
 export function QuizSession({
@@ -40,18 +86,19 @@ export function QuizSession({
     setGrade(g);
     sfx.play(g.correct ? 'correct' : 'wrong');
     if (g.correct) setCorrect((c) => c + 1);
-    recordLearning([
-      eventFromItem(item, {
-        id: uid('ev_'),
-        playerId: '',
-        mode,
-        correct: g.correct,
-        responseMs: Date.now() - startedAt,
-        timestamp: Date.now(),
-        timeLimitMs: rq.question.timeLimitSec * 1000,
-        ...(g.errorCategory ? { errorCategory: g.errorCategory } : {}),
-      }),
-    ]);
+    const ev = eventFromItem(item, {
+      id: uid('ev_'),
+      playerId: '',
+      mode,
+      correct: g.correct,
+      responseMs: Date.now() - startedAt,
+      timestamp: Date.now(),
+      timeLimitMs: rq.question.timeLimitSec * 1000,
+      ...(g.errorCategory ? { errorCategory: g.errorCategory } : {}),
+    });
+    // Without real audio the learner read the script, so it must not count as listening evidence.
+    if (item.listen && !ttsAvailable()) ev.primarySkill = 'reading';
+    recordLearning([ev]);
   };
   const next = () => {
     if (i + 1 >= items.length) {
@@ -81,6 +128,7 @@ export function QuizSession({
           {rq.question.context}
         </En>
       )}
+      {item.listen && <ListenControl key={item.id} script={item.listen} revealed={!!grade} />}
       <Prompt text={rq.question.prompt} fill={grade ? correctText : null} correct={grade ? true : null} />
       <div className={`answer-grid ${(rq.question.options?.length ?? 0) >= 4 ? 'answer-grid--2' : ''}`}>
         {rq.question.options?.map((o, k) => {
@@ -239,12 +287,12 @@ export function Practice({ focus }: { focus?: 'review' | 'mix' }) {
   const due = dueReviews(learner, Date.now());
   const weak = weakTopics(learner, 5);
 
-  const startSession = (kind: 'review' | 'mix') => {
-    const pool = itemsFor('practice').filter((i) => i.grading.mode === 'option' && !i.passageId);
+  const startSession = (kind: 'review' | 'mix' | 'listening') => {
+    const pool = kind === 'listening' ? listeningPool() : itemsFor('practice').filter((i) => i.grading.mode === 'option' && !i.passageId && !i.listen);
     const lvl = recommendedLevel(learner);
     const idx = CEFR_LEVELS.indexOf(lvl);
     const levels = CEFR_LEVELS.filter((_, k) => Math.abs(k - idx) <= 1);
-    const items = selectItems(pool, learner, { count: 8, now: Date.now(), random: Math.random, levels: kind === 'review' ? CEFR_LEVELS : levels, reviewShare: kind === 'review' ? 1 : 0.35 });
+    const items = selectItems(pool, learner, { count: kind === 'listening' ? 6 : 8, now: Date.now(), random: Math.random, levels: kind === 'mix' ? levels : CEFR_LEVELS, reviewShare: kind === 'review' ? 1 : 0.35 });
     setResult(null);
     setSession(items);
   };
@@ -300,6 +348,12 @@ export function Practice({ focus }: { focus?: 'review' | 'mix' }) {
           {due.length === 0 && <p className="small muted">{t('practice.noDue')}</p>}
           <Button variant="primary" icon="target" onClick={() => startSession(due.length > 0 || focus === 'review' ? 'review' : 'mix')} data-testid="start-review">
             {due.length > 0 ? t('practice.startReview') : t('practice.mix')}
+          </Button>
+        </Panel>
+        <Panel title={t('listening.lab')}>
+          <p className="small muted">{t('listening.labDesc')}</p>
+          <Button variant="secondary" icon="ear" onClick={() => startSession('listening')} data-testid="start-listening">
+            {t('listening.start')}
           </Button>
         </Panel>
         <Panel title={t('practice.topics')}>

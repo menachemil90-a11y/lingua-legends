@@ -11,6 +11,7 @@ export const DEFAULT_TIME_LIMIT_SEC: Record<ContentItem['type'], number> = {
 /** Per-category time limits override type defaults (reading needs more time). */
 const CATEGORY_TIME_LIMIT_SEC: Partial<Record<ContentItem['category'], number>> = {
   'reading-inference': 25,
+  listening: 30,
 };
 
 export function timeLimitFor(item: ContentItem): number {
@@ -80,6 +81,7 @@ export function prepareRoundQuestion(item: ContentItem, qid: string, random: Ran
     timeLimitSec,
   };
   if (item.context) question.context = item.context;
+  if (item.listen) question.listen = item.listen;
   const key: AnswerKey = {};
 
   if (item.options && item.grading.mode === 'option') {

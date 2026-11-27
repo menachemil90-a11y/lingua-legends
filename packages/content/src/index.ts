@@ -14,11 +14,13 @@ import { RACE_ITEMS } from './items/race';
 import { SENTENCE_ITEMS } from './items/sentences';
 import { PASSAGES, READING_ITEMS } from './reading';
 import { BAGRUT_ITEMS, LITERARY_TEXTS } from './bagrut';
+import { LISTENING_ITEMS } from './items/listening';
 
 export * from './bagrut';
 export * from './sets';
 export * from './story';
 export * from './escape';
+export * from './debate';
 export { validateContent, CONTENT_TARGETS, type ValidationIssue } from './validate';
 
 export const RAW_ITEMS: ContentItemInput[] = [
@@ -32,6 +34,7 @@ export const RAW_ITEMS: ContentItemInput[] = [
   ...SENTENCE_ITEMS,
   ...READING_ITEMS,
   ...BAGRUT_ITEMS,
+  ...LISTENING_ITEMS,
 ];
 
 export const RAW_PASSAGES = [...PASSAGES, ...LITERARY_TEXTS];
@@ -61,7 +64,7 @@ export function itemsForPassage(passageId: string): ContentItem[] {
 
 /** Items usable in Word Battle (option-graded, short enough for a round). */
 export function wordBattlePool(levels?: readonly CefrLevel[]): ContentItem[] {
-  return itemsFor('word-battle', levels).filter((i) => i.grading.mode === 'option' && !i.passageId);
+  return itemsFor('word-battle', levels).filter((i) => i.grading.mode === 'option' && !i.passageId && !i.listen);
 }
 
 export function grammarRacePool(levels?: readonly CefrLevel[]): ContentItem[] {
@@ -74,3 +77,7 @@ export function sentencePool(levels?: readonly CefrLevel[]): ContentItem[] {
 
 /** Authoring helpers (also used by the server-only ranked pool). */
 export { q, sb } from './helpers';
+
+export function listeningPool(levels?: readonly CefrLevel[]): ContentItem[] {
+  return CONTENT_ITEMS.filter((i) => !!i.listen && (!levels || levels.includes(i.level)));
+}

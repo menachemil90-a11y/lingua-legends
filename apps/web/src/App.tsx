@@ -18,6 +18,7 @@ import { Adventure, Detective, ModeInfo, RealLife } from './screens/World';
 import { MatchScreen } from './games/MatchScreen';
 import { EscapeRoomScreen } from './screens/EscapeRoom';
 import { ConquestScreen } from './screens/Conquest';
+import { DebateScreen } from './screens/Debate';
 import { SentencePracticeScreen } from './games/sentenceMaster/SentencePracticeScreen';
 
 function Router() {
@@ -65,6 +66,8 @@ function Router() {
       return <EscapeRoomScreen {...(s.roomId ? { roomId: s.roomId } : {})} />;
     case 'conquest':
       return <ConquestScreen />;
+    case 'debate':
+      return <DebateScreen {...(s.topicId ? { topicId: s.topicId } : {})} />;
     case 'mode-info':
       return <ModeInfo mode={s.mode} />;
   }

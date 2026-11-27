@@ -63,6 +63,7 @@ export function Lobby() {
     else if (selected.id === 'english-detective') go({ id: 'detective' });
     else if (selected.id === 'escape-room') go({ id: 'escape-room' });
     else if (selected.id === 'english-conquest') go({ id: 'conquest' });
+    else if (selected.id === 'debate-arena') go({ id: 'debate' });
     else go({ id: 'mode-info', mode: selected.id });
   };
 

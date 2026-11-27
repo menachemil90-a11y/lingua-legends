@@ -12,6 +12,7 @@ export interface QuestionSpec {
   /** Prompt; "___" marks a gap. */
   p: string;
   ctx?: string;
+  listen?: string;
   ans: string;
   wrong: Wrong[];
   en: string;
@@ -40,6 +41,7 @@ const SKILL_FOR: Record<QuestionCategory, Skill> = {
   'reading-inference': 'reading',
   grammar: 'grammar',
   'sentence-building': 'grammar',
+  listening: 'listening',
 };
 
 const GRAMMAR_CATS: QuestionCategory[] = ['sentence-completion', 'grammar-correction', 'grammar', 'connector'];
@@ -47,6 +49,7 @@ const GRAMMAR_CATS: QuestionCategory[] = ['sentence-completion', 'grammar-correc
 function defaultModes(cat: QuestionCategory): ContentConsumer[] {
   if (GRAMMAR_CATS.includes(cat)) return ['word-battle', 'grammar-race', 'practice', 'placement', 'adventure'];
   if (cat === 'reading-inference') return ['word-battle', 'practice', 'placement', 'adventure', 'english-detective'];
+  if (cat === 'listening') return ['practice', 'bagrut', 'adventure'];
   return ['word-battle', 'practice', 'placement', 'adventure'];
 }
 
@@ -75,6 +78,7 @@ export function q(s: QuestionSpec): ContentItemInput {
     category: s.cat,
     prompt: s.p,
     ...(s.ctx ? { context: s.ctx } : {}),
+    ...(s.listen ? { listen: s.listen } : {}),
     options,
     acceptedAnswers: ['a'],
     grading: { mode: 'option' },

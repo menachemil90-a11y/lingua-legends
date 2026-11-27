@@ -36,6 +36,7 @@ export const QUESTION_CATEGORIES = [
   'reading-inference',
   'grammar',
   'sentence-building',
+  'listening',
 ] as const;
 export type QuestionCategory = (typeof QUESTION_CATEGORIES)[number];
 
@@ -110,6 +111,8 @@ export const contentItemSchema = z
     prompt: z.string().min(1),
     /** Optional passage or context shown above the prompt. */
     context: z.string().optional(),
+    /** Listening items: script spoken aloud with text-to-speech (transcript shown after answering). */
+    listen: z.string().optional(),
     options: z.array(optionSchema).optional(),
     /** Word tiles for sentence-building (canonical order is irrelevant; shuffled at runtime). */
     tiles: z.array(z.string().min(1)).optional(),
@@ -204,6 +207,7 @@ export const publicQuestionSchema = z.object({
   level: z.enum(CEFR_LEVELS),
   prompt: z.string(),
   context: z.string().optional(),
+  listen: z.string().optional(),
   options: z.array(z.object({ id: z.string(), text: z.string() })).optional(),
   tiles: z.array(z.object({ id: z.string(), text: z.string() })).optional(),
   timeLimitSec: z.number(),

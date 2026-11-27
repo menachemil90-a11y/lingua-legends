@@ -79,6 +79,7 @@ export function validateContent(
   for (const i of items) {
     if (!HEBREW.test(i.explanation.he)) issues.push({ severity: 'error', ref: i.id, message: 'Hebrew explanation contains no Hebrew text' });
     if (i.explanation.en.length < 10) issues.push({ severity: 'warning', ref: i.id, message: 'English explanation is very short' });
+    if (i.category === 'listening' && !i.listen) issues.push({ severity: 'error', ref: i.id, message: 'listening item without a script' });
     if (i.type === 'cloze' && i.prompt.split('___').length !== 2) issues.push({ severity: 'error', ref: i.id, message: 'cloze must contain exactly one gap' });
     if (i.passageId && !passageIds.has(i.passageId)) issues.push({ severity: 'error', ref: i.id, message: `unknown passage ${i.passageId}` });
     for (const o of i.options ?? []) {
@@ -109,7 +110,7 @@ export function validateContent(
   if (opts.targets === false) return { issues, stats };
 
   // Minimum targets.
-  const general = items.filter((i) => !i.id.startsWith('race-') && i.type !== 'sentence-build' && !i.passageId);
+  const general = items.filter((i) => !i.id.startsWith('race-') && i.type !== 'sentence-build' && !i.passageId && !i.listen);
   for (const lvl of CEFR_LEVELS) {
     const n = general.filter((i) => i.level === lvl).length;
     stats[`general:${lvl}`] = n;
@@ -120,6 +121,7 @@ export function validateContent(
   stats.wordBattleSets = WORD_BATTLE_SETS.length;
   stats.openTasks = OPEN_TASKS.length;
   stats.readingItems = items.filter((i) => !!i.passageId).length;
+  stats.listeningItems = items.filter((i) => !!i.listen).length;
   if (stats.sentenceBuilding < CONTENT_TARGETS.sentenceBuilding) issues.push({ severity: 'error', ref: 'sentence', message: 'not enough sentence-building items' });
   if (stats.grammarRace < CONTENT_TARGETS.grammarRace) issues.push({ severity: 'error', ref: 'race', message: 'not enough race items' });
   if (stats.wordBattleSets < CONTENT_TARGETS.wordBattleSets) issues.push({ severity: 'error', ref: 'sets', message: 'not enough Word Battle sets' });

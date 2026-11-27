@@ -44,6 +44,7 @@ export type Screen =
   | { id: 'detective'; caseId?: string }
   | { id: 'escape-room'; roomId?: string }
   | { id: 'conquest' }
+  | { id: 'debate'; topicId?: string }
   | { id: 'mode-info'; mode: GameModeId };
 
 interface NavState {
