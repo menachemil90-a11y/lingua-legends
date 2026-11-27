@@ -7,6 +7,7 @@ export const HOTSPOTS: Record<Theme, Partial<Record<EscapePuzzle['object'], { x:
   workshop: { note: { x: 46, y: 26 }, clock: { x: 16, y: 40 }, desk: { x: 44, y: 66 }, chest: { x: 70, y: 78 }, 'door-panel': { x: 88, y: 52 } },
   observatory: { logbook: { x: 30, y: 70 }, telescope: { x: 52, y: 38 }, desk: { x: 18, y: 64 }, 'door-panel': { x: 86, y: 50 } },
   station: { map: { x: 30, y: 26 }, radio: { x: 58, y: 70 }, note: { x: 84, y: 34 }, 'door-panel': { x: 86, y: 56 } },
+  archive: { bookshelf: { x: 15, y: 38 }, map: { x: 45, y: 22 }, desk: { x: 47, y: 66 }, logbook: { x: 64, y: 60 }, chest: { x: 30, y: 80 }, 'door-panel': { x: 88, y: 52 } },
 };
 
 function Workshop() {
@@ -144,10 +145,74 @@ function Station() {
   );
 }
 
+/** University archive after hours: tall shelves, a reading desk with a green lamp, a framed map. */
+function Archive() {
+  const spines = ['#7a2e2e', '#2e4f7a', '#6b5a2a', '#2f6b4f', '#5a2e6b', '#7a4a2e', '#3a5a6b'];
+  return (
+    <g>
+      <defs>
+        <linearGradient id="ar-wall" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#1f2a3a" />
+          <stop offset="1" stopColor="#121925" />
+        </linearGradient>
+        <radialGradient id="ar-lamp" cx="50%" cy="0%" r="80%">
+          <stop offset="0" stopColor="#b7ffcf" stopOpacity=".45" />
+          <stop offset="1" stopColor="#b7ffcf" stopOpacity="0" />
+        </radialGradient>
+        <linearGradient id="ar-wood" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#5a3a22" />
+          <stop offset="1" stopColor="#2e1d10" />
+        </linearGradient>
+      </defs>
+      <rect width="1000" height="560" fill="url(#ar-wall)" />
+      <rect y="420" width="1000" height="140" fill="#1a1410" />
+      {Array.from({ length: 8 }, (_, i) => (
+        <rect key={i} x={i * 130} y="420" width="126" height="140" fill="none" stroke="#2a2018" strokeWidth="3" />
+      ))}
+      {/* Tall bookshelf */}
+      <rect x="40" y="70" width="230" height="350" rx="6" fill="url(#ar-wood)" stroke="#120c06" strokeWidth="4" />
+      {[95, 175, 255, 335].map((y, row) => (
+        <g key={y}>
+          <rect x="52" y={y + 62} width="206" height="8" fill="#120c06" />
+          {Array.from({ length: 11 }, (_, i) => (
+            <rect key={i} x={56 + i * 18.5} y={y + (i % 3) * 4} width="15" height={62 - (i % 3) * 4} rx="2" fill={spines[(i + row * 2) % spines.length]} opacity=".9" />
+          ))}
+        </g>
+      ))}
+      {/* Framed map */}
+      <rect x="360" y="60" width="210" height="140" rx="6" fill="#d9c79a" stroke="#6b4a2a" strokeWidth="8" />
+      <path d="M380 150 C420 100 460 170 500 120 S550 90 555 130" stroke="#7a2e2e" strokeWidth="3" fill="none" strokeDasharray="8 6" />
+      <circle cx="470" cy="140" r="7" fill="#7a2e2e" />
+      {/* Reading desk with green lamp */}
+      <ellipse cx="470" cy="300" rx="190" ry="120" fill="url(#ar-lamp)" />
+      <rect x="320" y="330" width="320" height="22" rx="6" fill="url(#ar-wood)" />
+      <rect x="340" y="352" width="16" height="70" fill="#2e1d10" />
+      <rect x="604" y="352" width="16" height="70" fill="#2e1d10" />
+      <ellipse cx="420" cy="328" rx="26" ry="6" fill="#c8a24a" />
+      <rect x="416" y="282" width="8" height="46" fill="#c8a24a" />
+      <path d="M380 284 Q420 246 460 284 Z" fill="#1f6b4f" stroke="#0d3a2a" strokeWidth="3" />
+      <ellipse cx="420" cy="284" rx="40" ry="5" fill="#b7ffcf" opacity=".7" />
+      <rect x="480" y="306" width="90" height="24" rx="3" fill="#efe6cf" stroke="#9a8a62" strokeWidth="2" />
+      {/* Catalogue cabinet (locked drawer) */}
+      <rect x="230" y="440" width="140" height="90" rx="6" fill="url(#ar-wood)" stroke="#120c06" strokeWidth="3" />
+      {[452, 486].map((y) => (
+        <g key={y}>
+          <rect x="242" y={y} width="116" height="26" rx="3" fill="#3a2614" stroke="#120c06" strokeWidth="2" />
+          <rect x="290" y={y + 10} width="20" height="6" rx="3" fill="#c8a24a" />
+        </g>
+      ))}
+      {/* Door with keypad */}
+      <rect x="800" y="140" width="160" height="280" rx="6" fill="#2a3448" stroke="#38e1ff" strokeWidth="5" />
+      <rect x="900" y="250" width="40" height="56" rx="4" fill="#0a0f1f" stroke="#38e1ff" strokeWidth="2" />
+      {[0, 1, 2].map((r) => [0, 1].map((c) => <circle key={`${r}${c}`} cx={912 + c * 16} cy={264 + r * 14} r="4" fill="#38e1ff" opacity=".7" />))}
+    </g>
+  );
+}
+
 export function RoomScene({ theme }: { theme: Theme }) {
   return (
     <svg viewBox="0 0 1000 560" preserveAspectRatio="xMidYMid slice" className="room-scene__art" aria-hidden="true">
-      {theme === 'workshop' ? <Workshop /> : theme === 'observatory' ? <Observatory /> : <Station />}
+      {theme === 'workshop' ? <Workshop /> : theme === 'observatory' ? <Observatory /> : theme === 'archive' ? <Archive /> : <Station />}
     </svg>
   );
 }

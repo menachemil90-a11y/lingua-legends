@@ -37,9 +37,9 @@ Status as of development session 2 (2026-11-27).
 
 ## Phase 5 — Game universe expansion
 - [x] Adventure map (5 regions, chapters, bosses, stars)
-- [x] English Detective — three cases (A2, B1, B2), shuffled options, learning events + progress
+- [x] English Detective — four cases (A2, B1, B2, C1), shuffled options, learning events + progress
 - [ ] More Detective cases + co-op investigations
-- [x] Escape Room — solo, relaxed or timed, 3 rooms
+- [x] Escape Room — solo, relaxed or timed, 4 illustrated rooms (A2–C1)
 - [x] Escape Room co-op online — `EscapeCoopHost`, 2–4 players, shared locks/hints/attempts, team timer (1.5× the solo time), brute-force limit
 - [x] English Conquest vs 1–3 bots (original 12-island map, 4 factions, pure tested rules)
 - [x] English Conquest online — authoritative `ConquestHost`, private rooms for 2–4 players, turn timers, absent-player skips, leavers' islands turn neutral

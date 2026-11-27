@@ -556,4 +556,37 @@ export const DETECTIVE_CASES: DetectiveCase[] = [
       he: 'זו הייתה טעות תמימה. תום מיהר וארז את הזמנה 214 במקום 241, כי המספרים והשמות דומים. דן מסר את הקופסה שקיבל. גברת גולד אפתה במהירות עוגה חדשה, ונועה קיבלה אותה בדיוק בזמן למסיבה. מאז תום תמיד קורא את השם המלא — בקול!',
     },
   },
+  {
+    id: 'case-fake-review',
+    title: 'The Fake Review',
+    titleHe: 'הביקורת המזויפת',
+    level: 'C1',
+    briefing: "On Thursday night, a devastating one-star review appeared on a popular restaurant's page, claiming food poisoning. Bookings collapsed overnight. The owner insists the review is fake. Weigh the evidence carefully — and separate what is proven from what is merely suggested.",
+    briefingHe: 'ביום חמישי בלילה הופיעה בעמוד של מסעדה פופולרית ביקורת הרסנית של כוכב אחד, שטענה להרעלת מזון. ההזמנות קרסו בן לילה. הבעלים טוענת שהביקורת מזויפת. שקלו את הראיות בזהירות — והפרידו בין מה שהוכח לבין מה שרק משתמע.',
+    suspects: [
+      { id: 'lior', name: 'Lior', role: 'Owner of a rival café' },
+      { id: 'hila', name: 'Hila', role: 'Former waiter, dismissed last week' },
+      { id: 'peretz', name: 'Mr. Peretz', role: 'Food blogger' },
+    ],
+    evidence: [
+      { id: 'fr-review', kind: 'document', title: 'The review (posted Thursday 22:47)', body: "'I dined here on Wednesday evening and was violently ill afterwards. The staff were dismissive when I complained. Avoid at all costs.' — A. Visitor (account created Thursday 22:40)" },
+      { id: 'fr-notice', kind: 'notice', title: 'Sign on the restaurant door', body: 'CLOSED EVERY WEDNESDAY for staff training. Thank you for your understanding.' },
+      { id: 'fr-hila-msg', kind: 'message', title: "Hila's message to a friend (Thursday 22:31)", from: 'Hila', body: "Let's just say they're going to regret letting me go. Tonight. 😉" },
+      { id: 'fr-lior', kind: 'statement', title: "Lior's statement", from: 'Lior', body: "I was behind the counter of my café until midnight on Thursday — the café's security camera shows it. Competition is healthy, but I don't fight dirty." },
+      { id: 'fr-peretz', kind: 'statement', title: "Mr. Peretz's statement", from: 'Mr. Peretz', body: 'I only ever publish under my own name. My Thursday post was about a bakery in Jaffa; the timestamp is 21:15.' },
+      { id: 'fr-platform', kind: 'document', title: 'Note from the review platform (after a complaint)', body: "The 'A. Visitor' account was created on a phone that had previously signed in to the restaurant's staff scheduling app as 'hila.k'." },
+    ],
+    questions: [
+      { id: 'fq1', prompt: "Why is the review's central claim implausible?", options: ['The reviewer used a new account.', 'The review was posted late at night.', 'The restaurant is closed on Wednesday evenings.', 'The staff are usually friendly.'], answer: 2, explanation: { en: 'The reviewer claims to have eaten there on Wednesday evening, but the restaurant closes every Wednesday for training.', he: 'המבקר טוען שאכל שם ביום רביעי בערב, אבל המסעדה סגורה בכל יום רביעי להשתלמות.' }, evidenceIds: ['fr-review', 'fr-notice'] },
+      { id: 'fq2', prompt: "What does Hila's message most likely imply?", options: ['She plans to apologise to her former employer.', 'She intends to do something that night to hurt the restaurant.', 'She has found a better job.', 'She is going to the restaurant for dinner.'], answer: 1, explanation: { en: "'Let's just say they're going to regret…' is a deliberate understatement that hints at revenge, and 'Tonight' sets the timing.", he: "'Let's just say they're going to regret…' היא לשון המעטה מכוונת שרומזת על נקמה, ו-Tonight קובע את התזמון." }, evidenceIds: ['fr-hila-msg'] },
+      { id: 'fq3', prompt: 'Whose account of Thursday evening is supported by independent evidence?', options: ["Lior's — the café's security camera recorded him.", "Hila's — her friend received her message.", "Mr. Peretz's — he says he writes under his own name."], answer: 0, explanation: { en: "A camera recording is independent of Lior's own words; Mr. Peretz's habit is only his claim, and Hila's message does not give her an alibi.", he: 'הקלטת מצלמה אינה תלויה בדברי ליאור עצמו; ההרגל של מר פרץ הוא רק טענה שלו, וההודעה של הילה לא נותנת לה אליבי.' }, evidenceIds: ['fr-lior'] },
+      { id: 'fq4', prompt: "What does the platform's note establish?", options: ['That Hila definitely wrote the words of the review.', "That the reviewer's account was created on a phone previously used by Hila.", 'That the restaurant made the review up itself.', 'That Mr. Peretz used a false name.'], answer: 1, explanation: { en: 'The note links the device to Hila; combined with the timing of her message it strongly suggests her involvement — careful readers note it does not, on its own, prove who typed the words.', he: 'ההערה מקשרת את המכשיר להילה; יחד עם תזמון ההודעה שלה זה מרמז מאוד על מעורבותה — קורא זהיר ישים לב שזה לבדו עוד לא מוכיח מי הקליד את המילים.' }, evidenceIds: ['fr-platform', 'fr-hila-msg'] },
+      { id: 'fq5', prompt: 'Why is Mr. Peretz an unlikely author of the review?', options: ['He was in Jaffa all week.', 'He publishes under his own name, and his Thursday post was about a different business.', 'He never eats at restaurants.'], answer: 1, explanation: { en: 'Nothing places him at the account, and his own post that evening concerned a bakery.', he: 'שום דבר לא קושר אותו לחשבון, והפוסט שלו באותו ערב עסק במאפייה.' }, evidenceIds: ['fr-peretz'] },
+    ],
+    culpritId: 'hila',
+    solution: {
+      en: "Hila, upset about being dismissed, created a new account on her phone minutes after messaging her friend and posted a review about a visit that could not have happened — the restaurant is closed on Wednesdays. The platform removed the review, and the owner chose a conversation over a lawsuit.",
+      he: 'הילה, שנפגעה מהפיטורים, יצרה חשבון חדש בטלפון שלה דקות אחרי ששלחה הודעה לחברה, ופרסמה ביקורת על ביקור שלא ייתכן שקרה — המסעדה סגורה בימי רביעי. הפלטפורמה הסירה את הביקורת, והבעלים בחרה בשיחה במקום בתביעה.',
+    },
+  },
 ];

@@ -78,13 +78,13 @@ Regions: Word Arena, Grammar Circuit, Sentence Citadel, Mystery District, Academ
 bosses reuse earlier material, stars from accuracy thresholds. All content remains available in Practice regardless of progress.
 
 ## Escape Room (solo)
-Three original rooms — The Clockmaker's Workshop (A2), Last Train from Platform 9 (B1), The Observatory at Midnight (B2) — each with
+Four original rooms — The Clockmaker's Workshop (A2), Last Train from Platform 9 (B1), The Observatory at Midnight (B2), The Locked Archive (C1) — each with
 illustrated hotspots. Puzzle kinds: multiple choice, typed word (normalised, articles ignored) and ordering steps.
 Each puzzle has a hint; first-try solves and hints used are shown at the end. Relaxed mode counts up; timed mode counts
 down; when it reaches zero the player is invited to keep going in relaxed mode (no penalty).
 
 **Co-op online (2–4 friends, private room, unranked).** Each language bracket opens one room (foundation → Clockmaker,
-core → Platform 9, advanced → Observatory). Anyone can open any lock; the server checks every answer and shares each
+core → Platform 9, advanced → the Archive). Anyone can open any lock; the server checks every answer and shares each
 attempt, hint and opened lock with the whole team ("Gal opened 'Timetable board'"). The team has 1.5× the solo time;
 running out is a shared draw — never a defeat — and every opened lock still counts as learning. Leavers do not stop the team. Co-op is planned.
 

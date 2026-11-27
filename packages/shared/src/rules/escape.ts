@@ -28,7 +28,7 @@ export interface EscapeRoom {
   title: string;
   titleHe: string;
   level: CefrLevel;
-  theme: 'workshop' | 'observatory' | 'station';
+  theme: 'workshop' | 'observatory' | 'station' | 'archive';
   intro: string;
   introHe: string;
   /** Suggested time for the optional timed mode. */
