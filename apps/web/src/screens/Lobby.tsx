@@ -61,6 +61,7 @@ export function Lobby() {
       go({ id: 'match', params: quickPlayParams(selected.id as OnlineModeId) });
     } else if (selected.id === 'real-life') go({ id: 'real-life' });
     else if (selected.id === 'english-detective') go({ id: 'detective' });
+    else if (selected.id === 'escape-room') go({ id: 'escape-room' });
     else go({ id: 'mode-info', mode: selected.id });
   };
 
@@ -174,7 +175,7 @@ export function Lobby() {
             <button type="button" className="btn btn-play" onClick={play} data-testid="play">
               <span>
                 {t('lobby.play')}
-                <span className="btn-play__sub">{selected.status === 'playable' ? t('play.vsBot') : t(`mode.status.${selected.status}`)}</span>
+                <span className="btn-play__sub">{selected.status === 'playable' ? (selected.online ? t('play.vsBot') : t('play.solo')) : t(`mode.status.${selected.status}`)}</span>
               </span>
             </button>
           </div>

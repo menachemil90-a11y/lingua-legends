@@ -42,6 +42,7 @@ export type Screen =
   | { id: 'adventure' }
   | { id: 'real-life'; scenarioId?: string }
   | { id: 'detective'; caseId?: string }
+  | { id: 'escape-room'; roomId?: string }
   | { id: 'mode-info'; mode: GameModeId };
 
 interface NavState {

@@ -15,6 +15,7 @@ import {
 import { MOCK_EXAMS, OPEN_TASKS, BAGRUT_CURRICULUM } from './bagrut';
 import { ADVENTURE_REGIONS, WORD_BATTLE_SETS } from './sets';
 import { DETECTIVE_CASES, REAL_LIFE_SCENARIOS } from './story';
+import { ESCAPE_ROOMS } from './escape';
 
 export interface ValidationIssue {
   severity: 'error' | 'warning';
@@ -152,6 +153,19 @@ function checkReferences(issues: ValidationIssue[], ids: Set<string>, passageIds
     const nodeIds = new Set(s.nodes.map((n) => n.id));
     if (!nodeIds.has(s.start)) issues.push({ severity: 'error', ref: s.id, message: 'missing start node' });
     for (const n of s.nodes) for (const c of n.choices ?? []) if (!nodeIds.has(c.next)) issues.push({ severity: 'error', ref: `${s.id}/${n.id}`, message: `unknown next ${c.next}` });
+  }
+  const puzzleIds = new Set<string>();
+  for (const room of ESCAPE_ROOMS) {
+    if (room.puzzles.length < 3) issues.push({ severity: 'error', ref: room.id, message: 'escape rooms need at least 3 puzzles' });
+    if (!HEBREW.test(room.introHe) || !HEBREW.test(room.outroHe)) issues.push({ severity: 'error', ref: room.id, message: 'missing Hebrew intro/outro' });
+    for (const p of room.puzzles) {
+      if (puzzleIds.has(p.id)) issues.push({ severity: 'error', ref: p.id, message: 'duplicate puzzle id' });
+      puzzleIds.add(p.id);
+      if (!HEBREW.test(p.explanation.he) || !HEBREW.test(p.hint.he)) issues.push({ severity: 'error', ref: p.id, message: 'puzzle lacks Hebrew explanation/hint' });
+      if (p.kind === 'choice' && (p.answer < 0 || p.answer >= p.options.length || new Set(p.options).size !== p.options.length)) issues.push({ severity: 'error', ref: p.id, message: 'invalid choice options/answer' });
+      if (p.kind === 'text' && p.accepted.length === 0) issues.push({ severity: 'error', ref: p.id, message: 'text puzzle needs accepted answers' });
+      if (p.kind === 'order' && (p.steps.length < 3 || new Set(p.steps).size !== p.steps.length)) issues.push({ severity: 'error', ref: p.id, message: 'order puzzle needs >= 3 unique steps' });
+    }
   }
   for (const c of DETECTIVE_CASES) {
     const evIds = new Set(c.evidence.map((e) => e.id));

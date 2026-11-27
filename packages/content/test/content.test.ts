@@ -37,3 +37,24 @@ describe('content bank', () => {
     }
   });
 });
+
+import { checkEscapeAnswer, ESCAPE_ROOMS } from '../src/escape';
+
+describe('escape rooms', () => {
+  it('accepts the intended answers and rejects others', () => {
+    for (const room of ESCAPE_ROOMS) {
+      for (const p of room.puzzles) {
+        if (p.kind === 'choice') {
+          expect(checkEscapeAnswer(p, { kind: 'choice', index: p.answer })).toBe(true);
+          expect(checkEscapeAnswer(p, { kind: 'choice', index: (p.answer + 1) % p.options.length })).toBe(false);
+        } else if (p.kind === 'text') {
+          for (const a of p.accepted) expect(checkEscapeAnswer(p, { kind: 'text', text: ` ${a.toUpperCase()}. ` }), a).toBe(true);
+          expect(checkEscapeAnswer(p, { kind: 'text', text: 'banana' })).toBe(false);
+        } else {
+          expect(checkEscapeAnswer(p, { kind: 'order', order: p.steps })).toBe(true);
+          expect(checkEscapeAnswer(p, { kind: 'order', order: p.steps.slice().reverse() })).toBe(false);
+        }
+      }
+    }
+  });
+});

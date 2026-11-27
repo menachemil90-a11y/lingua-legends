@@ -18,6 +18,7 @@ import { BAGRUT_ITEMS, LITERARY_TEXTS } from './bagrut';
 export * from './bagrut';
 export * from './sets';
 export * from './story';
+export * from './escape';
 export { validateContent, CONTENT_TARGETS, type ValidationIssue } from './validate';
 
 export const RAW_ITEMS: ContentItemInput[] = [
