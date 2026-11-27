@@ -58,28 +58,46 @@ export interface LocalMatchOptions {
   levels: CefrLevel[];
   botTier: BotTier;
   setId?: string;
+  /** Grammar Race only: total racers including the player (2–4). */
+  racers?: number;
   me: PublicPlayer;
   learner: LearnerProfile;
 }
 
-const BOT_NAMES: Record<BotTier, string> = { rookie: 'Sparky', adept: 'Quill', veteran: 'Cipher', champion: 'Aurelius' };
+const BOT_NAMES: Record<BotTier, string[]> = {
+  rookie: ['Sparky', 'Pebble', 'Nib'],
+  adept: ['Quill', 'Lumen', 'Echo'],
+  veteran: ['Cipher', 'Vortex', 'Sable'],
+  champion: ['Aurelius', 'Nova', 'Paragon'],
+};
+const VEHICLE_IDS = ['comet', 'viper', 'aurum', 'ember'];
+
+/** Spreads bot tiers around the chosen one so multi-bot races feel varied but fair. */
+function tiersFor(base: BotTier, count: number): BotTier[] {
+  const order: BotTier[] = ['rookie', 'adept', 'veteran', 'champion'];
+  const i = order.indexOf(base);
+  const pattern = [0, -1, 1];
+  return Array.from({ length: count }, (_, k) => order[Math.max(0, Math.min(3, i + pattern[k % 3]!))]!);
+}
 
 export function createLocalMatch(opts: LocalMatchOptions): MatchTransport {
   const matchId = uid('local-');
-  const botCharacter = BOT_CHARACTER_IDS.filter((c) => c !== opts.me.characterId)[Math.floor(Math.random() * 3)] ?? 'kael';
-  const bot: PublicPlayer = {
-    playerId: 'bot',
-    nickname: BOT_NAMES[opts.botTier],
+  const botCount = opts.mode === 'grammar-race' ? Math.max(1, Math.min(3, (opts.racers ?? 2) - 1)) : 1;
+  const otherChars = BOT_CHARACTER_IDS.filter((c) => c !== opts.me.characterId);
+  const otherCars = VEHICLE_IDS.filter((v) => v !== opts.me.vehicleId);
+  const bots: PublicPlayer[] = tiersFor(opts.botTier, botCount).map((tier, k) => ({
+    playerId: botCount === 1 ? 'bot' : `bot${k + 1}`,
+    nickname: BOT_NAMES[tier][k % 3]!,
     isBot: true,
-    botTier: opts.botTier,
-    characterId: botCharacter,
-    vehicleId: ['viper', 'aurum', 'ember', 'comet'].find((v) => v !== opts.me.vehicleId) ?? 'viper',
-  };
-  const players = [opts.me, bot];
+    botTier: tier,
+    characterId: otherChars[(k + Math.floor(Math.random() * otherChars.length)) % otherChars.length] ?? 'kael',
+    vehicleId: otherCars[k % otherCars.length] ?? 'viper',
+  }));
+  const players = [opts.me, ...bots];
   const listeners = new Set<(m: ServerMessage) => void>();
   const pool = poolFor(opts.mode, opts.levels, opts.setId);
   const source = adaptiveSource(pool, opts.learner, opts.mode, opts.levels);
-  let botCtl: BotController | null = null;
+  const botCtls = new Map<string, BotController>();
   let disposed = false;
 
   const deliver = (msg: ServerMessage) => {
@@ -116,7 +134,7 @@ export function createLocalMatch(opts: LocalMatchOptions): MatchTransport {
     random: Math.random,
     onEnd,
     emit: (to: string | null, msg: ServerMessage) => {
-      if (to === null || to === 'bot') botCtl?.handle(msg);
+      for (const [id, ctl] of botCtls) if (to === null || to === id) ctl.handle(msg);
       if (to === null || to === opts.me.playerId) deliver(msg);
     },
   };
@@ -126,7 +144,7 @@ export function createLocalMatch(opts: LocalMatchOptions): MatchTransport {
   else host = new WordBattleHost(deps);
 
   const comfort = opts.levels[Math.floor(opts.levels.length / 2)] ?? 'A2';
-  botCtl = new BotController(host, 'bot', makeBotProfile(opts.botTier, comfort), realClock, Math.random);
+  for (const b of bots) botCtls.set(b.playerId, new BotController(host, b.playerId, makeBotProfile(b.botTier as BotTier, comfort), realClock, Math.random));
 
   return {
     kind: 'local',
@@ -159,7 +177,7 @@ export function createLocalMatch(opts: LocalMatchOptions): MatchTransport {
     start: () => host.start(),
     dispose() {
       disposed = true;
-      botCtl?.dispose();
+      for (const ctl of botCtls.values()) ctl.dispose();
       host.dispose();
       listeners.clear();
     },

@@ -53,6 +53,8 @@ export const clientMessageSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('ROOM_CREATE'), ...base, mode: modeSchema, bracket: bracketSchema }),
   z.object({ type: z.literal('ROOM_JOIN'), ...base, code: z.string().regex(/^[A-Z0-9]{6}$/) }),
   z.object({ type: z.literal('ROOM_LEAVE'), ...base }),
+  /** Host starts a room early (Grammar Race rooms hold up to 4 racers). */
+  z.object({ type: z.literal('ROOM_START'), ...base }),
   z.object({ type: z.literal('READY'), ...base, matchId: id }),
   z.object({ type: z.literal('ANSWER_SUBMIT'), ...base, matchId: id, roundId: id, answer: answerPayloadSchema }),
   z.object({ type: z.literal('ABILITY_USE'), ...base, matchId: id, ability: abilitySchema }),
@@ -238,6 +240,7 @@ export const serverMessageSchema = z.discriminatedUnion('type', [
     hostId: id,
     members: z.array(publicPlayerSchema),
     status: z.enum(['open', 'in-match', 'closed']),
+    capacity: z.number(),
     expiresAt: z.number(),
   }),
   z.object({

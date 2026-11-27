@@ -314,6 +314,8 @@ export async function startServer(cfg: Config, store: ServerStore, port = cfg.PO
         return fail(await rooms.join(playerId, msg.code), 'Room unavailable');
       case 'ROOM_LEAVE':
         return rooms.leave(playerId);
+      case 'ROOM_START':
+        return fail(await rooms.start(playerId), 'Cannot start this room');
       case 'READY':
         return fail(matches.ready(playerId, msg.matchId), 'Not in this match');
       case 'ANSWER_SUBMIT': {

@@ -112,6 +112,7 @@ export const he: Record<MessageKey, string> = {
   'play.bracket.advanced': 'מתקדם (C1–C2)',
   'play.autoLevel': 'אוטומטי (מסתגל)',
   'play.serverOffline': 'שרת המשחק המקוון אינו זמין. עדיין אפשר לשחק מול בוטים במצב לא מקוון.',
+  'play.racers': 'מספר מתחרים',
   'play.set': 'סט שאלות',
   'play.anySet': 'תמהיל מסתגל',
 
@@ -323,6 +324,7 @@ export const he: Record<MessageKey, string> = {
   'room.ready': 'מוכן',
   'room.notReady': 'לא מוכן',
   'room.imReady': 'אני מוכן/ה',
+  'room.start': 'התחלה עכשיו',
   'room.leave': 'יציאה מהחדר',
   'room.joinPrompt': 'הזינו קוד חדר בן 6 תווים',
   'room.expires': 'החדר יפוג בעוד {t}',

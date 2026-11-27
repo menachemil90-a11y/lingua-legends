@@ -58,6 +58,8 @@ class RaceScene extends Phaser.Scene {
   private startLine!: Phaser.GameObjects.Graphics;
   private reduced = prefersReducedMotion();
   private laneY: number[] = [];
+  private carScale = 0.95;
+  private labelOffset = -62;
 
   constructor(
     private readonly racers: RacerInfo[],
@@ -77,12 +79,14 @@ class RaceScene extends Phaser.Scene {
     const laneH = lanes <= 2 ? 96 : 66;
     this.laneY = Array.from({ length: lanes }, (_, i) => top + laneH * (i + 0.5));
     this.buildTrack(top, laneH, lanes);
+    this.carScale = lanes <= 2 ? 0.95 : lanes === 3 ? 0.62 : 0.5;
+    this.labelOffset = -62 * (this.carScale / 0.95) - 6;
     this.racers.forEach((info, i) => {
       const y = this.laneY[i]!;
-      const flame = this.add.image(0, y + 6, `flame-${info.vehicleId}`).setOrigin(1, 0.5).setBlendMode('ADD').setScale(0.9);
-      const body = this.add.image(0, y, `car-${info.vehicleId}`).setOrigin(0.5, 0.62).setScale(lanes <= 2 ? 0.95 : 0.75);
+      const flame = this.add.image(0, y + 6, `flame-${info.vehicleId}`).setOrigin(1, 0.5).setBlendMode('ADD').setScale(0.9 * (this.carScale / 0.95));
+      const body = this.add.image(0, y, `car-${info.vehicleId}`).setOrigin(0.5, 0.62).setScale(this.carScale);
       const label = this.add
-        .text(0, y - 62, info.isSelf ? `▼ ${info.nickname}` : info.nickname, {
+        .text(0, y + this.labelOffset, info.isSelf ? `▼ ${info.nickname}` : info.nickname, {
           fontFamily: 'Rubik Variable, Rubik, sans-serif',
           fontSize: '20px',
           fontStyle: '800',
@@ -284,11 +288,11 @@ class RaceScene extends Phaser.Scene {
       c.body.setPosition(x, y + bob);
       c.flame.setPosition(x - c.body.displayWidth * 0.45, y + 4 + bob);
       const sp = c.target.speed;
-      const fl = c.target.finished ? 0.2 : c.target.stalled ? 0.25 : Math.min(2.2, 0.5 + sp / 12 + (c.target.turbo ? 0.9 : 0));
+      const fl = (c.target.finished ? 0.2 : c.target.stalled ? 0.25 : Math.min(2.2, 0.5 + sp / 12 + (c.target.turbo ? 0.9 : 0))) * (this.carScale / 0.95);
       c.flame.scaleX += (fl - c.flame.scaleX) * Math.min(1, dt * 8);
-      c.flame.scaleY = 0.7 + Math.min(0.6, sp / 40);
+      c.flame.scaleY = (0.7 + Math.min(0.6, sp / 40)) * (this.carScale / 0.95);
       c.flame.setAlpha(c.target.stalled ? 0.4 : 0.95);
-      c.label.setPosition(x, y - 62 + bob);
+      c.label.setPosition(x, y + this.labelOffset + bob);
       const off = x < -60 || x > W + 60;
       c.body.setVisible(!off);
       c.flame.setVisible(!off);

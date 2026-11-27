@@ -157,6 +157,33 @@ describe('private room Word Battle', () => {
   }, 30_000);
 });
 
+describe('Grammar Race rooms', () => {
+  it('lets the host start a 3-racer race; only the host may start', async () => {
+    const a = await client('Hana');
+    const b = await client('Ido');
+    const c = await client('Jon');
+    a.send({ type: 'ROOM_CREATE', mode: 'grammar-race', bracket: 'core' });
+    const room = await a.waitFor('ROOM_STATE', (m) => m.members.length === 1);
+    expect(room.capacity).toBe(4);
+    b.send({ type: 'ROOM_JOIN', code: room.code });
+    c.send({ type: 'ROOM_JOIN', code: room.code });
+    await a.waitFor('ROOM_STATE', (m) => m.members.length === 3);
+    b.send({ type: 'ROOM_START' });
+    expect((await b.waitFor('ERROR', (e) => e.code === 'FORBIDDEN')).code).toBe('FORBIDDEN');
+    a.send({ type: 'ROOM_START' });
+    const found = await c.waitFor('MATCH_FOUND');
+    expect(found.players).toHaveLength(3);
+    for (const p of [a, b, c]) p.send({ type: 'READY', matchId: found.matchId });
+    const start = await b.waitFor('MATCH_START');
+    expect(start.players).toHaveLength(3);
+    const q = await c.waitFor('ROUND_START', () => true, 9000);
+    expect(q.question.options!.length).toBeGreaterThanOrEqual(2);
+    for (const p of [a, b]) p.send({ type: 'MATCH_LEAVE', matchId: found.matchId });
+    const end = await c.waitFor('MATCH_END', () => true, 9000);
+    expect(end.winnerId).toBe(c.playerId);
+  }, 30_000);
+});
+
 describe('ranked matchmaking', () => {
   it('matches two real players, updates MMR server-side and shows them on the leaderboard', async () => {
     const a = await client('Rina');

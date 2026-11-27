@@ -175,7 +175,9 @@ export function Online({ mode, flow, queue, bracket, roomCode }: { mode: OnlineM
               <span className="tiny muted">{t('room.expires', { t: `${Math.max(0, Math.ceil((room.expiresAt - now - useConnection.getState().offsetMs) / 60000))} min` })}</span>
             </div>
             <div className="room__members">
-              <span className="tiny muted">{t('room.members')}</span>
+              <span className="tiny muted">
+                {t('room.members')} · {room.members.length}/{room.capacity}
+              </span>
               {room.members.map((m) => (
                 <div key={m.playerId} className="room__member">
                   <Hero id={m.characterId} className="room__hero" />
@@ -184,7 +186,12 @@ export function Online({ mode, flow, queue, bracket, roomCode }: { mode: OnlineM
                   </span>
                 </div>
               ))}
-              {room.members.length < 2 && <p className="muted small">{t('room.waiting')}</p>}
+              {room.members.length < room.capacity && <p className="muted small">{t('room.waiting')}</p>}
+              {room.hostId === playerId && room.capacity > 2 && room.members.length >= 2 && (
+                <Button variant="primary" icon="play" onClick={() => connection.send({ type: 'ROOM_START' })} data-testid="start-room">
+                  {t('room.start')}
+                </Button>
+              )}
             </div>
           </div>
           <p className="tiny muted">{t('friends.safety')}</p>

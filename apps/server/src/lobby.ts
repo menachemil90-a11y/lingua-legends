@@ -104,6 +104,10 @@ interface Room {
   expiresAt: number;
 }
 
+export function roomCapacity(mode: OnlineModeId): number {
+  return mode === 'grammar-race' ? 4 : 2;
+}
+
 export class Rooms {
   private rooms = new Map<string, Room>();
   private byPlayer = new Map<string, string>();
@@ -136,19 +140,34 @@ export class Rooms {
       this.broadcast(room);
       return null;
     }
-    if (room.members.length >= 2 || room.status !== 'open') return 'ROOM_FULL';
+    if (room.members.length >= roomCapacity(room.mode) || room.status !== 'open') return 'ROOM_FULL';
     if (await this.store.isBlockedEitherWay(playerId, room.hostId)) return 'ROOM_NOT_FOUND';
     this.leave(playerId);
     room.members.push(playerId);
     this.byPlayer.set(playerId, code);
     this.broadcast(room);
-    if (room.members.length === 2) {
-      room.status = 'in-match';
-      this.broadcast(room);
-      await this.matches.create({ playerIds: room.members, mode: room.mode, queue: 'private', bracket: room.bracket });
-      this.close(room);
-    }
+    if (room.members.length >= roomCapacity(room.mode)) await this.launch(room);
     return null;
+  }
+
+  /** Host may start once at least two players are present. */
+  async start(playerId: string): Promise<string | null> {
+    const code = this.byPlayer.get(playerId);
+    const room = code ? this.rooms.get(code) : undefined;
+    if (!room) return 'ROOM_NOT_FOUND';
+    if (room.hostId !== playerId) return 'FORBIDDEN';
+    if (room.members.length < 2) return 'INVALID_STATE';
+    await this.launch(room);
+    return null;
+  }
+
+  private async launch(room: Room): Promise<void> {
+    if (room.status !== 'open') return;
+    room.status = 'in-match';
+    this.broadcast(room);
+    const members = room.members.slice();
+    this.close(room);
+    await this.matches.create({ playerIds: members, mode: room.mode, queue: 'private', bracket: room.bracket });
   }
 
   leave(playerId: string): void {
@@ -178,6 +197,7 @@ export class Rooms {
       hostId: room.hostId,
       members: room.members.map((m) => this.hub.publicPlayer(m)),
       status,
+      capacity: roomCapacity(room.mode),
       expiresAt: room.expiresAt,
     };
   }

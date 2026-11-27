@@ -8,6 +8,8 @@ export interface LocalMatchParams {
   levels: CefrLevel[];
   botTier: BotTier;
   setId?: string;
+  /** Grammar Race: total racers including the player (2–4). */
+  racers?: number;
   /** Adventure chapter that launched the match, if any. */
   chapterId?: string;
 }

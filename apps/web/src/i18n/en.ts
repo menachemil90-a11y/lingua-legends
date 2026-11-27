@@ -110,6 +110,7 @@ export const en = {
   'play.bracket.advanced': 'Advanced (C1–C2)',
   'play.autoLevel': 'Auto (adaptive)',
   'play.serverOffline': 'The multiplayer server is not reachable. You can still play offline against bots.',
+  'play.racers': 'Racers',
   'play.set': 'Question set',
   'play.anySet': 'Adaptive mix',
 
@@ -321,6 +322,7 @@ export const en = {
   'room.ready': 'Ready',
   'room.notReady': 'Not ready',
   'room.imReady': "I'm ready",
+  'room.start': 'Start now',
   'room.leave': 'Leave room',
   'room.joinPrompt': 'Enter the 6-character room code',
   'room.expires': 'Room expires in {t}',

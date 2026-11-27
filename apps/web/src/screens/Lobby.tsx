@@ -30,7 +30,7 @@ export function quickPlayParams(mode: OnlineModeId) {
   const levels = bracket === 'foundation' ? (['A1', 'A2'] as const) : bracket === 'core' ? (['B1', 'B2'] as const) : (['C1', 'C2'] as const);
   const recent = p.matches.slice(0, 5);
   const acc = recent.length ? recent.reduce((a, m) => a + m.accuracy, 0) / recent.length : null;
-  return { kind: 'local' as const, mode, levels: [...levels], botTier: suggestBotTier(acc) };
+  return { kind: 'local' as const, mode, levels: [...levels], botTier: suggestBotTier(acc), ...(mode === 'grammar-race' ? { racers: 4 } : {}) };
 }
 
 export function Lobby() {

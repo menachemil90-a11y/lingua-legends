@@ -23,6 +23,7 @@ export function Play({ initialMode }: { initialMode?: GameModeId }) {
   const [bracket, setBracket] = useState<Bracket>(bracketForLevel(recommendedLevel(learner)));
   const [tier, setTier] = useState<BotTier>('adept');
   const [setId, setSetId] = useState<string>('');
+  const [racers, setRacers] = useState<'2' | '3' | '4'>('4');
   const [server, setServer] = useState<'checking' | 'up' | 'down'>('checking');
   const status = useConnection((s) => s.status);
 
@@ -35,7 +36,18 @@ export function Play({ initialMode }: { initialMode?: GameModeId }) {
   }, []);
 
   const levels = [...BRACKET_LEVELS[bracket]];
-  const startBot = () => go({ id: 'match', params: { kind: 'local', mode, levels, botTier: tier, ...(setId && mode === 'word-battle' ? { setId } : {}) } });
+  const startBot = () =>
+    go({
+      id: 'match',
+      params: {
+        kind: 'local',
+        mode,
+        levels,
+        botTier: tier,
+        ...(setId && mode === 'word-battle' ? { setId } : {}),
+        ...(mode === 'grammar-race' ? { racers: Number(racers) } : {}),
+      },
+    });
   const startOnline = async (flow: 'queue' | 'room', queue?: 'ranked' | 'casual') => {
     const ok = await connection.connect();
     if (!ok) {
@@ -76,6 +88,12 @@ export function Play({ initialMode }: { initialMode?: GameModeId }) {
             <span className="field__label">{t('play.botLevel')}</span>
             <Segmented label={t('play.botLevel')} value={tier} onChange={setTier} options={BOT_TIERS.map((b) => ({ value: b, label: t(`bot.${b}` as MessageKey) }))} />
           </div>
+          {mode === 'grammar-race' && (
+            <div className="field">
+              <span className="field__label">{t('play.racers')}</span>
+              <Segmented label={t('play.racers')} value={racers} onChange={setRacers} options={(['2', '3', '4'] as const).map((n) => ({ value: n, label: n }))} />
+            </div>
+          )}
           {mode === 'word-battle' && (
             <div className="field">
               <label className="field__label" htmlFor="set">

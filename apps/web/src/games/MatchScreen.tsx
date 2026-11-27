@@ -25,7 +25,7 @@ export function MatchScreen({ params }: { params: LocalMatchParams | OnlineMatch
   const finalized = useRef(false);
   const connPlayerId = useConnection((s) => s.playerId);
 
-  const matchKey = params.kind === 'online' ? params.matchId : `${attempt}:${params.mode}:${params.levels.join(',')}:${params.setId ?? ''}`;
+  const matchKey = params.kind === 'online' ? params.matchId : `${attempt}:${params.mode}:${params.levels.join(',')}:${params.setId ?? ''}:${params.racers ?? 2}`;
   const [transport, setTransport] = useState<MatchTransport | null>(null);
 
   // Created inside an effect (not useMemo) so React StrictMode's mount/unmount/mount cycle
@@ -39,6 +39,7 @@ export function MatchScreen({ params }: { params: LocalMatchParams | OnlineMatch
             levels: params.levels,
             botTier: params.botTier,
             ...(params.setId ? { setId: params.setId } : {}),
+            ...(params.racers ? { racers: params.racers } : {}),
             learner: p.learner,
             me: {
               playerId: 'me',
