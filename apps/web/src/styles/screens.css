@@ -1254,3 +1254,113 @@
     display: none;
   }
 }
+
+/* English Conquest */
+.conquest__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
+  gap: var(--s-4);
+  align-items: start;
+}
+@media (max-width: 960px) {
+  .conquest__layout {
+    grid-template-columns: 1fr;
+  }
+}
+.conquest__board {
+  border-radius: var(--r-xl);
+  overflow: hidden;
+  border: 1px solid var(--c-line-strong);
+  box-shadow: var(--sh-2);
+  direction: ltr;
+}
+.conquest-map {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.cq-terr {
+  cursor: pointer;
+}
+.cq-terr:focus,
+.cq-terr:focus-visible {
+  outline: none;
+}
+.cq-terr:focus-visible path:nth-child(2) {
+  stroke: #fff;
+  stroke-width: 6;
+}
+.cq-terr--target path:nth-child(2) {
+  animation: cq-pulse 1.2s ease-in-out infinite;
+}
+@keyframes cq-pulse {
+  50% {
+    stroke-opacity: 0.35;
+  }
+}
+.cq-name {
+  font: 800 17px var(--font-ui);
+  fill: #fff;
+  paint-order: stroke;
+  stroke: #04091a;
+  stroke-width: 5px;
+}
+.cq-troops {
+  font: 900 24px var(--font-display);
+  fill: #fff;
+}
+.cq-yield {
+  font: 800 14px var(--font-ui);
+  fill: var(--c-gold-2);
+  paint-order: stroke;
+  stroke: #04091a;
+  stroke-width: 4px;
+}
+.cq-player {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+}
+.cq-player--turn {
+  border-color: var(--c-gold);
+  background: rgba(245, 196, 81, 0.08);
+}
+.cq-player--out {
+  opacity: 0.45;
+  text-decoration: line-through;
+}
+.cq-dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex: none;
+}
+.cq-stats {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+.cq-stats svg {
+  width: 14px;
+  height: 14px;
+}
+.cq-attack {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: var(--r-md);
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid var(--c-line);
+}
+.cq-log li {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  flex-wrap: wrap;
+}

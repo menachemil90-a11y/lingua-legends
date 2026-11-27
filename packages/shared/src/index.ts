@@ -11,6 +11,7 @@ export * from './bots';
 export * from './rules/wordBattle';
 export * from './rules/grammarRace';
 export * from './rules/sentenceMaster';
+export * from './rules/conquest';
 export * from './hosts/common';
 export * from './hosts/wordBattleHost';
 export * from './hosts/grammarRaceHost';

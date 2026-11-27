@@ -17,6 +17,7 @@ import { BagrutHub, BagrutMock, BagrutTask } from './screens/Bagrut';
 import { Adventure, Detective, ModeInfo, RealLife } from './screens/World';
 import { MatchScreen } from './games/MatchScreen';
 import { EscapeRoomScreen } from './screens/EscapeRoom';
+import { ConquestScreen } from './screens/Conquest';
 import { SentencePracticeScreen } from './games/sentenceMaster/SentencePracticeScreen';
 
 function Router() {
@@ -62,6 +63,8 @@ function Router() {
       return <Detective {...(s.caseId ? { caseId: s.caseId } : {})} />;
     case 'escape-room':
       return <EscapeRoomScreen {...(s.roomId ? { roomId: s.roomId } : {})} />;
+    case 'conquest':
+      return <ConquestScreen />;
     case 'mode-info':
       return <ModeInfo mode={s.mode} />;
   }
