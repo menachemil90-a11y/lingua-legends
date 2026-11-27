@@ -505,7 +505,9 @@
 .gr__track {
   position: relative;
   height: 36px;
-  margin-inline-end: 24px;
+  /* Room for the half-width car at the start line and the flag at the end. */
+  margin-left: 18px;
+  margin-right: 24px;
   direction: ltr;
 }
 .gr__trackline {

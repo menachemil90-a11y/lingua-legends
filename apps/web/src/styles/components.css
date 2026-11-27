@@ -633,11 +633,18 @@ button.tile:active:not(:disabled) {
 }
 .input {
   min-height: var(--tap-min);
+  /* Never wider than its container (a select sizes itself to its longest option). */
+  max-width: 100%;
+  min-width: 0;
   padding: 0 var(--s-4);
   border-radius: var(--r-md);
   border: 1px solid var(--c-line-strong);
   background: rgba(0, 0, 0, 0.35);
   color: var(--c-text);
+}
+select.input {
+  width: 100%;
+  text-overflow: ellipsis;
 }
 textarea.input {
   padding: var(--s-3) var(--s-4);
@@ -768,6 +775,9 @@ textarea.input {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
   gap: var(--s-4);
+}
+.grid-auto > * {
+  min-width: 0;
 }
 .spacer {
   flex: 1;

@@ -373,7 +373,9 @@ export function ModeInfo({ mode }: { mode: GameModeId }) {
           <div className="stack" style={{ flex: 1, minWidth: 220 }}>
             <p>{t(`mode.${mode}.desc` as MessageKey)}</p>
             <Chip>{t('mode.roadmapPhase', { n: def.phase })}</Chip>
-            <Chip>{def.players}</Chip>
+            <Chip>
+              <bdi dir="ltr">{def.players}</bdi>
+            </Chip>
             <StateMessage icon="hourglass" title={t('common.comingSoon')}>
               {t('mode.status.planned')}
             </StateMessage>

@@ -680,8 +680,14 @@
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
   gap: var(--s-3);
 }
+.mode-picker > * {
+  min-width: 0;
+}
 .mode-big {
   display: grid;
+  /* A single shrinkable column so long descriptions wrap instead of widening the page. */
+  grid-template-columns: minmax(0, 1fr);
+  text-align: center;
   justify-items: center;
   gap: 6px;
   padding: var(--s-4);

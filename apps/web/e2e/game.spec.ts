@@ -160,9 +160,27 @@ test('two browsers play English Conquest online: question for the active player,
   await ctxB.close();
 });
 
-test('@mobile lobby has no horizontal overflow and the play button is reachable', async ({ page }) => {
+/**
+ * Elements that stick out of the viewport. `body` hides horizontal overflow, so content wider than the
+ * screen is silently cut off rather than scrollable; we look for elements no ancestor clips or scrolls.
+ */
+const layoutOverflow = (page: Page) =>
+  page.evaluate(() => {
+    const W = window.innerWidth;
+    const out = [...document.querySelectorAll('body *')].filter((el) => {
+      const r = el.getBoundingClientRect();
+      if (!(r.width > 0 && (r.right > W + 1 || r.left < -1))) return false;
+      for (let a = el.parentElement; a && a !== document.body; a = a.parentElement) if (getComputedStyle(a).overflowX !== 'visible') return false;
+      return true;
+    });
+    return out.length;
+  });
+
+test('@mobile lobby and play screens fit the device width; the play button is reachable', async ({ page }) => {
   await skipOnboarding(page);
-  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
-  expect(overflow).toBeLessThanOrEqual(0);
+  expect(await layoutOverflow(page)).toBeLessThanOrEqual(0);
   await expect(page.getByTestId('play')).toBeInViewport();
+  await page.locator('.lobby-tile').first().click();
+  await expect(page.locator('.mode-picker')).toBeVisible();
+  expect(await layoutOverflow(page)).toBeLessThanOrEqual(0);
 });

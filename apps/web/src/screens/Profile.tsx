@@ -82,6 +82,11 @@ export function Profile() {
             {p.learner.placement && <Chip tone="good">{t('profile.placementDone')}</Chip>}
           </div>
           <ProgressBar value={lvl.progress} tone="gold" label={t('profile.level')} />
+          <div className="row">
+            <Button size="sm" icon="sparkle" onClick={() => go({ id: 'customize' })} data-testid="profile-customize">
+              {t('nav.customize')}
+            </Button>
+          </div>
           <p className="tiny muted">{t('profile.privacyNote')}</p>
         </div>
       </Panel>

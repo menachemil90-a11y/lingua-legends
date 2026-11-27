@@ -261,7 +261,7 @@ function RoomPlay({ room }: { room: Room }) {
       </div>
       <p className="small muted">{t('escape.instructions')}</p>
 
-      <Dialog open={!!open} title={open?.title ?? ''} onClose={() => setOpen(null)}>
+      <Dialog open={!!open} title={open ? <En>{open.title}</En> : ''} onClose={() => setOpen(null)}>
         {open && (
           <PuzzlePanel
             key={open.id}

@@ -72,7 +72,9 @@ export function Play({ initialMode }: { initialMode?: GameModeId }) {
             </div>
             <strong className="mode-big__name display">{t(`mode.${m.id}` as MessageKey)}</strong>
             <span className="tiny muted">{t(`mode.${m.id}.desc` as MessageKey)}</span>
-            <Chip>{m.players}</Chip>
+            <Chip>
+              <bdi dir="ltr">{m.players}</bdi>
+            </Chip>
           </button>
         ))}
       </div>
