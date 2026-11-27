@@ -88,6 +88,18 @@ export interface RemoteRating {
   placement: { played: number; total: number } | null;
 }
 
+export interface RemoteWallet {
+  xp: number;
+  shards: number;
+  achievements: string[];
+}
+
+/** Server-verified rewards from online matches (read-only for the client). */
+export async function fetchMyWallet(): Promise<RemoteWallet> {
+  const token = await getAuthToken();
+  return http<RemoteWallet>('/api/me/wallet', { headers: { authorization: `Bearer ${token}` } });
+}
+
 export async function fetchMyRatings(): Promise<RemoteRating[]> {
   const token = await getAuthToken();
   const res = await http<{ ratings: RemoteRating[] }>('/api/me/ratings', { headers: { authorization: `Bearer ${token}` } });

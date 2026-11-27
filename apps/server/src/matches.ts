@@ -8,6 +8,7 @@ import {
   currentSeason,
   ERROR_CODES,
   GrammarRaceHost,
+  matchShards,
   matchXp,
   newRatingState,
   rankFromRating,
@@ -207,10 +208,25 @@ export class MatchManager {
       changes.set(b, rb.change);
     }
     const xp = new Map<string, number>();
+    const shards = new Map<string, number>();
+    const unlocked = new Map<string, string[]>();
     for (const p of m.players) {
       const stats = o.stats.find((s) => s.playerId === p.playerId)!;
       const result = o.outcomes.find((x) => x.playerId === p.playerId)!.result;
-      xp.set(p.playerId, matchXp(stats, result, o.reason !== 'cancelled'));
+      const completed = o.reason !== 'cancelled';
+      xp.set(p.playerId, matchXp(stats, result, completed));
+      // A forfeiting player earns no shards; rewards are computed only here, server-side.
+      shards.set(p.playerId, o.reason === 'forfeit' && result === 'loss' ? 0 : matchShards(stats, result, completed));
+      const ids: string[] = [];
+      if (result === 'win') ids.push('first-victory');
+      if (result === 'win' && m.mode === 'grammar-race') ids.push('race-winner');
+      if (stats.bestCombo >= 6) ids.push('combo-master');
+      try {
+        await this.store.addRewards(p.playerId, xp.get(p.playerId)!, shards.get(p.playerId)!);
+        unlocked.set(p.playerId, await this.store.unlockAchievements(p.playerId, ids));
+      } catch (e) {
+        console.error('[matches] failed to persist rewards', p.playerId, e);
+      }
     }
     for (const p of m.players) {
       this.hub.send(p.playerId, {
@@ -223,6 +239,8 @@ export class MatchManager {
         stats: o.stats,
         ratingChange: changes.get(p.playerId) ?? null,
         xpEarned: xp.get(p.playerId) ?? 0,
+        shardsEarned: shards.get(p.playerId) ?? 0,
+        achievements: unlocked.get(p.playerId) ?? [],
         ranked,
       });
     }

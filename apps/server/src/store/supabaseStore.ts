@@ -232,6 +232,28 @@ export class SupabaseStore implements ServerStore {
     );
   }
 
+  async addRewards(playerId: string, xp: number, shards: number) {
+    const cur = await this.getWallet(playerId);
+    const next = { xp: cur.xp + Math.max(0, Math.round(xp)), shards: cur.shards + Math.max(0, Math.round(shards)) };
+    check(await this.db.from('wallets').upsert({ player_id: playerId, xp: next.xp, shards: next.shards, updated_at: new Date().toISOString() }));
+    return next;
+  }
+  async getWallet(playerId: string) {
+    const data = check(await this.db.from('wallets').select('xp, shards').eq('player_id', playerId).maybeSingle());
+    return { xp: data?.xp ?? 0, shards: data?.shards ?? 0 };
+  }
+  async unlockAchievements(playerId: string, ids: string[]) {
+    if (ids.length === 0) return [];
+    const have = await this.listAchievements(playerId);
+    const fresh = ids.filter((id) => !have.includes(id));
+    if (fresh.length) check(await this.db.from('user_achievements').upsert(fresh.map((achievement_id) => ({ player_id: playerId, achievement_id }))));
+    return fresh;
+  }
+  async listAchievements(playerId: string) {
+    const data = check(await this.db.from('user_achievements').select('achievement_id').eq('player_id', playerId));
+    return (data ?? []).map((r: { achievement_id: string }) => r.achievement_id);
+  }
+
   async flush() {
     /* writes are immediate */
   }

@@ -210,6 +210,14 @@ describe('ranked matchmaking', () => {
     expect(lb.rows[0]).toMatchObject({ playerId: a.playerId, rating: 1032 });
     const mine = (await (await fetch(`http://127.0.0.1:${server.port}/api/me/ratings`, { headers: { authorization: `Bearer ${a.token}` } })).json()) as { ratings: { rating: number }[] };
     expect(mine.ratings[0]!.rating).toBe(1032);
+    // Rewards are computed and stored by the server; the forfeiting player gets no shards.
+    expect(end.xpEarned).toBeGreaterThan(0);
+    expect(end.shardsEarned).toBeGreaterThan(0);
+    expect(end.achievements).toContain('first-victory');
+    expect(endB.shardsEarned).toBe(0);
+    const wallet = (await (await fetch(`http://127.0.0.1:${server.port}/api/me/wallet`, { headers: { authorization: `Bearer ${a.token}` } })).json()) as { xp: number; shards: number; achievements: string[] };
+    expect(wallet).toMatchObject({ xp: end.xpEarned, shards: end.shardsEarned });
+    expect(wallet.achievements).toContain('first-victory');
   }, 30_000);
 
   it('cancels a match when a player never readies up', async () => {

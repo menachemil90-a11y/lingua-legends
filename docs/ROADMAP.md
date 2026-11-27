@@ -1,6 +1,6 @@
 # Roadmap
 
-Status as of the first development session (2026-11-26).
+Status as of development session 2 (2026-11-27).
 
 ## Phase 1 — Core foundation ✅
 - [x] pnpm monorepo, strict TypeScript, ESLint, Vitest, Playwright
@@ -27,7 +27,8 @@ Status as of the first development session (2026-11-26).
 - [x] Supabase migrations + RLS (tested locally)
 - [ ] Deploy server + frontend; connect Supabase; verify `SupabaseStore` online (HANDOFF.md)
 - [ ] Cloud sync of mastery/review state for registered users (learning events already supported)
-- [ ] Server-side XP/currency/achievement persistence in `wallets`/`user_achievements` for registered players
+- [x] Server-side XP/shards/achievement persistence for online matches (`MemoryStore` tested; `SupabaseStore` → `wallets`/`user_achievements`, not verified online) + `GET /api/me/wallet`
+- [x] Private Grammar Race rooms for up to 4 racers (`ROOM_START` lets the host start with 2+)
 
 ## Phase 4 — Bagrut Academy (starter ✅)
 - [x] Module E, F, G, COBE, project planner, timed mock exams (original material)
@@ -36,16 +37,21 @@ Status as of the first development session (2026-11-26).
 
 ## Phase 5 — Game universe expansion
 - [x] Adventure map (5 regions, chapters, bosses, stars)
-- [x] English Detective — first case (preview)
+- [x] English Detective — two cases (preview)
 - [ ] More Detective cases + co-op investigations
-- [ ] Escape Room (solo, co-op, timed)
-- [ ] English Conquest (2–4 player strategy; original map and factions)
+- [x] Escape Room — solo, relaxed or timed, 3 rooms
+- [ ] Escape Room co-op (online)
+- [x] English Conquest vs 1–3 bots (original 12-island map, 4 factions, pure tested rules)
+- [ ] English Conquest online (server host for 2–4 players)
 - [ ] 2v2 / 4-player online modes using the existing multi-player host abstraction
 
 ## Phase 6 — Advanced learning
-- [x] Real Life — two scripted text scenarios (airport A2, job interview B2)
-- [ ] More scenarios (hotel, restaurant, university, customer service, business meeting, shopping, tech workplace, travel)
-- [ ] Debate Arena (private practice first; AI evaluation only after approval + moderation)
+- [x] Real Life — four scripted text scenarios (airport A2, hotel A2, restaurant B1, job interview B2)
+- [ ] More scenarios (university, customer service, business meeting, shopping, tech workplace, travel)
+- [x] Debate Arena private practice with a rule-based writing check (4 topics)
+- [ ] Debate Arena AI evaluation (only after approval + moderation)
+- [x] Listening lab with on-device text-to-speech (12 items)
+- [x] Post-match “Practise my mistakes” sessions
 - [ ] Speech services (consent, no default storage) and pronunciation feedback
 - [ ] Expanded C1/C2 curriculum
 

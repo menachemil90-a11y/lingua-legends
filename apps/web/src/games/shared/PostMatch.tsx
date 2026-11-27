@@ -6,6 +6,7 @@ import { BotBadge, Button, Chip, En, Panel, ProgressBar, Stat } from '../../desi
 import { useT, type MessageKey } from '../../i18n';
 import { sfx } from '../../audio/sfx';
 import { playerLevel, usePlayer } from '../../state/player';
+import { useNav } from '../../state/nav';
 import { Explanation } from './components';
 import type { MatchSummary } from './finalize';
 import type { Mistake } from './useMatch';
@@ -37,6 +38,7 @@ export function PostMatch({
 }) {
   const t = useT();
   const [showReview, setShowReview] = useState(false);
+  const go = useNav((s) => s.go);
   const xp = usePlayer((s) => s.xp);
   const loadout = usePlayer((s) => s.loadout);
   const me = players.find((p) => p.playerId === selfId);
@@ -200,8 +202,14 @@ export function PostMatch({
           </Button>
         )}
         {mistakes.length > 0 && (
-          <Button variant="secondary" size="lg" icon="book" onClick={() => setShowReview(true)}>
-            {t('result.review')}
+          <Button
+            variant="secondary"
+            size="lg"
+            icon="book"
+            data-testid="practise-mistakes"
+            onClick={() => go({ id: 'practice', mistakes: mistakes.map((m) => ({ itemId: m.itemId, level: m.level, tags: m.tags })) })}
+          >
+            {t('result.practiseMistakes')}
           </Button>
         )}
         <Button size="lg" icon="home" onClick={onLobby}>

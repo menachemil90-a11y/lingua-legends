@@ -47,7 +47,7 @@ function Router() {
     case 'placement':
       return <Placement />;
     case 'practice':
-      return <Practice {...(s.focus ? { focus: s.focus } : {})} />;
+      return <Practice {...(s.focus ? { focus: s.focus } : {})} {...(s.mistakes ? { mistakes: s.mistakes } : {})} />;
     case 'reading':
       return <Reading passageId={s.passageId} {...(s.chapterId ? { chapterId: s.chapterId } : {})} />;
     case 'bagrut':

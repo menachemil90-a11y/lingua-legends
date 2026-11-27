@@ -14,9 +14,11 @@ interface Snapshot {
   blocks: string[];
   reports: ReportRecord[];
   learning: ServerLearningEvent[];
+  wallets: Record<string, { xp: number; shards: number }>;
+  achievements: Record<string, string[]>;
 }
 
-const empty = (): Snapshot => ({ players: {}, ratings: {}, matches: [], requests: {}, friendships: [], blocks: [], reports: [], learning: [] });
+const empty = (): Snapshot => ({ players: {}, ratings: {}, matches: [], requests: {}, friendships: [], blocks: [], reports: [], learning: [], wallets: {}, achievements: {} });
 const pair = (a: string, b: string) => (a < b ? `${a}|${b}` : `${b}|${a}`);
 
 export class MemoryStore implements ServerStore {
@@ -167,5 +169,26 @@ export class MemoryStore implements ServerStore {
   async addReport(r: ReportRecord) {
     this.s.reports.push(r);
     this.dirty();
+  }
+
+  async addRewards(playerId: string, xp: number, shards: number) {
+    const w = (this.s.wallets[playerId] ??= { xp: 0, shards: 0 });
+    w.xp += Math.max(0, Math.round(xp));
+    w.shards += Math.max(0, Math.round(shards));
+    this.dirty();
+    return { ...w };
+  }
+  async getWallet(playerId: string) {
+    return { ...(this.s.wallets[playerId] ?? { xp: 0, shards: 0 }) };
+  }
+  async unlockAchievements(playerId: string, ids: string[]) {
+    const have = (this.s.achievements[playerId] ??= []);
+    const fresh = ids.filter((id) => !have.includes(id));
+    have.push(...fresh);
+    if (fresh.length) this.dirty();
+    return fresh;
+  }
+  async listAchievements(playerId: string) {
+    return [...(this.s.achievements[playerId] ?? [])];
   }
 }

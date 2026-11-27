@@ -171,6 +171,11 @@ export async function startServer(cfg: Config, store: ServerStore, port = cfg.PO
           corsOrigin,
         );
       }
+      if (req.method === 'GET' && url.pathname === '/api/me/wallet') {
+        const id = await bearer(req);
+        if (!id) return json(res, 401, { error: 'unauthenticated' }, corsOrigin);
+        return json(res, 200, { ...(await store.getWallet(id.playerId)), achievements: await store.listAchievements(id.playerId) }, corsOrigin);
+      }
       if (req.method === 'GET' && url.pathname === '/api/me/matches') {
         const id = await bearer(req);
         if (!id) return json(res, 401, { error: 'unauthenticated' }, corsOrigin);

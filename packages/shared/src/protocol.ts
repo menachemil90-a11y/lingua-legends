@@ -305,6 +305,9 @@ export const serverMessageSchema = z.discriminatedUnion('type', [
     stats: z.array(playerMatchStatsSchema),
     ratingChange: ratingChangeSchema.nullable(),
     xpEarned: z.number(),
+    shardsEarned: z.number().optional(),
+    /** Achievements unlocked server-side by this match. */
+    achievements: z.array(z.string()).optional(),
     ranked: z.boolean(),
   }),
   z.object({ type: z.literal('MATCH_CANCELLED'), matchId: id, reason: z.string() }),

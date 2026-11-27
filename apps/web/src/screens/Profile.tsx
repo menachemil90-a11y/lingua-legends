@@ -8,7 +8,7 @@ import { useT, type MessageKey } from '../i18n';
 import { ACHIEVEMENTS, playerLevel, usePlayer } from '../state/player';
 import { useNav } from '../state/nav';
 import { useConnection } from '../net/connection';
-import { fetchMyRatings, type RemoteRating } from '../net/api';
+import { fetchMyRatings, fetchMyWallet, type RemoteRating, type RemoteWallet } from '../net/api';
 
 function humanTag(tag: string): string {
   return tag.replace(/^[vgi]:/, '').replace(/-/g, ' ');
@@ -30,6 +30,7 @@ export function Profile() {
   const lvl = playerLevel(p.xp);
   const status = useConnection((s) => s.status);
   const [ratings, setRatings] = useState<RemoteRating[] | null>(null);
+  const [wallet, setWallet] = useState<RemoteWallet | null>(null);
   const [editName, setEditName] = useState(false);
   const [name, setName] = useState(p.nickname);
   const now = Date.now();
@@ -37,6 +38,7 @@ export function Profile() {
   useEffect(() => {
     if (status !== 'connected') return;
     fetchMyRatings().then(setRatings).catch(() => setRatings(null));
+    fetchMyWallet().then(setWallet).catch(() => setWallet(null));
   }, [status]);
 
   const ests = estimateAll(p.learner);
@@ -104,6 +106,13 @@ export function Profile() {
           )}
         </Panel>
         <Panel title={t('profile.rank')}>
+          {wallet && (
+            <div className="stats-row" style={{ marginBottom: 12 }} data-testid="server-wallet">
+              <Stat value={wallet.xp} label={t('profile.serverXp')} />
+              <Stat value={wallet.shards} label={t('profile.serverShards')} />
+              <Stat value={wallet.achievements.length} label={t('profile.serverAchievements')} />
+            </div>
+          )}
           {status !== 'connected' ? (
             <p className="small muted">{t('profile.offlineRank')}</p>
           ) : !ratings || ratings.length === 0 ? (

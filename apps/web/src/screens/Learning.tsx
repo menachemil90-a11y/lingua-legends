@@ -1,7 +1,7 @@
 /** Placement test, practice/review sessions and the reading room. */
 import { useMemo, useState } from 'react';
 import { CEFR_LEVELS, prepareRoundQuestion, gradeAnswer, type ContentItem, type GradeResult } from '@lingua/shared';
-import { PlacementSession, dueReviews, eventFromItem, recommendedLevel, selectItems, weakTopics } from '@lingua/learning';
+import { PlacementSession, buildMistakeReview, dueReviews, eventFromItem, recommendedLevel, selectItems, weakTopics, type MistakeTarget } from '@lingua/learning';
 import { CONTENT_ITEMS, itemsFor, itemsForPassage, listeningPool, passageById, READING_PASSAGES } from '@lingua/content';
 import { Icon } from '../art/icons';
 import { Button, Chip, En, Panel, ProgressBar, StateMessage } from '../design';
@@ -276,19 +276,23 @@ export function Placement() {
   );
 }
 
-export function Practice({ focus }: { focus?: 'review' | 'mix' }) {
+const quizPool = () => itemsFor('practice').filter((i) => i.grading.mode === 'option' && !i.passageId && !i.listen);
+
+export function Practice({ focus, mistakes }: { focus?: 'review' | 'mix'; mistakes?: MistakeTarget[] }) {
   const t = useT();
   const back = useNav((s) => s.back);
   const go = useNav((s) => s.go);
   const learner = usePlayer((s) => s.learner);
   const incrementCounter = usePlayer((s) => s.incrementCounter);
-  const [session, setSession] = useState<ContentItem[] | null>(null);
+  // A post-match "review mistakes" visit starts immediately with the mistaken items (or similar public ones).
+  const [fromMistakes] = useState(() => (mistakes && mistakes.length > 0 ? buildMistakeReview(quizPool(), mistakes, { count: 8 }) : null));
+  const [session, setSession] = useState<ContentItem[] | null>(fromMistakes && fromMistakes.length > 0 ? fromMistakes : null);
   const [result, setResult] = useState<{ correct: number; total: number } | null>(null);
   const due = dueReviews(learner, Date.now());
   const weak = weakTopics(learner, 5);
 
   const startSession = (kind: 'review' | 'mix' | 'listening') => {
-    const pool = kind === 'listening' ? listeningPool() : itemsFor('practice').filter((i) => i.grading.mode === 'option' && !i.passageId && !i.listen);
+    const pool = kind === 'listening' ? listeningPool() : quizPool();
     const lvl = recommendedLevel(learner);
     const idx = CEFR_LEVELS.indexOf(lvl);
     const levels = CEFR_LEVELS.filter((_, k) => Math.abs(k - idx) <= 1);
@@ -302,7 +306,7 @@ export function Practice({ focus }: { focus?: 'review' | 'mix' }) {
       <div className="page">
         <div className="page__head">
           <Button variant="ghost" icon="back" aria-label={t('common.back')} onClick={() => setSession(null)} />
-          <h1 className="page__title">{t('practice.title')}</h1>
+          <h1 className="page__title">{session === fromMistakes ? t('practice.fromMistakes') : t('practice.title')}</h1>
         </div>
         {result ? (
           <Panel gold>
@@ -340,6 +344,7 @@ export function Practice({ focus }: { focus?: 'review' | 'mix' }) {
         <Button variant="ghost" icon="back" aria-label={t('common.back')} onClick={back} />
         <h1 className="page__title">{t('practice.title')}</h1>
       </div>
+      {fromMistakes && fromMistakes.length === 0 && <p className="small muted">{t('practice.noMistakeItems')}</p>}
       <div className="grid-auto">
         <Panel title={t('practice.due')} gold={due.length > 0}>
           <p className="num" style={{ fontSize: 'var(--fs-2xl)', fontWeight: 900 }}>

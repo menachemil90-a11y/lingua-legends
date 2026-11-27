@@ -17,8 +17,9 @@ settings or in a local `.env` that is never committed.
 
 | Area | Status | Notes |
 | --- | --- | --- |
-| Offline game (all 3 modes vs labelled bots, learning engine, Bagrut Academy, adventure) | ✅ | Runs fully in the browser; progress saved on the device |
-| Authoritative multiplayer server (rooms, queues, ranked MMR, friends, reconnection) | ✅ locally | Tested with integration tests + two real browsers. Not deployed |
+| Offline game (Word Battle, Grammar Race with up to 3 bots, Sentence Master, Escape Room, English Conquest vs bots, Debate practice, listening lab, learning engine, Bagrut Academy, adventure) | ✅ | Runs fully in the browser; progress saved on the device. Bots are always labelled |
+| Authoritative multiplayer server (rooms incl. 4-racer race rooms, queues, ranked MMR, friends, reconnection) | ✅ locally | Tested with integration tests + two real browsers. Not deployed |
+| Server-computed rewards for online matches (XP, shards, match achievements; `GET /api/me/wallet`) | ✅ locally / 🟡 Supabase | Tested with the memory store. With `STORE=supabase` they are written to `wallets` and `user_achievements` (service role) — not yet verified against a live project |
 | Database schema + RLS (`supabase/migrations`) | ✅ locally | Applied and tested on local PostgreSQL 16 with a Supabase-like auth stub. Not applied to a real Supabase project |
 | Supabase Auth (registered accounts, magic-link email) | 🟡 | Client + server token verification implemented, never exercised against a live project |
 | Server persistence in Supabase (`STORE=supabase`) | 🟡 | `apps/server/src/store/supabaseStore.ts` written against the migration; not verified online |
@@ -67,6 +68,7 @@ settings or in a local `.env` that is never committed.
     - Locally, before pushing: `pnpm db:test` must print `ALL RLS TESTS PASSED`.
     - After deploying the web app with the two `VITE_` variables: Settings → Account shows an email field; signing in sends a magic link; after sign-in, play a practice session and confirm rows appear in `learning_events` for that user only.
     - Run `select * from rank_profiles` as an authenticated user from the browser console → inserts/updates must fail.
+    - With the server on `STORE=supabase`, finish one online match: rows must appear in `wallets` (xp/shards) and, for the winner, `user_achievements` (`first-victory`); `GET /api/me/wallet` with that player's token must return the same numbers. A browser `update wallets ...` as an authenticated user must fail.
 11. **What the owner/ChatGPT must do:** steps 5.1–5.6, run step 8, then put the variables into the hosting providers (sections 2 and 3).
 12. **What Claude Code must do afterwards:** run the server with `STORE=supabase` against the project, verify `supabaseStore.ts` end-to-end (guest + registered matches, leaderboards, friends), add the missing registered-player profile creation trigger if needed, and update this file's status table to "Connected and verified online".
 

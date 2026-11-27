@@ -89,5 +89,11 @@ export interface ServerStore {
   isBlockedEitherWay(a: string, b: string): Promise<boolean>;
 
   addReport(r: ReportRecord): Promise<void>;
+
+  /** Server-authoritative rewards. Clients can never write these. */
+  addRewards(playerId: string, xp: number, shards: number): Promise<{ xp: number; shards: number }>;
+  getWallet(playerId: string): Promise<{ xp: number; shards: number }>;
+  unlockAchievements(playerId: string, ids: string[]): Promise<string[]>;
+  listAchievements(playerId: string): Promise<string[]>;
   flush(): Promise<void>;
 }

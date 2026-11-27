@@ -56,11 +56,33 @@ XP per match = 20 participation + 4 × correct + outcome (25/15/8) + combo (≤ 
 Shards (cosmetic currency) are earned only by playing; nothing is for sale. Cosmetics are deterministic unlocks
 (level or achievement) and never affect gameplay. Weekly Momentum shows active days this week (Sunday-first) and never removes progress.
 Achievements: First Victory, Podium Finish, Architect, Wordsmith, Combo Master, On Fire, Scholar, Know Thyself, Memory Keeper.
+Online matches: the server computes XP, shards and the match-based achievements (First Victory, Podium Finish, Combo Master)
+and stores them per player; a player who forfeits earns no shards. Offline (vs bot) rewards stay on the device.
+After any match, **Practise my mistakes** replays the public items that were missed; ranked (server-only) items are
+replaced by public items that share their vocabulary/grammar tags at a nearby level, so the answer keys stay private.
 
 ## Adventure
 Regions: Word Arena, Grammar Circuit, Sentence Citadel, Mystery District, Academic Summit. Chapters unlock in order,
 bosses reuse earlier material, stars from accuracy thresholds. All content remains available in Practice regardless of progress.
 
+## Escape Room (solo)
+Three original rooms — The Clockmaker's Workshop (A2), Last Train from Platform 9 (B1), The Observatory at Midnight (B2) — each with
+illustrated hotspots. Puzzle kinds: multiple choice, typed word (normalised, articles ignored) and ordering steps.
+Each puzzle has a hint; first-try solves and hints used are shown at the end. Relaxed mode counts up; timed mode counts
+down; when it reaches zero the player is invited to keep going in relaxed mode (no penalty). Co-op is planned.
+
+## English Conquest (vs bots)
+Original 12-island archipelago, factions Azure, Gilded, Violet and Ember. Each turn: answer a question (correct → +3 gold
+and a +2 Focus bonus for the next attack), then up to 3 actions — recruit (2 gold), fortify (5 gold, +2 defence),
+move, attack. Attack succeeds when troops + focus > defenders + fort; the preview shows the exact odds before you commit.
+Win by holding 8 islands, or after 12 rounds by most islands, then most troops. Bots use the same rules
+(`packages/shared/src/rules/conquest.ts`) and are labelled as bots. Online play is planned.
+
+## Debate Arena (private practice)
+Pick a topic and a side, write an opening statement, read the opposing view, write a rebuttal. A rule-based checker
+(`packages/learning/src/writingCheck.ts`) reports length, stance, reasons, examples, concession + rebuttal, hedging,
+connectors, long sentences and common errors. It is clearly labelled as an automatic structure check, not AI or a teacher.
+
 ## Planned modes
-English Conquest (strategy, 2–4), Escape Room (solo/co-op), Debate Arena (writing + AI feedback once approved),
-full Real Life (speech once approved), more Detective cases. See `docs/ROADMAP.md`.
+Online English Conquest (2–4), co-op Escape Room, Debate Arena AI feedback (once approved), full Real Life (speech once approved),
+more Detective cases. See `docs/ROADMAP.md`.

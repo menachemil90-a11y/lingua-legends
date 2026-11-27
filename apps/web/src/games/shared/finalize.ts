@@ -40,7 +40,7 @@ export function finalizeMatch(opts: {
 
   // Online rewards are computed by the server (xpEarned). Offline rewards are local only.
   const xp = end.xpEarned;
-  const shards = mine ? matchShards(mine, result, completed) : 0;
+  const shards = opts.online ? (end.shardsEarned ?? 0) : mine ? matchShards(mine, result, completed) : 0;
   const { levelBefore, levelAfter, unlocked } = store.recordMatch({
     mode: opts.mode,
     online: opts.online,

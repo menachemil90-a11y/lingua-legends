@@ -11,16 +11,19 @@ CEFR A1–C2, Israeli 5-unit Bagrut preparation, and real authoritative multipla
 | Feature | Status |
 | --- | --- |
 | **Word Battle** — 1v1 arena (Phaser): HP, damage with modest speed bonus, 3-combo abilities (Shield / Surge / Focus), KO/timeout/draw rules | ✅ vs labelled bots offline, ✅ online (private rooms, casual & ranked queues) |
-| **Grammar Race** — animated hover-racing (Phaser): boosts, turbo streaks, stalls, finish line, positions | ✅ offline vs bots, ✅ online (2–4 racers supported by the host) |
+| **Grammar Race** — animated hover-racing (Phaser): boosts, turbo streaks, stalls, finish line, positions | ✅ offline vs 1–3 labelled bots (2–4 racers), ✅ online 1v1 queues + private rooms for up to 4 racers (host can start with 2+) |
 | **Sentence Master** — tile building with drag & drop, tap, and full keyboard control; multiple valid answers; structural feedback | ✅ untimed practice, ✅ duel vs bot, ✅ online duel |
 | Lobby, onboarding, mode picker, profile, settings, customization, leaderboards, friends | ✅ |
 | Shared learning engine — spaced repetition, mastery per knowledge component, Elo-style skill estimates, adaptive selection, placement test | ✅ |
-| Post-match screen — result, accuracy, XP, rank change, mistakes with English/Hebrew explanations | ✅ |
+| Post-match screen — result, accuracy, XP, rank change, mistakes with English/Hebrew explanations, **“Practise my mistakes”** session (exact public items, or similar public items for server-only ranked questions) | ✅ |
 | Bagrut Academy — Module E/F/G, COBE speaking practice (timers + TTS listening), project planner, timed mock exams | ✅ (exam structure = unverified draft, see `docs/BAGRUT.md`) |
 | Adventure map — 5 regions, chapters, bosses, stars | ✅ |
-| Real Life (scripted conversations), English Detective (one case) | ✅ preview |
-| Escape Room, English Conquest, Debate Arena | ⛔ planned (shown as "in development") |
-| Authoritative WebSocket server — auth, rooms, queues, ready check, reconnection, rematch, Elo ranking, friends, block/report, rate limits, replay protection | ✅ locally (not deployed) |
+| **Escape Room** — 3 original rooms (A2/B1/B2), choice/text/order puzzles, hints, relaxed or timed | ✅ solo (co-op planned) |
+| **English Conquest** — 12-island strategy map, 4 factions, answer questions for gold, recruit/fortify/attack/move, 1–3 labelled bots | ✅ vs bots (online planned) |
+| **Debate Arena** — private written practice: opening → opposing view → rebuttal, rule-based structure/grammar check (not AI) | ✅ practice (AI feedback ⛔ needs approval) |
+| Listening lab — 12 listening items using free on-device browser text-to-speech; transcript hidden until answered | ✅ (falls back to reading when TTS is unavailable, and is then not counted as listening evidence) |
+| Real Life (4 scripted text scenarios: airport A2, hotel A2, restaurant B1, job interview B2), English Detective (2 cases) | ✅ preview |
+| Authoritative WebSocket server — auth, rooms, queues, ready check, reconnection, rematch, Elo ranking, friends, block/report, rate limits, replay protection, **server-computed XP/shards/achievements persisted per player** (`/api/me/wallet`) | ✅ locally (not deployed) |
 | Supabase schema + RLS | ✅ tested on local PostgreSQL; 🟡 not yet applied to a real project |
 | Registered accounts / cloud sync / AI / speech | 🟡 / ⛔ — see `HANDOFF.md` |
 
@@ -87,7 +90,9 @@ WebSockets (Render / Koyeb / any VPS) + Supabase Free. Exact steps and environme
 - The exam structure in Bagrut Academy is a configurable draft pending verification against the official booklet.
 - All content is original but AI-drafted (`reviewStatus: 'ai-drafted'`) and must be reviewed by a teacher.
 - No AI writing feedback, no speech recognition (clearly labelled in the UI).
-- Content volume is a prototype minimum (180 public + 54 ranked items) and must grow before release.
+- Content volume is still small (216 public + 54 ranked items) and must grow before release.
+- Escape Room and English Conquest are single-player (vs bots) for now; their online/co-op versions are not implemented.
+- Offline (vs bot) rewards are stored on the device only; only online-match rewards are server-verified.
 
 ## Licenses
 

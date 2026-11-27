@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useReducer, useRef } from 'react';
 import type {
   AnswerResultEntry,
+  CefrLevel,
   CombatEvent,
   PlayerStatePayload,
   PublicPlayer,
@@ -13,6 +14,10 @@ import type { MatchTransport } from '../../net/transport';
 import { uid } from '../../state/storage';
 
 export interface Mistake {
+  itemId: string;
+  level: CefrLevel;
+  /** Knowledge components (`v:` / `g:`) used to find similar practice items. */
+  tags: string[];
   prompt: string;
   context?: string;
   yourAnswer: string | null;
@@ -158,6 +163,9 @@ function reducer(s: MatchView, a: Action): MatchView {
         : [
             ...s.mistakes,
             {
+              itemId: msg.learning.itemId,
+              level: msg.learning.level,
+              tags: [...msg.learning.vocabularyTags.map((t) => `v:${t}`), ...msg.learning.grammarTags.map((t) => `g:${t}`)],
               prompt: msg.prompt,
               ...(s.round?.question.context ? { context: s.round.question.context } : {}),
               yourAnswer: mine?.answerText ?? null,

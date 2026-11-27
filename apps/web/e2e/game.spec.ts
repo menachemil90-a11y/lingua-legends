@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { ESCAPE_ROOMS } from '@lingua/content';
 /* End-to-end tests: real browser, real multiplayer server (see playwright.config.ts). */
 
 async function skipOnboarding(page: Page) {
@@ -77,6 +78,43 @@ test('two browsers play an online private match through the authoritative server
   await expect(a.locator('.chip--bot')).toHaveCount(0);
   await ctxA.close();
   await ctxB.close();
+});
+
+async function pickMode(page: Page, name: string) {
+  await page.locator('.mode-card').click();
+  await page.locator('.mode-row', { hasText: name }).click();
+  await page.getByTestId('play').click();
+}
+
+test('Escape Room: open a puzzle, solve it and see the lock open', async ({ page }) => {
+  await skipOnboarding(page);
+  await pickMode(page, 'Escape Room');
+  const room = ESCAPE_ROOMS[0]!;
+  await page.locator('.escape-card').first().click();
+  await page.getByTestId('enter-room').click();
+  const puzzle = room.puzzles.find((p) => p.kind === 'choice');
+  if (!puzzle || puzzle.kind !== 'choice') throw new Error('expected a choice puzzle in the first room');
+  await page.getByRole('button', { name: puzzle.title }).click();
+  await page.locator('.answer', { hasText: puzzle.options[puzzle.answer]! }).click();
+  await expect(page.locator('.answer--correct')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('.lock--open')).toHaveCount(1);
+});
+
+test('English Conquest: start against bots and see the 12-island map', async ({ page }) => {
+  await skipOnboarding(page);
+  await pickMode(page, 'English Conquest');
+  await page.getByTestId('start-conquest').click();
+  await expect(page.locator('.cq-terr')).toHaveCount(12);
+  await expect(page.getByText(/בוט|Bot/).first()).toBeVisible();
+});
+
+test('Listening lab starts a session with a play control', async ({ page }) => {
+  await skipOnboarding(page);
+  await page.getByRole('button', { name: /^תרגול/ }).first().click();
+  await page.getByTestId('start-listening').click();
+  await expect(page.locator('.quiz')).toBeVisible();
+  await expect(page.locator('.answer').first()).toBeVisible();
 });
 
 test('@mobile lobby has no horizontal overflow and the play button is reachable', async ({ page }) => {

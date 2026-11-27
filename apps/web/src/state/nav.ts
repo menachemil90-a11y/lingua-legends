@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { Bracket, CefrLevel, GameModeId, OnlineModeId, PublicPlayer } from '@lingua/shared';
 import type { BotTier } from '@lingua/shared';
+import type { MistakeTarget } from '@lingua/learning';
 
 export interface LocalMatchParams {
   kind: 'local';
@@ -34,7 +35,7 @@ export type Screen =
   | { id: 'settings' }
   | { id: 'customize' }
   | { id: 'placement' }
-  | { id: 'practice'; focus?: 'review' | 'mix' }
+  | { id: 'practice'; focus?: 'review' | 'mix'; mistakes?: MistakeTarget[] }
   | { id: 'reading'; passageId: string; chapterId?: string }
   | { id: 'bagrut' }
   | { id: 'bagrut-task'; taskId: string }
