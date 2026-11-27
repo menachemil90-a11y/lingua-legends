@@ -74,6 +74,15 @@ export interface CupRun {
 
 export const CUP_ROUNDS = 3;
 
+/** A finished debate practice (checklist counts only — never a grade). */
+export interface DebateRecord {
+  topicId: string;
+  side: 'for' | 'against';
+  at: number;
+  met: number;
+  total: number;
+}
+
 export function cupRound(run: CupRun): number {
   return run.results.filter((r) => r === 'win').length;
 }
@@ -100,6 +109,8 @@ export interface PlayerState {
   selectedMode: GameModeId;
   cup: CupRun | null;
   cupTitles: number;
+  debates: DebateRecord[];
+  recordDebate: (rec: Omit<DebateRecord, 'at'>) => void;
   startCup: (run: Omit<CupRun, 'results' | 'startedAt'>) => void;
   recordCupResult: (result: 'win' | 'loss' | 'draw') => string[];
   endCup: () => void;
@@ -174,6 +185,7 @@ function initial(): Omit<PlayerState, keyof PlayerActions> {
     selectedMode: 'word-battle',
     cup: null,
     cupTitles: 0,
+    debates: [],
   };
 }
 
@@ -195,6 +207,7 @@ type PlayerActions = Pick<
   | 'startCup'
   | 'recordCupResult'
   | 'endCup'
+  | 'recordDebate'
   | 'reset'
 >;
 
@@ -291,6 +304,7 @@ export const usePlayer = create<PlayerState>()(
           return [];
         },
         endCup: () => set({ cup: null }),
+        recordDebate: (rec) => set({ debates: [...get().debates, { ...rec, at: Date.now() }].slice(-40) }),
         reset: () => set({ ...initial() }),
       };
     },

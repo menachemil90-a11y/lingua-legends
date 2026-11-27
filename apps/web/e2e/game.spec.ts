@@ -176,6 +176,24 @@ test('three browsers start a friends tournament; exactly two are called to the f
   for (const x of ctxs) await x.close();
 });
 
+test('Debate Arena: opening, rebuttal and closing lead to a transparent checklist', async ({ page }) => {
+  await skipOnboarding(page);
+  await pickMode(page, 'Debate Arena');
+  await page.getByTestId('debate-topic-debate-weekend-homework').click();
+  const opening =
+    'In my opinion, teachers should not give homework at the weekend because students need real rest. For example, many students have sports games or family visits on Saturday. Moreover, tired students learn less on Sunday morning, so a free weekend actually helps learning. Therefore weekends should belong to rest and hobbies.';
+  await page.getByTestId('debate-opening').fill(opening);
+  await page.getByTestId('debate-next').click();
+  await page
+    .getByTestId('debate-rebuttal')
+    .fill('Some people argue that weekend homework helps students remember the lessons. However, short reviews during the week work just as well, and they do not take away family time. As a result, the benefit of weekend homework is small.');
+  await page.getByTestId('debate-next').click();
+  await page.getByTestId('debate-closing').fill('To sum up, free weekends make students healthier and more focused, so the benefits of rest are clearly greater than the costs.');
+  await page.getByTestId('debate-finish').click();
+  await expect(page.getByTestId('debate-checklist').locator('li')).toHaveCount(8);
+  await expect(page.getByTestId('debate-checklist').locator('.finding--good').first()).toBeVisible();
+});
+
 test('two browsers play English Conquest online: question for the active player, turn passes', async ({ browser }) => {
   const ctxA = await browser.newContext();
   const ctxB = await browser.newContext();

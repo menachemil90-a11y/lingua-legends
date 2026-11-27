@@ -30,6 +30,7 @@ const EXAMPLE = ['for example', 'for instance', 'such as', 'to illustrate', 'a g
 const CONCEDE = ['although', 'while it is true', 'some people argue', 'some may say', 'admittedly', 'it is true that', 'opponents claim', 'critics argue', 'on the other hand'];
 const REBUT = ['however', 'nevertheless', 'yet', 'but this ignores', 'this overlooks', 'even so', 'in reality'];
 const HEDGE = ['may', 'might', 'could', 'likely', 'tend to', 'often', 'in many cases'];
+const SUMMARY = ['in conclusion', 'to sum up', 'overall', 'on balance', 'to conclude', 'all in all', 'in short', 'for these reasons'];
 
 const ERRORS: { id: string; re: RegExp; en: string; he: string }[] = [
   { id: 'more-better', re: /\bmore (better|worse|easier|bigger|faster)\b/gi, en: "Don't use 'more' with a comparative that already ends in -er: 'better', not 'more better'.", he: "לא משתמשים ב-more עם צורת השוואה שכבר מסתיימת ב-er: better ולא more better." },
@@ -47,7 +48,7 @@ function countMarkers(text: string, list: string[]): string[] {
   return list.filter((m) => lower.includes(` ${m} `));
 }
 
-export function checkWriting(text: string, target: { minWords: number; maxWords: number; expectConcession?: boolean }): WritingReport {
+export function checkWriting(text: string, target: { minWords: number; maxWords: number; expectConcession?: boolean; expectSummary?: boolean }): WritingReport {
   const trimmed = text.trim();
   const words = trimmed ? trimmed.split(/\s+/).length : 0;
   const sentenceList = trimmed.split(/(?<=[.!?])\s+/).filter((s) => /\w/.test(s));
@@ -88,6 +89,14 @@ export function checkWriting(text: string, target: { minWords: number; maxWords:
         : { id: 'counter', kind: 'tip', en: "Acknowledge the opposing view ('Some people argue that…') and then answer it ('However, …').", he: 'התייחסו לעמדה המנוגדת (Some people argue that…) ואז השיבו לה (However, …).' },
     );
   }
+  if (target.expectSummary) {
+    const summary = countMarkers(trimmed, SUMMARY);
+    findings.push(
+      summary.length
+        ? { id: 'summary', kind: 'good', en: 'Your closing clearly sums up your case.', he: 'הסיכום שלכם מסכם בבירור את הטיעון.', matches: summary }
+        : { id: 'summary', kind: 'tip', en: "Signal your conclusion ('To sum up, …', 'On balance, …') and restate your main point.", he: 'סמנו את הסיכום (To sum up, …, On balance, …) וחזרו על הטענה המרכזית.' },
+    );
+  }
   const hedges = countMarkers(trimmed, HEDGE);
   if (hedges.length) findings.push({ id: 'hedge', kind: 'good', en: 'You use cautious language where appropriate.', he: 'אתם משתמשים בלשון זהירה במקומות המתאימים.', matches: hedges });
   if (connectorsUsed.length < 2 && words > 40) findings.push({ id: 'connectors', kind: 'tip', en: 'Link your ideas with more connectors (however, therefore, moreover…).', he: 'קשרו בין הרעיונות בעזרת מילות קישור נוספות (however, therefore, moreover…).' });
@@ -103,3 +112,32 @@ export function checkWriting(text: string, target: { minWords: number; maxWords:
 
   return { words, sentences, paragraphs, avgSentenceLength, connectorsUsed, findings };
 }
+
+export interface ChecklistItem {
+  id: string;
+  met: boolean;
+  en: string;
+  he: string;
+}
+
+const has = (r: WritingReport, id: string) => r.findings.some((f) => f.id === id && f.kind === 'good');
+
+/**
+ * A transparent debate checklist built from the three reports. It shows which structural
+ * habits are present — it is NOT a grade, and it is never used as proficiency evidence.
+ */
+export function debateChecklist(parts: { opening: WritingReport; rebuttal: WritingReport; closing: WritingReport }): ChecklistItem[] {
+  const all = [parts.opening, parts.rebuttal, parts.closing];
+  const connectors = new Set(all.flatMap((r) => r.connectorsUsed));
+  return [
+    { id: 'stance', met: has(parts.opening, 'stance'), en: 'Clear position in the opening', he: 'עמדה ברורה בפתיחה' },
+    { id: 'reasons', met: has(parts.opening, 'reason'), en: 'Reasons that support the position', he: 'נימוקים שתומכים בעמדה' },
+    { id: 'example', met: has(parts.opening, 'example') || has(parts.rebuttal, 'example'), en: 'At least one concrete example', he: 'לפחות דוגמה קונקרטית אחת' },
+    { id: 'counter', met: has(parts.rebuttal, 'counter'), en: 'The opposing view acknowledged and answered', he: 'התייחסות לעמדה המנוגדת ומענה לה' },
+    { id: 'connectors', met: connectors.size >= 4, en: 'Ideas linked with at least four different connectors', he: 'קישור רעיונות בעזרת לפחות ארבע מילות קישור שונות' },
+    { id: 'length', met: all.every((r) => has(r, 'length-ok')), en: 'Every part within its word target', he: 'כל חלק בטווח המילים שלו' },
+    { id: 'summary', met: has(parts.closing, 'summary'), en: 'A closing that sums up the case', he: 'סיכום שמסכם את הטיעון' },
+    { id: 'accuracy', met: all.every((r) => !r.findings.some((f) => f.kind === 'error')), en: 'No flagged common errors', he: 'ללא טעויות נפוצות שסומנו' },
+  ];
+}
+

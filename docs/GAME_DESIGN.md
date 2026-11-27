@@ -102,7 +102,12 @@ An absent player's turn is skipped after 8 s (no bonus); after 60 s away — or 
 the others play on. The last player standing wins by forfeit. Leavers earn no shards.
 
 ## Debate Arena (private practice)
-Pick a topic and a side, write an opening statement, read the opposing view, write a rebuttal. A rule-based checker
+Pick one of 10 motions (B1–C2) and a side. Write an opening, read the other side's *prepared* argument (clearly labelled as
+prepared text, not AI), write a rebuttal, read their prepared closing, then write your own closing. The review shows an
+8-point checklist (clear position, reasons, example, counter-argument answered, ≥4 connectors, every part within its word
+target, a real summary, no flagged common errors) — habits present, never a grade, and never used as proficiency evidence.
+Each motion has a phrase bank and key vocabulary with Hebrew glosses; past debates are kept on the device.
+Live debates between players are intentionally not offered: they would require free text between players. A rule-based checker
 (`packages/learning/src/writingCheck.ts`) reports length, stance, reasons, examples, concession + rebuttal, hedging,
 connectors, long sentences and common errors. It is clearly labelled as an automatic structure check, not AI or a teacher.
 

@@ -23,7 +23,7 @@ export const MODES: ModeDef[] = [
   { id: 'english-detective', name: 'English Detective', tagline: 'Read the evidence, crack the case', status: 'playable', online: false, skills: ['reading', 'inference'], players: 'Solo', phase: 5 },
   { id: 'escape-room', name: 'Escape Room', tagline: 'Language puzzles that unlock doors', status: 'playable', online: false, skills: ['reading', 'vocabulary'], players: 'Solo / Co-op', phase: 5 },
   { id: 'english-conquest', name: 'English Conquest', tagline: 'Strategy kingdoms built on knowledge', status: 'playable', online: false, skills: ['vocabulary', 'grammar', 'reading'], players: '2–4', phase: 5 },
-  { id: 'debate-arena', name: 'Debate Arena', tagline: 'Argue, persuade, respond', status: 'preview', online: false, skills: ['writing', 'argumentation'], players: '1v1', phase: 6 },
+  { id: 'debate-arena', name: 'Debate Arena', tagline: 'Argue, persuade, respond', status: 'playable', online: false, skills: ['writing', 'argumentation'], players: '1v1', phase: 6 },
 ];
 
 export function modeDef(id: GameModeId): ModeDef {

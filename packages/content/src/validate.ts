@@ -16,6 +16,7 @@ import { MOCK_EXAMS, OPEN_TASKS, BAGRUT_CURRICULUM } from './bagrut';
 import { ADVENTURE_REGIONS, WORD_BATTLE_SETS } from './sets';
 import { DETECTIVE_CASES, REAL_LIFE_SCENARIOS } from './story';
 import { ESCAPE_ROOM_FOR_BRACKET, ESCAPE_ROOMS } from './escape';
+import { DEBATE_TOPICS } from './debate';
 
 export interface ValidationIssue {
   severity: 'error' | 'warning';
@@ -150,6 +151,16 @@ function checkReferences(issues: ValidationIssue[], ids: Set<string>, passageIds
     for (const id of m.itemIds) if (!ids.has(id)) issues.push({ severity: 'error', ref: m.id, message: `unknown item ${id}` });
     for (const id of m.taskIds) if (!taskIds.has(id)) issues.push({ severity: 'error', ref: m.id, message: `unknown task ${id}` });
     for (const id of m.passageIds) if (!passageIds.has(id)) issues.push({ severity: 'error', ref: m.id, message: `unknown passage ${id}` });
+  }
+  const debateIds = new Set<string>();
+  for (const d of DEBATE_TOPICS) {
+    if (debateIds.has(d.id)) issues.push({ severity: 'error', ref: d.id, message: 'duplicate debate id' });
+    debateIds.add(d.id);
+    if (!HEBREW.test(d.motionHe)) issues.push({ severity: 'error', ref: d.id, message: 'missing Hebrew motion' });
+    if (d.phrases.length < 4) issues.push({ severity: 'error', ref: d.id, message: 'a debate needs at least 4 useful phrases' });
+    if (d.vocabulary.length < 4 || d.vocabulary.some((v) => !HEBREW.test(v.he))) issues.push({ severity: 'error', ref: d.id, message: 'a debate needs at least 4 vocabulary items with Hebrew glosses' });
+    for (const [a, b] of [d.openingWords, d.rebuttalWords, d.closingWords]) if (!(a > 0 && b > a)) issues.push({ severity: 'error', ref: d.id, message: 'invalid word range' });
+    for (const side of ['for', 'against'] as const) if (!d.opposition[side] || !d.closingOpp[side]) issues.push({ severity: 'error', ref: d.id, message: `missing prepared ${side} text` });
   }
   const scenarioIds = new Set<string>();
   for (const s of REAL_LIFE_SCENARIOS) {

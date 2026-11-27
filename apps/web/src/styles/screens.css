@@ -1576,3 +1576,69 @@
   height: 16px;
   color: var(--c-good);
 }
+
+/* Debate stages and vocabulary */
+.debate-steps {
+  list-style: none;
+  margin: var(--s-3) 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--s-2);
+}
+.debate-step {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px var(--s-2);
+  border-radius: var(--r-pill);
+  border: 1px solid var(--c-line);
+  font-size: var(--fs-xs);
+  color: var(--c-text-dim);
+  min-width: 0;
+}
+.debate-step svg {
+  flex: none;
+  width: 14px;
+  height: 14px;
+}
+.debate-step span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.debate-step--done {
+  border-color: var(--c-good);
+  color: var(--c-good);
+}
+.debate-step--now {
+  border-color: var(--c-gold);
+  color: var(--c-gold-2);
+  box-shadow: var(--sh-glow-gold);
+}
+.debate-vocab {
+  margin: 0;
+  display: grid;
+  gap: var(--s-2);
+}
+.debate-vocab > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-2);
+  padding-bottom: var(--s-1);
+  border-bottom: 1px solid var(--c-line);
+}
+.debate-vocab dt {
+  font-weight: 700;
+}
+.debate-vocab dd {
+  margin: 0;
+}
+@media (max-width: 420px) {
+  .debate-steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

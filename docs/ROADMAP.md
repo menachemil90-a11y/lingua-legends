@@ -48,7 +48,7 @@ Status as of development session 2 (2026-11-27).
 ## Phase 6 — Advanced learning
 - [x] Real Life — eight scripted text scenarios (airport A2, hotel A2, shop return A2, restaurant B1, support call B1, job interview B2, university office hours B2, tech stand-up C1)
 - [ ] More scenarios (business meeting, medical appointment, travel problems) and teacher review of all dialogue
-- [x] Debate Arena private practice with a rule-based writing check (4 topics)
+- [x] Debate Arena complete as private practice: 10 motions (B1–C2), opening/rebuttal/closing, prepared opposing texts, transparent checklist, vocabulary, history
 - [ ] Debate Arena AI evaluation (only after approval + moderation)
 - [x] Listening lab with on-device text-to-speech (12 items)
 - [x] Post-match “Practise my mistakes” sessions
