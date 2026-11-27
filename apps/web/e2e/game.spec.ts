@@ -35,6 +35,7 @@ test('Sentence Master practice: keyboard building and feedback', async ({ page }
   await page.getByRole('button', { name: /^תרגול/ }).first().click();
   await page.getByRole('button', { name: /תרגול \(ללא זמן\)/ }).click();
   const pool = page.locator('.tiles__pool .tile-word');
+  await expect(pool.first()).toBeVisible({ timeout: 15_000 });
   const n = await pool.count();
   expect(n).toBeGreaterThan(2);
   for (let i = 0; i < n; i++) await page.keyboard.press('1');

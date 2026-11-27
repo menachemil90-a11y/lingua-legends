@@ -80,3 +80,12 @@ The service worker caches only same-origin static assets and the app shell; API/
 ## Scaling notes
 One Node process handles matchmaking and matches in memory. To scale horizontally: sticky sessions per player,
 a shared queue (Redis or Postgres) and match ownership per process. Not needed for the prototype.
+
+## Mobile performance
+- Only the lobby is in the initial bundle; every other screen is a lazy chunk (`React.lazy` + `Suspense` in `App.tsx`).
+  Initial JavaScript went from 674 kB (205 kB gzip) to 273 kB (86 kB gzip) plus React (60 kB gzip). Phaser (332 kB gzip)
+  loads only when a Word Battle / Grammar Race scene starts.
+- When the browser is idle, the most likely next screens (Play, match, practice) are prefetched; ~8 s later every other
+  chunk (including Phaser) is fetched once so the service worker caches it — skipped when the user enabled *Save data*.
+  Verified: after the warm-up, Escape Room and a Word Battle match open with the network switched off.
+

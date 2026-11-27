@@ -1,26 +1,81 @@
-import { useEffect } from 'react';
-import { Button, Dialog, ToastHost, toast } from './design';
+import { lazy, Suspense, useEffect, type ComponentType } from 'react';
+import type { CefrLevel, GameModeId } from '@lingua/shared';
+import { Button, Dialog, Loading, ToastHost, toast } from './design';
 import { applyDocumentSettings, useT, type MessageKey } from './i18n';
 import { useSettings } from './state/settings';
 import { useNav, installHistoryBridge, type Screen } from './state/nav';
 import { connection, useConnection } from './net/connection';
 import { sfx } from './audio/sfx';
 import { Lobby } from './screens/Lobby';
-import { Play } from './screens/Play';
-import { Online } from './screens/Online';
-import { Profile } from './screens/Profile';
-import { Settings } from './screens/Settings';
-import { Friends, Leaderboard } from './screens/Social';
-import { Customize } from './screens/Customize';
-import { Placement, Practice, Reading } from './screens/Learning';
-import { BagrutHub, BagrutMock, BagrutTask } from './screens/Bagrut';
-import { Adventure, Detective, ModeInfo, RealLife } from './screens/World';
-import { MatchScreen } from './games/MatchScreen';
-import { EscapeRoomScreen } from './screens/EscapeRoom';
-import { ConquestScreen } from './screens/Conquest';
-import { DebateScreen } from './screens/Debate';
-import { TournamentScreen } from './screens/Tournament';
-import { SentencePracticeScreen } from './games/sentenceMaster/SentencePracticeScreen';
+
+/*
+ * Every screen except the lobby is loaded on demand, so a phone downloads and parses only
+ * what the first screen needs. The most likely next screens are prefetched when idle.
+ */
+const named = <P extends object = object>(loader: () => Promise<Record<string, unknown>>, key: string) => lazy(async () => ({ default: (await loader())[key] as ComponentType<P> }));
+const loadPlay = () => import('./screens/Play');
+const loadMatch = () => import('./games/MatchScreen');
+const loadOnline = () => import('./screens/Online');
+const loadLearning = () => import('./screens/Learning');
+const loadWorld = () => import('./screens/World');
+const loadBagrut = () => import('./screens/Bagrut');
+const loadSocial = () => import('./screens/Social');
+const Play = named<{ initialMode?: GameModeId }>(loadPlay, 'Play');
+const MatchScreen = named<{ params: Extract<Screen, { id: 'match' }>['params'] }>(loadMatch, 'MatchScreen');
+const Online = named<Omit<Extract<Screen, { id: 'online' }>, 'id'>>(loadOnline, 'Online');
+const Profile = named(() => import('./screens/Profile'), 'Profile');
+const Settings = named(() => import('./screens/Settings'), 'Settings');
+const Friends = named(loadSocial, 'Friends');
+const Leaderboard = named(loadSocial, 'Leaderboard');
+const Customize = named(() => import('./screens/Customize'), 'Customize');
+const Placement = named(loadLearning, 'Placement');
+const Practice = named<{ focus?: 'review' | 'mix'; mistakes?: NonNullable<Extract<Screen, { id: 'practice' }>['mistakes']> }>(loadLearning, 'Practice');
+const Reading = named<{ passageId: string; chapterId?: string }>(loadLearning, 'Reading');
+const BagrutHub = named(loadBagrut, 'BagrutHub');
+const BagrutMock = named<{ examId: string }>(loadBagrut, 'BagrutMock');
+const BagrutTask = named<{ taskId: string }>(loadBagrut, 'BagrutTask');
+const Adventure = named(loadWorld, 'Adventure');
+const Detective = named<{ caseId?: string }>(loadWorld, 'Detective');
+const ModeInfo = named<{ mode: GameModeId }>(loadWorld, 'ModeInfo');
+const RealLife = named<{ scenarioId?: string }>(loadWorld, 'RealLife');
+const EscapeRoomScreen = named<{ roomId?: string }>(() => import('./screens/EscapeRoom'), 'EscapeRoomScreen');
+const ConquestScreen = named(() => import('./screens/Conquest'), 'ConquestScreen');
+const DebateScreen = named<{ topicId?: string }>(() => import('./screens/Debate'), 'DebateScreen');
+const TournamentScreen = named<{ tab?: 'cup' | 'friends'; code?: string }>(() => import('./screens/Tournament'), 'TournamentScreen');
+const SentencePracticeScreen = named<{ startLevels?: CefrLevel[] }>(() => import('./games/sentenceMaster/SentencePracticeScreen'), 'SentencePracticeScreen');
+
+function prefetchLikelyScreens(): void {
+  const run = () => {
+    void loadPlay();
+    void loadMatch();
+    void loadLearning();
+    // Then warm the offline cache with everything else (the service worker caches each chunk),
+    // unless the user asked the browser to save data.
+    const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
+    if (saveData) return;
+    setTimeout(() => {
+      void Promise.allSettled([
+        loadOnline(),
+        loadWorld(),
+        loadBagrut(),
+        loadSocial(),
+        import('./screens/Profile'),
+        import('./screens/Settings'),
+        import('./screens/Customize'),
+        import('./screens/EscapeRoom'),
+        import('./screens/Conquest'),
+        import('./screens/Debate'),
+        import('./screens/Tournament'),
+        import('./games/sentenceMaster/SentencePracticeScreen'),
+        import('./phaser/ArenaScene'),
+        import('./phaser/RaceScene'),
+      ]);
+    }, 8000);
+  };
+  const w = window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => void };
+  if (w.requestIdleCallback) w.requestIdleCallback(run, { timeout: 4000 });
+  else setTimeout(run, 2500);
+}
 
 /**
  * Each route gets its own component instance, so moving between two screens of the same kind
@@ -28,7 +83,11 @@ import { SentencePracticeScreen } from './games/sentenceMaster/SentencePracticeS
  */
 function Router() {
   const s = useNav((n) => n.current);
-  return <ScreenFor key={JSON.stringify(s)} s={s} />;
+  return (
+    <Suspense fallback={<Loading />}>
+      <ScreenFor key={JSON.stringify(s)} s={s} />
+    </Suspense>
+  );
 }
 
 function ScreenFor({ s }: { s: Screen }) {
@@ -146,6 +205,10 @@ function InviteDialog() {
 export function App() {
   const t = useT();
   const settings = useSettings();
+  useEffect(() => {
+    prefetchLikelyScreens();
+  }, []);
+
   useEffect(() => {
     applyDocumentSettings();
   }, [settings.language, settings.immersion, settings.reducedMotion, settings.highContrast]);

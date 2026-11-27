@@ -46,6 +46,10 @@ the Real Life crash, Customize unreachable on phones (now in Profile), Play scre
 Hebrew ("140–60 words", "4–1" players), and English puzzle titles rendered RTL. Later: Detective options were always in the same order with the answer first (now shuffled),
 and Detective/Real Life did not feed the learning engine (now they record evidence — Real Life as reading/grammar, never as speaking).
 
+## Performance and offline check (session 2)
+Production build with the service worker at 360 px: after the idle warm-up, the network was switched off and two screens
+that had never been opened (Escape Room, a Word Battle match with Phaser) loaded and worked. Initial JS: 86 kB gzip (+ React 60 kB).
+
 ## Not tested (requires external services)
 Supabase Auth/magic links, `SupabaseStore` against a live project (including `wallets`/`user_achievements` writes), deployed hosting,
 real mobile devices (only emulated), AI/speech recognition (not implemented). Browser text-to-speech depends on the voices installed on the device.
