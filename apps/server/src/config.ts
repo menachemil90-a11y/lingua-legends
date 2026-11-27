@@ -20,6 +20,10 @@ const schema = z.object({
   ROOM_TTL_MS: z.coerce.number().int().min(60_000).default(15 * 60_000),
   MAX_CONNECTIONS_PER_IP: z.coerce.number().int().min(1).default(12),
   GUEST_TOKENS_PER_MINUTE: z.coerce.number().int().min(1).default(10),
+  /** Path to a PRIVATE ranked pool (JSON array of content items). Never commit this file. */
+  RANKED_POOL_FILE: z.string().optional(),
+  /** Allow the PUBLIC development sample for ranked play. Defaults to true outside production only. */
+  ALLOW_PUBLIC_RANKED_SAMPLE: z.enum(['true', 'false']).optional(),
 });
 
 export type Config = z.infer<typeof schema> & { secret: string; origins: string[] };

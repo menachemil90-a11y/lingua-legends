@@ -12,3 +12,8 @@ apps/web/test-results/
 apps/web/playwright-report/
 .vite/
 *.tsbuildinfo
+
+# PRIVATE ranked question pools — never commit (the repository is public)
+private/
+*.private.json
+*.private.sql

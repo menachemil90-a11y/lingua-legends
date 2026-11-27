@@ -14,7 +14,7 @@
 ## Security rules (non-negotiable)
 - The server decides correctness, damage, scores, winners, ratings, XP, currency and rewards. Clients send intents only.
 - Never send answer keys before a round ends. `ROUND_START` carries `PublicQuestion` only.
-- Ranked questions live in `apps/server/src/content/rankedPool.ts` — never import server code from `apps/web` or `packages/*` (ESLint enforces this).
+- The repository is PUBLIC. Ranked answer keys must never be committed: production loads a private pool (`RANKED_POOL_FILE` or Supabase `is_ranked_only`, see `apps/server/src/content/rankedPool.ts`). `devRankedSample.ts` is a public sample for dev/tests only. Keep private pools in `private/` (gitignored) and check them with `pnpm ranked:validate`. Never import server code from `apps/web` or `packages/*` (ESLint enforces this).
 - Validate every client message with the zod schemas in `packages/shared/src/protocol.ts`; keep idempotency (`msgId`), rate limits and membership checks.
 - Never trust client timestamps; response times are measured by the host.
 - RLS on every Supabase table; clients must not be able to write ratings, matches, rewards, currency, achievements or friendships. Run `pnpm db:test` after any migration change.

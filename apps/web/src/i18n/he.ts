@@ -557,6 +557,7 @@ export const he: Record<MessageKey, string> = {
   'error.network': 'אין חיבור לרשת.',
   'error.roomNotFound': 'החדר לא נמצא או שפג תוקפו.',
   'error.roomFull': 'החדר כבר מלא.',
+  'error.rankedUnavailable': 'משחק מדורג עדיין לא זמין בשרת הזה. משחקים רגילים וחדרים פרטיים עובדים כרגיל.',
 
   'offline.notice': 'אתם לא מחוברים לרשת. מצבים לא מקוונים עדיין עובדים.',
 };

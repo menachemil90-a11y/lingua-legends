@@ -43,7 +43,11 @@ export function Online({ mode, flow, queue, bracket, roomCode }: { mode: OnlineM
   useEffect(() => {
     if (lastError?.startsWith('ROOM_NOT_FOUND')) toast(t('error.roomNotFound'), 'bad');
     if (lastError?.startsWith('ROOM_FULL')) toast(t('error.roomFull'), 'bad');
-  }, [lastError, t]);
+    if (lastError?.startsWith('RANKED_UNAVAILABLE')) {
+      toast(t('error.rankedUnavailable'), 'bad');
+      back();
+    }
+  }, [lastError, t, back]);
 
   const leave = () => {
     if (q) connection.send({ type: 'QUEUE_LEAVE' });

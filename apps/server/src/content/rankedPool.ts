@@ -1,144 +1,99 @@
 /**
- * SERVER-ONLY ranked question pool.
+ * Ranked question pool loader.
  *
- * These items are never bundled into the web client, so their answer keys cannot be
- * looked up from downloadable offline content. Answers are revealed to players only
- * after each round ends. The pool must be expanded and rotated before public release.
+ * Ranked answer keys must never be publicly readable. The repository is public, so the
+ * committed pool (`devRankedSample.ts`) is a development sample only. Production loads a
+ * PRIVATE pool from one of these sources, in order:
+ *   1. RANKED_POOL_FILE — a JSON array of content items on the server host (never committed);
+ *   2. Supabase — `content_items` rows with `is_ranked_only = true` (read with the service role);
+ *   3. the public development sample — only outside production, or if explicitly allowed.
+ * With no private source in production, the ranked queue is disabled (casual/private still work).
  */
-import { contentItemSchema, type ContentItem, type ContentItemInput } from '@lingua/shared';
-import { q, sb } from '@lingua/content';
+import { readFileSync } from 'node:fs';
+import { createClient } from '@supabase/supabase-js';
+import { BRACKET_LEVELS, BRACKETS, contentItemSchema, type ContentItem } from '@lingua/shared';
+import { CONTENT_ITEMS } from '@lingua/content';
+import { DEV_RANKED_SAMPLE } from './devRankedSample';
 
-const RANKED = ['word-battle', 'grammar-race'] as const;
-const R = (s: Parameters<typeof q>[0]) => q({ ...s, modes: s.modes ?? [...RANKED] });
+export type RankedPoolSource = 'private-file' | 'supabase' | 'public-sample' | 'disabled';
 
-export const RANKED_RAW_ITEMS: ContentItemInput[] = [
-  // Foundation (A1–A2)
-  R({ id: 'rk-a1-breakfast', level: 'A1', cat: 'vocabulary', d: 1, p: 'We eat ___ in the morning.', ans: 'breakfast', wrong: ['dinner', 'pillow', 'homework'], en: 'Breakfast is the morning meal.', he: 'breakfast היא ארוחת הבוקר.', v: ['breakfast'] }),
-  R({ id: 'rk-a1-opp-old', level: 'A1', cat: 'antonym', d: 1, p: "The opposite of 'old' (for a car) is ___.", ans: 'new', wrong: ['tall', 'slow', 'happy'], en: "For things, the opposite of 'old' is 'new'.", he: 'לחפצים, ההפך של old הוא new.', v: ['old', 'new'] }),
-  R({ id: 'rk-a1-watches', level: 'A1', cat: 'sentence-completion', d: 2, p: 'My dad ___ the news every evening.', ans: 'watches', wrong: [['watch', 'He/she/it: add -es after -ch.', 'עם he/she/it מוסיפים es אחרי ch.', 'subject-verb-agreement'], 'watching', 'watchs'], en: 'Verbs ending in -ch take -es in the third person.', he: 'פעלים שמסתיימים ב-ch מקבלים es בגוף שלישי.', g: ['present-simple-3rd-person'] }),
-  R({ id: 'rk-a1-is-he', level: 'A1', cat: 'sentence-completion', d: 2, p: '___ he your brother?', ans: 'Is', wrong: ['Are', 'Do', 'Does'], en: "Questions with 'to be': Is + he/she/it?", he: 'שאלה עם to be: Is + he/she/it?', g: ['verb-to-be'] }),
-  R({ id: 'rk-a1-under', level: 'A1', cat: 'vocabulary', d: 2, ctx: 'The ball is not on the bed. It is below the bed.', p: 'Where is the ball?', ans: 'under the bed', wrong: ['on the bed', 'next to the door', 'in the bag'], en: "'Below' and 'under' mean the same here.", he: 'below ו-under — מתחת.', v: ['under'] }),
-  R({ id: 'rk-a1-their', level: 'A1', cat: 'sentence-completion', d: 2, p: 'The children are playing with ___ toys.', ans: 'their', wrong: [['there', "'There' is a place word. 'Their' shows possession.", 'there מציין מקום; their מציין שייכות.', 'spelling'], "they're", 'them'], en: "'Their' = belonging to them.", he: 'their = שלהם.', g: ['possessive-adjectives'] }),
-  R({ id: 'rk-a2-bought', level: 'A2', cat: 'sentence-completion', d: 2, p: 'I ___ a new jacket last Saturday.', ans: 'bought', wrong: [['buyed', "'Buy' is irregular: buy – bought.", 'buy לא סדיר: buy – bought.', 'tense'], 'buy', 'have bought'], en: "Irregular past: buy → bought.", he: 'עבר לא סדיר: buy ← bought.', g: ['past-simple-irregular'] }),
-  R({ id: 'rk-a2-hottest', level: 'A2', cat: 'sentence-completion', d: 3, p: 'August is the ___ month of the year in Israel.', ans: 'hottest', wrong: ['hotter', 'most hot', 'hotest'], en: "Superlative: hot → hottest (double the consonant).", he: 'דרגה עליונה: hot ← hottest (הכפלת עיצור).', g: ['superlatives'] }),
-  R({ id: 'rk-a2-some', level: 'A2', cat: 'sentence-completion', d: 2, p: 'Would you like ___ tea?', ans: 'some', wrong: ['any', 'many', 'a'], en: "Offers use 'some' even in questions.", he: 'בהצעות משתמשים ב-some גם בשאלה.', g: ['some-any'] }),
-  R({ id: 'rk-a2-turn-on', level: 'A2', cat: 'phrasal-verb', d: 2, p: "It's dark in here. Can you ___ the light?", ans: 'turn on', wrong: ['turn off', 'turn down', 'turn back'], en: "'Turn on' = start a device or light.", he: 'turn on = להדליק.', v: ['turn on'] }),
-  R({ id: 'rk-a2-syn-start', level: 'A2', cat: 'synonym', d: 2, p: "Which word means the same as 'start'?", ans: 'begin', wrong: ['finish', 'stay', 'carry'], en: "'Start' and 'begin' are synonyms.", he: 'start ו-begin הן מילים נרדפות.', v: ['begin'] }),
-  R({ id: 'rk-a2-but', level: 'A2', cat: 'connector', d: 2, p: 'The test was hard, ___ I passed it.', ans: 'but', wrong: ['so', 'because', 'or'], en: "'But' shows a contrast.", he: 'but מבטא ניגוד.', v: ['but'], g: ['connectors-contrast'] }),
-  R({ id: 'rk-a2-make-mistake', level: 'A2', cat: 'collocation', d: 2, p: "Don't worry — everyone ___ mistakes.", ans: 'makes', wrong: ['does', 'takes', 'gets'], en: "Collocation: make a mistake.", he: 'צירוף: make a mistake.', v: ['make a mistake'] }),
-  R({ id: 'rk-a2-was-raining', level: 'A2', cat: 'sentence-completion', d: 3, p: 'It ___ when we left the house.', ans: 'was raining', wrong: ['rained', 'is raining', 'were raining'], en: 'Past Progressive for the background situation.', he: 'Past Progressive לתיאור הרקע.', g: ['past-progressive'] }),
-  // Foundation (A1–A2) — expansion 2026-11-27
-  R({ id: 'rk-a1-kitchen', level: 'A1', cat: 'vocabulary', d: 1, p: 'We cook food in the ___.', ans: 'kitchen', wrong: ['bedroom', 'garden', 'garage'], en: 'The kitchen is the room for cooking.', he: 'kitchen הוא המטבח — החדר שבו מבשלים.', v: ['kitchen'] }),
-  R({ id: 'rk-a1-opp-heavy', level: 'A1', cat: 'antonym', d: 1, p: "The opposite of 'heavy' is ___.", ans: 'light', wrong: ['dark', 'big', 'strong'], en: "'Heavy' and 'light' describe weight.", he: 'heavy ו-light מתארים משקל: כבד וקל.', v: ['heavy', 'light'] }),
-  R({ id: 'rk-a1-doesnt', level: 'A1', cat: 'sentence-completion', d: 2, p: "My sister ___ like spicy food.", ans: "doesn't", wrong: [["don't", "With he/she/it use 'doesn't'.", "עם he/she/it משתמשים ב-doesn't.", 'subject-verb-agreement'], "isn't", "not"], en: "Negative Present Simple with she: doesn't + base verb.", he: "שלילה בהווה פשוט עם she: doesn't + פועל בסיס.", g: ['present-simple-negative'] }),
-  R({ id: 'rk-a1-there-are', level: 'A1', cat: 'sentence-completion', d: 2, p: '___ three apples on the table.', ans: 'There are', wrong: [['There is', "Plural nouns take 'There are'.", 'עם רבים אומרים There are.', 'subject-verb-agreement'], 'They are', 'It is'], en: "'There are' + plural noun.", he: 'There are + שם עצם ברבים.', g: ['there-is-are'] }),
-  R({ id: 'rk-a1-on-monday', level: 'A1', cat: 'sentence-completion', d: 2, p: 'I have a piano lesson ___ Monday.', ans: 'on', wrong: [['in', "Days take 'on': on Monday.", 'עם ימים משתמשים ב-on.', 'preposition'], 'at', 'to'], en: 'Prepositions of time: on + day.', he: 'מילות יחס של זמן: on + יום.', g: ['prepositions-of-time'] }),
-  R({ id: 'rk-a1-tired', level: 'A1', cat: 'contextual-vocabulary', d: 2, p: 'I worked all day, so now I am very ___.', ans: 'tired', wrong: ['hungry', 'early', 'tidy'], en: "'Tired' = you need rest.", he: 'tired = עייף.', v: ['tired'] }),
-  R({ id: 'rk-a1-an-umbrella', level: 'A1', cat: 'sentence-completion', d: 2, p: 'Take ___ umbrella — it is raining.', ans: 'an', wrong: [['a', "Use 'an' before a vowel sound: an umbrella.", 'לפני צליל תנועה משתמשים ב-an.', 'article'], 'some', 'any'], en: "'An' before a vowel sound.", he: 'an לפני צליל של תנועה.', g: ['articles'] }),
-  R({ id: 'rk-a2-was-born', level: 'A2', cat: 'sentence-completion', d: 2, p: 'My grandmother ___ in Haifa in 1950.', ans: 'was born', wrong: [['born', "We say 'was born' (passive form).", 'אומרים was born.', 'passive'], 'is born', 'has born'], en: "'Be born' is always passive: I was born in…", he: 'be born תמיד בסביל: I was born in…', g: ['past-simple-be'] }),
-  R({ id: 'rk-a2-than', level: 'A2', cat: 'sentence-completion', d: 2, p: 'This box is heavier ___ that one.', ans: 'than', wrong: [['then', "'Then' is about time; comparisons use 'than'.", 'then הוא "אז"; בהשוואה אומרים than.', 'spelling'], 'as', 'like'], en: 'Comparative + than.', he: 'דרגת יתרון + than.', g: ['comparatives'] }),
-  R({ id: 'rk-a2-look-for', level: 'A2', cat: 'phrasal-verb', d: 2, p: "I can't find my keys. Can you help me ___ them?", ans: 'look for', wrong: ['look after', 'look like', 'look up'], en: "'Look for' = try to find.", he: 'look for = לחפש.', v: ['look for'] }),
-  R({ id: 'rk-a2-should', level: 'A2', cat: 'sentence-completion', d: 2, p: 'You have a fever. You ___ stay in bed.', ans: 'should', wrong: [['should to', "No 'to' after 'should'.", 'אחרי should לא בא to.', 'modal'], 'must to', 'would'], en: "'Should' + base verb gives advice.", he: 'should + פועל בסיס לנתינת עצה.', g: ['modals-advice'] }),
-  R({ id: 'rk-a2-because', level: 'A2', cat: 'connector', d: 2, p: 'We stayed inside ___ it was too cold.', ans: 'because', wrong: ['but', 'so', 'or'], en: "'Because' gives a reason.", he: 'because מציג סיבה.', v: ['because'], g: ['connectors-reason'] }),
-  R({ id: 'rk-a2-take-photo', level: 'A2', cat: 'collocation', d: 2, p: 'Can I ___ a photo of you?', ans: 'take', wrong: [['make', "We 'take' a photo.", 'אומרים take a photo.', 'collocation'], 'do', 'catch'], en: 'Collocation: take a photo.', he: 'צירוף: take a photo.', v: ['take a photo'] }),
-  R({ id: 'rk-a2-syn-quick', level: 'A2', cat: 'synonym', d: 2, p: "Which word means almost the same as 'quick'?", ans: 'fast', wrong: ['quiet', 'late', 'empty'], en: "'Quick' and 'fast' are synonyms.", he: 'quick ו-fast נרדפות: מהיר.', v: ['quick', 'fast'] }),
-  R({ id: 'rk-a2-ago', level: 'A2', cat: 'sentence-completion', d: 3, p: 'We moved to this town three years ___.', ans: 'ago', wrong: [['before', "After a period of time use 'ago': three years ago.", 'אחרי פרק זמן אומרים ago.', 'preposition'], 'since', 'for'], en: "Period of time + 'ago' with the Past Simple.", he: 'פרק זמן + ago בעבר פשוט.', g: ['past-simple-time-expressions'] }),
-  R({ id: 'rk-a2-much', level: 'A2', cat: 'sentence-completion', d: 3, p: "There isn't ___ milk left in the fridge.", ans: 'much', wrong: [['many', "'Milk' is uncountable: use 'much'.", 'milk לא ספיר — משתמשים ב-much.', 'plural'], 'few', 'a lot'], en: "'Much' with uncountable nouns in negatives.", he: 'much עם שמות לא ספירים בשלילה.', g: ['countable-uncountable'] }),
-  R({ id: 'rk-a2-infer-closed', level: 'A2', cat: 'reading-inference', d: 3, ctx: 'SORRY! The swimming pool is closed for cleaning until Thursday. Opening hours from Friday: 7:00–20:00.', p: 'When can you swim again?', ans: 'From Friday', wrong: ['On Thursday morning', 'Today at 7:00', 'Never again'], en: "'Closed … until Thursday' and new hours 'from Friday'.", he: 'הבריכה סגורה עד יום חמישי ונפתחת מיום שישי.', v: ['until'] }),
-  R({ id: 'rk-a2-amazed', level: 'A2', cat: 'sentence-completion', d: 3, p: 'Everyone was ___ by the surprise ending of the book.', ans: 'amazed', wrong: [['amazing', "'-ed' describes how people feel; '-ing' describes the thing that causes it.", 'ed מתאר איך אנשים מרגישים; ing מתאר את מה שגורם לכך.', 'word-meaning'], 'amaze', 'amazement'], en: "-ed adjectives describe feelings: people are amazed by something amazing.", he: 'שם תואר עם ed מתאר רגש: אנשים amazed ממשהו amazing.', g: ['adjectives-ed-ing'] }),
-  R({ id: 'rk-a2-will-help', level: 'A2', cat: 'sentence-completion', d: 2, p: "Those bags look heavy. I ___ you carry them.", ans: "'ll help", wrong: ["'m help", 'helped', 'help'], en: "'Will' for an offer made at the moment of speaking.", he: 'will להצעה שמחליטים עליה ברגע הדיבור.', g: ['future-will'] }),
-  R({ id: 'rk-a2-opp-borrow', level: 'A2', cat: 'antonym', d: 3, p: "I borrowed a book from Dana. Dana ___ me the book.", ans: 'lent', wrong: [['borrowed', "You borrow FROM someone; they lend TO you.", 'borrow = לשאול ממישהו; lend = להשאיל למישהו.', 'opposite-meaning'], 'gave back', 'sold'], en: "Borrow (take) ↔ lend (give) for a short time.", he: 'borrow — לשאול, lend — להשאיל.', v: ['borrow', 'lend'] }),
-  // Core (B1–B2)
-  R({ id: 'rk-b1-have-finished', level: 'B1', cat: 'sentence-completion', d: 2, p: "I ___ my essay, so I can relax now.", ans: 'have finished', wrong: ['finish', 'am finishing', 'had finish'], en: 'Present Perfect for a past action with a result now.', he: 'Present Perfect לפעולה בעבר עם תוצאה בהווה.', g: ['present-perfect-result'] }),
-  R({ id: 'rk-b1-unless', level: 'B1', cat: 'connector', d: 3, p: "You won't pass ___ you study.", ans: 'unless', wrong: ['if', 'although', 'because'], en: "'Unless' = 'if not'.", he: 'unless = אלא אם כן.', v: ['unless'], g: ['first-conditional'] }),
-  R({ id: 'rk-b1-were-made', level: 'B1', cat: 'sentence-completion', d: 3, p: 'These chairs ___ by hand.', ans: 'were made', wrong: ['made', 'was made', 'have make'], en: 'Past passive: were + past participle (plural subject).', he: 'סביל בעבר: were + צורה שלישית (נושא ברבים).', g: ['passive-past'] }),
-  R({ id: 'rk-b1-give-up', level: 'B1', cat: 'phrasal-verb', d: 2, p: "Don't ___ — you're almost there!", ans: 'give up', wrong: ['give in', 'give away', 'give back'], en: "'Give up' = stop trying.", he: 'give up = לוותר, להפסיק לנסות.', v: ['give up'] }),
-  R({ id: 'rk-b1-which-bought', level: 'B1', cat: 'sentence-completion', d: 2, p: 'The phone ___ I bought last week is already broken.', ans: 'which', wrong: ['who', 'where', 'whose'], en: "'Which' or 'that' for things.", he: 'which או that לחפצים.', g: ['relative-clauses-defining'] }),
-  R({ id: 'rk-b1-opp-generous', level: 'B1', cat: 'antonym', d: 3, p: "The opposite of 'generous' is ___.", ans: 'mean', wrong: ['kind', 'rich', 'polite'], en: "In British English, 'mean' can describe someone who doesn't like spending or sharing.", he: 'mean במשמעות קמצן — ההפך מנדיב.', v: ['generous', 'mean'] }),
-  R({ id: 'rk-b1-avoid', level: 'B1', cat: 'contextual-vocabulary', d: 3, p: 'She left home early to ___ the traffic.', ans: 'avoid', wrong: ['attend', 'admit', 'arrange'], en: "'Avoid' = stay away from.", he: 'avoid = להימנע מ...', v: ['avoid'] }),
-  R({ id: 'rk-b1-so-that', level: 'B1', cat: 'connector', d: 3, p: 'He spoke slowly ___ everyone could understand.', ans: 'so that', wrong: ['such that', 'even though', 'as if'], en: "'So that' introduces purpose.", he: 'so that מציג מטרה.', v: ['so that'], g: ['connectors-purpose'] }),
-  R({ id: 'rk-b2-had-been-waiting', level: 'B2', cat: 'sentence-completion', d: 4, p: 'We ___ for an hour when the bus finally came.', ans: 'had been waiting', wrong: ['have been waiting', 'were waited', 'are waiting'], en: 'Past Perfect Progressive for duration before a past moment.', he: 'Past Perfect Progressive למשך זמן לפני רגע בעבר.', g: ['past-perfect-progressive'] }),
-  R({ id: 'rk-b2-regret', level: 'B2', cat: 'sentence-completion', d: 4, p: "I regret ___ so rude to her yesterday.", ans: 'being', wrong: ['to be', 'be', 'been'], en: "'Regret' + -ing for something you did and feel sorry about.", he: 'regret + ing לחרטה על משהו שעשית.', g: ['verb-patterns-gerund'] }),
-  R({ id: 'rk-b2-turn-down', level: 'B2', cat: 'phrasal-verb', d: 3, p: 'She ___ the job offer because the salary was too low.', ans: 'turned down', wrong: ['turned up', 'turned over', 'turned into'], en: "'Turn down' an offer = refuse it.", he: 'turn down = לדחות הצעה.', v: ['turn down'] }),
-  R({ id: 'rk-b2-syn-obvious', level: 'B2', cat: 'synonym', d: 3, p: "Which word is closest in meaning to 'evident'?", ans: 'obvious', wrong: ['hidden', 'doubtful', 'ancient'], en: "'Evident' = clearly seen or understood.", he: 'evident = ברור, גלוי.', v: ['evident'] }),
-  R({ id: 'rk-b2-in-case', level: 'B2', cat: 'connector', d: 3, p: 'Take an umbrella ___ it rains.', ans: 'in case', wrong: ['unless', 'so that', 'as long as'], en: "'In case' = as a precaution against something that might happen.", he: 'in case = ליתר ביטחון, למקרה ש...', v: ['in case'] }),
-  R({ id: 'rk-b2-make-sense', level: 'B2', cat: 'collocation', d: 3, p: 'His story doesn\'t ___ sense.', ans: 'make', wrong: ['do', 'have', 'take'], en: "Collocation: make sense.", he: 'צירוף: make sense — הגיוני.', v: ['make sense'] }),
-  R({ id: 'rk-b2-cant-have', level: 'B2', cat: 'sentence-completion', d: 4, p: "She ___ have seen me — she wasn't wearing her glasses.", ans: "can't", wrong: ['must', 'should', 'would rather'], en: "'Can't have' + past participle = a confident negative deduction about the past.", he: "can't have + צורה שלישית = הסקה שלילית בטוחה לגבי העבר.", g: ['modals-deduction'] }),
-  // Core (B1–B2) — expansion 2026-11-27
-  R({ id: 'rk-b1-used-to', level: 'B1', cat: 'sentence-completion', d: 3, p: 'When I was a child, I ___ climb trees every day.', ans: 'used to', wrong: [['use to', "In positive sentences: 'used to'.", 'במשפט חיובי כותבים used to.', 'spelling'], 'was used to', 'am used to'], en: "'Used to' + base verb for past habits.", he: 'used to + פועל בסיס להרגלים בעבר.', g: ['used-to'] }),
-  R({ id: 'rk-b1-for-ages', level: 'B1', cat: 'sentence-completion', d: 3, p: "I haven't seen him ___ ages.", ans: 'for', wrong: [['since', "'Since' needs a point in time; 'ages' is a period.", 'since דורש נקודת זמן; ages הוא פרק זמן.', 'preposition'], 'from', 'during'], en: "'For' + a period of time with the Present Perfect.", he: 'for + פרק זמן עם Present Perfect.', g: ['present-perfect-since-for'] }),
-  R({ id: 'rk-b1-if-had', level: 'B1', cat: 'sentence-completion', d: 3, p: 'If I ___ more free time, I would learn the guitar.', ans: 'had', wrong: [['would have', "No 'would' in the if-clause.", 'אין would בחלק של if.', 'conditional'], 'have', 'will have'], en: 'Second conditional: If + Past Simple, would + verb.', he: 'תנאי מסוג שני: If + עבר פשוט, would + פועל.', g: ['second-conditional'] }),
-  R({ id: 'rk-b1-look-forward', level: 'B1', cat: 'sentence-completion', d: 3, p: 'I look forward to ___ from you.', ans: 'hearing', wrong: [['hear', "In 'look forward to', 'to' is a preposition: + -ing.", 'ב-look forward to, ה-to היא מילת יחס ולכן ing.', 'tense'], 'heard', 'be heard'], en: "'Look forward to' + -ing.", he: 'אחרי look forward to בא פועל עם ing (מצפה ל...).', g: ['verb-patterns-gerund'] }),
-  R({ id: 'rk-b1-run-out', level: 'B1', cat: 'phrasal-verb', d: 3, p: "We've ___ of sugar — can you buy some?", ans: 'run out', wrong: ['run into', 'run away', 'run over'], en: "'Run out of' = have none left.", he: 'run out of = שנגמר לנו משהו.', v: ['run out of'] }),
-  R({ id: 'rk-b1-however', level: 'B1', cat: 'connector', d: 3, p: 'The plan sounded simple. ___, it turned out to be very difficult.', ans: 'However', wrong: ['Therefore', 'For instance', 'Because'], en: "'However' introduces a contrast with the previous sentence.", he: 'However מציג ניגוד למשפט הקודם.', v: ['however'], g: ['connectors-contrast'] }),
-  R({ id: 'rk-b1-decision', level: 'B1', cat: 'collocation', d: 3, p: "It's time to ___ a decision.", ans: 'make', wrong: [['do', "We 'make' a decision.", 'אומרים make a decision.', 'collocation'], 'take on', 'give'], en: 'Collocation: make a decision.', he: 'צירוף: make a decision.', v: ['make a decision'] }),
-  R({ id: 'rk-b1-reliable', level: 'B1', cat: 'contextual-vocabulary', d: 3, p: 'You can always count on Noa — she is very ___.', ans: 'reliable', wrong: ['careless', 'anxious', 'available'], en: "'Reliable' = you can trust them to do what they say.", he: 'reliable = אמין.', v: ['reliable'] }),
-  R({ id: 'rk-b1-whose', level: 'B1', cat: 'sentence-completion', d: 3, p: 'That is the boy ___ bike was stolen.', ans: 'whose', wrong: [["who's", "'Who's' = who is; possession needs 'whose'.", "who's = who is; לשייכות אומרים whose.", 'relative-clause'], 'which', 'whom'], en: "'Whose' shows possession in relative clauses.", he: 'whose מציין שייכות במשפט זיקה.', g: ['relative-clauses-defining'] }),
-  R({ id: 'rk-b1-gr-correction', level: 'B1', cat: 'grammar-correction', d: 3, p: "Choose the correct sentence.", ans: 'She has lived here since 2019.', wrong: [['She lives here since 2019.', "Use the Present Perfect with 'since' for a situation that continues now.", 'עם since למצב שנמשך עד עכשיו משתמשים ב-Present Perfect.', 'tense'], 'She is living here since 2019.', 'She has live here since 2019.'], en: "Present Perfect + since for a continuing situation.", he: 'Present Perfect + since למצב מתמשך.', g: ['present-perfect-since-for'] }),
-  R({ id: 'rk-b2-despite', level: 'B2', cat: 'connector', d: 4, p: '___ the heavy rain, the match went ahead.', ans: 'Despite', wrong: [['Although', "'Although' needs a clause (subject + verb); 'despite' takes a noun.", 'although דורש משפט (נושא + פועל); despite בא עם שם עצם.', 'connector-logic'], 'Because of', 'In spite'], en: "'Despite' + noun phrase.", he: 'Despite + צירוף שמני.', v: ['despite'], g: ['connectors-contrast'] }),
-  R({ id: 'rk-b2-should-have', level: 'B2', cat: 'sentence-completion', d: 4, p: "You look exhausted. You ___ to bed earlier last night.", ans: 'should have gone', wrong: [['should go', "Criticism of the past: should have + past participle.", 'ביקורת על העבר: should have + צורה שלישית.', 'modal'], 'must go', 'should have went'], en: "'Should have' + past participle for past regret or criticism.", he: 'should have + צורה שלישית לביקורת על העבר.', g: ['modals-past'] }),
-  R({ id: 'rk-b2-reported', level: 'B2', cat: 'sentence-completion', d: 4, p: '"I am tired," she said. → She said that she ___ tired.', ans: 'was', wrong: [['is', "Reported speech usually moves back one tense: am → was.", 'בדיבור עקיף זזים זמן אחד אחורה: am ← was.', 'tense'], 'has been', 'will be'], en: 'Backshift in reported speech: present → past.', he: 'הסטת זמנים בדיבור עקיף: הווה ← עבר.', g: ['reported-speech'] }),
-  R({ id: 'rk-b2-get-used', level: 'B2', cat: 'sentence-completion', d: 4, p: "After a month in London, I finally got used to ___ on the left.", ans: 'driving', wrong: [['drive', "'Get used to' + -ing.", 'אחרי get used to בא פועל עם ing.', 'tense'], 'drove', 'have driven'], en: "'Be/get used to' + -ing = become familiar with.", he: 'be/get used to + ing = להתרגל.', g: ['used-to'] }),
-  R({ id: 'rk-b2-put-off', level: 'B2', cat: 'phrasal-verb', d: 4, p: 'The meeting has been ___ until next week.', ans: 'put off', wrong: ['put out', 'put up', 'put on'], en: "'Put off' = postpone.", he: 'put off = לדחות.', v: ['put off'] }),
-  R({ id: 'rk-b2-syn-fragile', level: 'B2', cat: 'synonym', d: 3, p: "Which phrase is closest in meaning to 'fragile'?", ans: 'easily broken', wrong: ['very heavy', 'brightly coloured', 'quite expensive'], en: "'Fragile' = easily broken or damaged.", he: 'fragile = שביר.', v: ['fragile'] }),
-  R({ id: 'rk-b2-whereas', level: 'B2', cat: 'connector', d: 4, p: 'My brother loves crowds, ___ I prefer quiet places.', ans: 'whereas', wrong: ['moreover', 'therefore', 'unless'], en: "'Whereas' contrasts two facts.", he: 'whereas מנגיד בין שתי עובדות.', v: ['whereas'], g: ['connectors-contrast'] }),
-  R({ id: 'rk-b2-wish-present', level: 'B2', cat: 'sentence-completion', d: 4, p: 'I wish I ___ taller — I can never reach the top shelf.', ans: 'were', wrong: [['am', "'Wish' about the present takes a past form: I wish I were/was…", 'wish על ההווה בא עם צורת עבר.', 'tense'], 'will be', 'have been'], en: "'Wish' + past form for an unreal present situation.", he: 'wish + צורת עבר למצב לא מציאותי בהווה.', g: ['wish'] }),
-  R({ id: 'rk-b2-infer-tone', level: 'B2', cat: 'reading-inference', d: 4, ctx: "Review: 'The phone looks stunning and the camera is excellent. Shame the battery barely survives until lunch.'", p: "What is the reviewer's main criticism?", ans: 'The battery life is too short.', wrong: ['The camera is poor.', 'The design is ugly.', 'The phone is too expensive.'], en: "'Barely survives until lunch' = the battery runs out quickly.", he: 'barely survives until lunch = הסוללה נגמרת מהר.', v: ['barely'] }),
-  R({ id: 'rk-b2-gr-correction', level: 'B2', cat: 'grammar-correction', d: 4, p: 'Choose the correct sentence for formal written English.', ans: 'Neither of the answers was correct.', wrong: [['Neither of the answers were correct.', "In formal English, 'neither of' takes a singular verb.", 'באנגלית רשמית neither of בא עם פועל ביחיד.', 'subject-verb-agreement'], 'Neither of the answer was correct.', 'Neither the answers was correct.'], en: "'Neither of + plural noun' + singular verb (formal).", he: 'neither of + רבים + פועל ביחיד (רשמי).', g: ['quantifiers'] }),
-  // Advanced (C1–C2)
-  R({ id: 'rk-c1-hardly-had', level: 'C1', cat: 'sentence-completion', d: 4, p: 'Hardly ___ arrived when the meeting started.', ans: 'had we', wrong: ['we had', 'did we', 'we have'], en: "Inversion after 'Hardly': Hardly had + subject + past participle ... when ...", he: 'היפוך אחרי Hardly: Hardly had + נושא + צורה שלישית ... when ...', g: ['inversion'] }),
-  R({ id: 'rk-c1-albeit', level: 'C1', cat: 'connector', d: 4, p: 'The results were positive, ___ limited in scope.', ans: 'albeit', wrong: ['whereas', 'hence', 'unless'], en: "'Albeit' (formal) = although, followed by an adjective or phrase.", he: 'albeit (רשמי) = אם כי.', v: ['albeit'], g: ['connectors-contrast'] }),
-  R({ id: 'rk-c1-meticulous', level: 'C1', cat: 'contextual-vocabulary', d: 4, p: 'She kept ___ records, noting every detail of the experiment.', ans: 'meticulous', wrong: ['haphazard', 'reluctant', 'superficial'], en: "'Meticulous' = extremely careful and precise.", he: 'meticulous = קפדני מאוד.', v: ['meticulous'] }),
-  R({ id: 'rk-c1-bring-about', level: 'C1', cat: 'phrasal-verb', d: 4, p: 'The new law ___ major changes in the industry.', ans: 'brought about', wrong: ['brought up', 'brought in for', 'brought round'], en: "'Bring about' = cause to happen.", he: 'bring about = לגרום, להביא לידי.', v: ['bring about'] }),
-  R({ id: 'rk-c1-were-to', level: 'C1', cat: 'sentence-completion', d: 4, p: 'If the company ___ collapse, thousands would lose their jobs.', ans: 'were to', wrong: ['would', 'will', 'has to'], en: "'Were to' + base verb expresses an unlikely future condition.", he: 'were to + פועל בסיס מבטא תנאי עתידי לא סביר.', g: ['second-conditional'] }),
-  R({ id: 'rk-c1-syn-ambiguous', level: 'C1', cat: 'synonym', d: 4, p: "Which phrase is closest in meaning to 'ambiguous'?", ans: 'open to more than one interpretation', wrong: ['completely clear', 'extremely large', 'strongly opposed'], en: "'Ambiguous' = having more than one possible meaning.", he: 'ambiguous = דו-משמעי.', v: ['ambiguous'] }),
-  R({ id: 'rk-c2-exacerbate', level: 'C2', cat: 'contextual-vocabulary', d: 4, p: 'Cutting the budget would only ___ the problem.', ans: 'exacerbate', wrong: ['alleviate', 'eradicate', 'exonerate'], en: "'Exacerbate' = make worse; 'alleviate' = make better.", he: 'exacerbate = להחמיר; alleviate = להקל.', v: ['exacerbate'] }),
-  R({ id: 'rk-c2-lest', level: 'C2', cat: 'connector', d: 5, p: 'He spoke quietly ___ he wake the baby.', ans: 'lest', wrong: ['unless', 'whereby', 'insofar'], en: "'Lest' (formal) = in order to avoid; followed by the base form.", he: 'lest (רשמי) = פן, כדי שלא.', v: ['lest'] }),
-  R({ id: 'rk-c2-on-no-account', level: 'C2', cat: 'sentence-completion', d: 4, p: 'On no account ___ this door be left open.', ans: 'should', wrong: ['is', 'it should', 'does'], en: "Inversion after 'On no account': On no account + auxiliary + subject.", he: 'היפוך אחרי On no account: פועל עזר + נושא.', g: ['inversion'] }),
-  R({ id: 'rk-c2-pragmatic', level: 'C2', cat: 'reading-inference', d: 5, ctx: "Asked whether the project would finish on time, the director replied, 'We remain cautiously optimistic,' and quickly changed the subject.", p: "What does the director's response most likely suggest?", ans: 'The project may well be delayed.', wrong: ['The project is ahead of schedule.', 'The director is certain of success.', 'The project has been cancelled.'], en: "'Cautiously optimistic' plus changing the subject signals doubt.", he: 'cautiously optimistic יחד עם החלפת נושא מרמזים על ספק.', v: ['cautiously optimistic'] }),
-  // Advanced (C1–C2) — expansion 2026-11-27
-  R({ id: 'rk-c1-not-only', level: 'C1', cat: 'sentence-completion', d: 4, p: 'Not only ___ the exam, but she also got the highest grade in the class.', ans: 'did she pass', wrong: [['she passed', "After 'Not only' at the start, invert with an auxiliary: did she pass.", 'אחרי Not only בתחילת משפט יש היפוך עם פועל עזר: did she pass.', 'word-order'], 'passed she', 'she did pass'], en: "Negative adverbial at the start → inversion.", he: 'תואר שלילי בתחילת המשפט ← היפוך.', g: ['inversion'] }),
-  R({ id: 'rk-c1-mixed-cond', level: 'C1', cat: 'sentence-completion', d: 5, p: 'If I had taken that job, I ___ in Berlin now.', ans: 'would be living', wrong: [['would have lived', "Past condition, present result: would + be/verb now.", 'תנאי בעבר ותוצאה בהווה: would + פועל בהווה.', 'conditional'], 'will live', 'had lived'], en: 'Mixed conditional: past condition → present result.', he: 'תנאי מעורב: תנאי בעבר ← תוצאה בהווה.', g: ['mixed-conditionals'] }),
-  R({ id: 'rk-c1-in-lieu', level: 'C1', cat: 'collocation', d: 5, p: 'Staff were given extra days off ___ of overtime pay.', ans: 'in lieu', wrong: ['in case', 'in charge', 'in touch'], en: "'In lieu of' (formal) = instead of.", he: 'in lieu of (רשמי) = במקום.', v: ['in lieu of'] }),
-  R({ id: 'rk-c1-whereby', level: 'C1', cat: 'connector', d: 5, p: 'They introduced a system ___ employees can work from home twice a week.', ans: 'whereby', wrong: ['whereas', 'wherever', 'whereupon'], en: "'Whereby' (formal) = by which; through which.", he: 'whereby (רשמי) = שבאמצעותו, שלפיו.', v: ['whereby'] }),
-  R({ id: 'rk-c1-heavily-reliant', level: 'C1', cat: 'collocation', d: 4, p: 'The region is ___ reliant on tourism.', ans: 'heavily', wrong: ['tightly', 'thickly', 'loudly'], en: "Collocation: heavily reliant / heavily dependent.", he: 'צירוף: heavily reliant — תלוי מאוד.', v: ['heavily reliant'] }),
-  R({ id: 'rk-c1-scrutiny', level: 'C1', cat: 'contextual-vocabulary', d: 4, p: "The minister's decision came under intense public ___.", ans: 'scrutiny', wrong: ['applause', 'routine', 'shelter'], en: "'Scrutiny' = close, critical examination.", he: 'scrutiny = בחינה מדוקדקת וביקורתית.', v: ['scrutiny'] }),
-  R({ id: 'rk-c1-syn-mitigate', level: 'C1', cat: 'synonym', d: 4, p: "Which word is closest in meaning to 'mitigate'?", ans: 'lessen', wrong: ['measure', 'ignore', 'imitate'], en: "'Mitigate' = make less severe.", he: 'mitigate = להקל, למתן.', v: ['mitigate'] }),
-  R({ id: 'rk-c1-it-is-high-time', level: 'C1', cat: 'sentence-completion', d: 4, p: "It's high time we ___ a decision.", ans: 'made', wrong: [['make', "'It's (high) time' + past form for the present.", "It's high time + צורת עבר על ההווה.", 'tense'], 'will make', 'have made'], en: "'It's high time' + past simple = this should happen now.", he: "It's high time + עבר = הגיע הזמן שזה יקרה עכשיו.", g: ['unreal-past'] }),
-  R({ id: 'rk-c1-infer-hedge', level: 'C1', cat: 'reading-inference', d: 5, ctx: "The report states that the new drug 'appears to reduce symptoms in some patients, although further trials are needed before firm conclusions can be drawn.'", p: "What is the report's position?", ans: 'The early results are promising but not yet conclusive.', wrong: ['The drug has been proven to cure the disease.', 'The drug has no effect at all.', 'The trials have been cancelled.'], en: "Hedging ('appears to', 'some patients', 'further trials are needed') signals caution.", he: 'ביטויי הסתייגות מסמנים זהירות — התוצאות מבטיחות אך לא סופיות.', v: ['hedging'] }),
-  R({ id: 'rk-c1-gr-correction', level: 'C1', cat: 'grammar-correction', d: 5, p: 'Choose the correct sentence.', ans: 'Having finished the report, she went home.', wrong: [['Having finished the report, the office was empty.', "The participle clause must describe the subject of the main clause (she, not the office).", 'צירוף הבינוני צריך להתייחס לנושא של המשפט הראשי.', 'word-order'], 'Finished the report, she went home.', 'Having finish the report, she went home.'], en: 'Participle clauses share the subject of the main clause.', he: 'לצירוף בינוני יש אותו נושא כמו למשפט הראשי.', g: ['participle-clauses'] }),
-  R({ id: 'rk-c2-were-it-not', level: 'C2', cat: 'sentence-completion', d: 5, p: '___ for her quick thinking, the accident would have been far worse.', ans: 'Had it not been', wrong: [['If it was not', "Formal inversion: Had it not been for…", 'היפוך רשמי: Had it not been for…', 'conditional'], 'Was it not', 'Unless it had been'], en: "'Had it not been for' = if it hadn't been for (third conditional, inverted).", he: 'Had it not been for = אלמלא (תנאי שלישי בהיפוך).', g: ['conditional-inversion'] }),
-  R({ id: 'rk-c2-ubiquitous', level: 'C2', cat: 'contextual-vocabulary', d: 5, p: 'Coffee shops are ___ in this city — there seems to be one on every corner.', ans: 'ubiquitous', wrong: ['obsolete', 'meticulous', 'precarious'], en: "'Ubiquitous' = present everywhere.", he: 'ubiquitous = נמצא בכל מקום.', v: ['ubiquitous'] }),
-  R({ id: 'rk-c2-syn-ostensibly', level: 'C2', cat: 'synonym', d: 5, p: "Which word is closest in meaning to 'ostensibly'?", ans: 'apparently', wrong: ['obviously', 'deliberately', 'occasionally'], en: "'Ostensibly' = as it appears or is claimed (but perhaps not really).", he: 'ostensibly = לכאורה.', v: ['ostensibly'] }),
-  R({ id: 'rk-c2-to-no-avail', level: 'C2', cat: 'collocation', d: 5, p: 'Rescuers searched through the night, but to no ___.', ans: 'avail', wrong: ['result', 'success', 'benefit'], en: "Fixed expression: to no avail = without success.", he: 'ביטוי קבוע: to no avail = ללא הועיל.', v: ['to no avail'] }),
-  R({ id: 'rk-c2-be-that-as', level: 'C2', cat: 'connector', d: 5, p: 'The plan is risky. ___, it may be our only option.', ans: 'Be that as it may', wrong: ['As it were', 'So to speak', 'By and large'], en: "'Be that as it may' = even so; nevertheless.", he: 'Be that as it may = ובכל זאת, יהיה אשר יהיה.', v: ['be that as it may'] }),
-  R({ id: 'rk-c2-subjunctive', level: 'C2', cat: 'sentence-completion', d: 5, p: 'The committee insisted that the report ___ published immediately.', ans: 'be', wrong: [['is', "After 'insist that' in formal English, use the base form (subjunctive).", 'אחרי insist that ברשמית משתמשים בצורת הבסיס.', 'tense'], 'was being', 'will be'], en: 'Mandative subjunctive: insist/demand that + base form.', he: 'סובג׳נקטיב: insist/demand that + צורת בסיס.', g: ['subjunctive'] }),
-  R({ id: 'rk-c2-come-to-terms', level: 'C2', cat: 'phrasal-verb', d: 5, p: 'It took him years to ___ the loss of his business.', ans: 'come to terms with', wrong: ['come up with', 'come down with', 'come round to'], en: "'Come to terms with' = gradually accept something painful.", he: 'come to terms with = להשלים עם.', v: ['come to terms with'] }),
-  R({ id: 'rk-c2-infer-irony', level: 'C2', cat: 'reading-inference', d: 5, ctx: "After the third delay of the day, a passenger muttered, 'Wonderful. Another relaxing afternoon at the station.'", p: "What is the passenger's attitude?", ans: 'Frustrated, expressed through irony', wrong: ['Genuinely pleased with the delay', 'Indifferent to the situation', 'Relieved to be resting'], en: "Praise in an obviously negative situation signals irony.", he: 'שבח במצב שלילי בעליל מסמן אירוניה.', v: ['irony'] }),
-  R({ id: 'rk-c2-gr-correction', level: 'C2', cat: 'grammar-correction', d: 5, p: 'Choose the correct sentence.', ans: 'Scarcely had the meeting begun when the alarm went off.', wrong: [['Scarcely the meeting had begun when the alarm went off.', "After 'Scarcely' at the start, invert: Scarcely had + subject + past participle.", 'אחרי Scarcely בתחילת המשפט יש היפוך: Scarcely had + נושא.', 'word-order'], 'Scarcely had the meeting began when the alarm went off.', 'Scarcely had the meeting begun than the alarm went off.'], en: "'Scarcely had … when …' with inversion and the past participle.", he: 'Scarcely had … when … עם היפוך וצורה שלישית.', g: ['inversion'] }),
-  R({ id: 'rk-c1-nuance', level: 'C1', cat: 'vocabulary', d: 4, p: "A 'nuance' is ___.", ans: 'a very small difference in meaning or feeling', wrong: ['a strong disagreement', 'a sudden loud noise', 'a type of formal letter'], en: "'Nuance' = a subtle difference.", he: 'nuance = ניואנס, הבדל דק.', v: ['nuance'] }),
-  // Sentence Master (server-only puzzles for ranked duels)
-  sb({ id: 'rk-sb-a1-cat', level: 'A1', d: 1, p: 'Describe the pet.', accept: ['My cat is very small.'], en: 'Subject + to be + adverb + adjective.', he: 'נושא + to be + תואר פועל + שם תואר.', g: ['verb-to-be'] }),
-  sb({ id: 'rk-sb-a1-swim', level: 'A1', d: 2, p: 'Say what they can do.', accept: ['They can swim very well.'], en: "'Can' + base verb; 'very well' comes at the end.", he: 'can + פועל בסיס; very well בסוף המשפט.', g: ['modal-can'] }),
-  sb({ id: 'rk-sb-a2-bus', level: 'A2', d: 2, p: 'Say how you got to school yesterday.', accept: ['I took the bus to school yesterday.', 'Yesterday I took the bus to school.'], en: 'Past Simple; time expressions at the end or the start.', he: 'עבר פשוט; ביטוי זמן בסוף או בהתחלה.', g: ['past-simple-irregular', 'word-order-time'] }),
-  sb({ id: 'rk-sb-a2-never', level: 'A2', d: 2, p: 'Describe a habit.', accept: ['She never drinks coffee at night.'], en: "Frequency adverbs go before the main verb.", he: 'תארי תדירות באים לפני הפועל העיקרי.', g: ['adverbs-of-frequency'] }),
-  sb({ id: 'rk-sb-a2-going', level: 'A2', d: 3, p: 'Talk about a plan.', accept: ['We are going to visit Eilat next month.', 'Next month we are going to visit Eilat.'], en: "'Be going to' for plans.", he: 'be going to לתוכניות.', g: ['future-going-to'] }),
-  sb({ id: 'rk-sb-b1-since', level: 'B1', d: 3, p: 'Say how long they have known each other.', accept: ['They have known each other since 2015.'], en: "Present Perfect with 'since' + a point in time.", he: 'Present Perfect עם since ונקודת זמן.', g: ['present-perfect-since-for'] }),
-  sb({ id: 'rk-sb-b1-who', level: 'B1', d: 3, p: 'Describe the teacher.', accept: ['The teacher who helped me lives nearby.'], en: 'A defining relative clause follows the noun it describes.', he: 'משפט זיקה מגדיר בא אחרי שם העצם שהוא מתאר.', g: ['relative-clauses-defining'] }),
-  sb({ id: 'rk-sb-b1-unless', level: 'B1', d: 3, p: 'Give a warning.', accept: ["You won't pass unless you study."], en: "'Unless' = 'if not'.", he: 'unless = אלא אם כן.', g: ['first-conditional'] }),
-  sb({ id: 'rk-sb-b2-passive', level: 'B2', d: 4, p: 'Report the news in the passive.', accept: ['The new bridge will be opened next week.', 'Next week the new bridge will be opened.'], en: 'Future passive: will be + past participle.', he: 'סביל בעתיד: will be + צורה שלישית.', g: ['passive-future'] }),
-  sb({ id: 'rk-sb-b2-wish', level: 'B2', d: 4, p: 'Express a regret about the past.', accept: ['I wish I had studied harder.'], en: "'Wish' + Past Perfect for regrets about the past.", he: 'wish + Past Perfect לחרטה על העבר.', g: ['wish'] }),
-  sb({ id: 'rk-sb-c1-rarely', level: 'C1', d: 4, p: 'Emphasise how unusual it is.', accept: ['Rarely have I seen such talent.'], en: "Inversion after 'Rarely'.", he: 'היפוך אחרי Rarely.', g: ['inversion'] }),
-  sb({ id: 'rk-sb-c1-should', level: 'C1', d: 5, p: 'Formal conditional.', accept: ['Should you need help, please call us.'], en: "'Should' inversion replaces 'If you need help'.", he: 'היפוך עם Should במקום If you need help.', g: ['conditional-inversion'] }),
-  sb({ id: 'rk-sb-c1-what', level: 'C1', d: 4, p: 'Emphasise what surprised you.', accept: ['What surprised me was his honesty.'], en: "Cleft sentence: What + clause + was + focus.", he: 'משפט שסע: What + משפט + was + המוקד.', g: ['cleft-sentences'] }),
-  sb({ id: 'rk-sb-c2-only', level: 'C2', d: 5, p: 'Emphasise when they understood.', accept: ['Only later did they realise the mistake.'], en: "Inversion after 'Only later'.", he: 'היפוך אחרי Only later.', g: ['inversion'] }),
-  sb({ id: 'rk-sb-c2-hardly', level: 'C2', d: 5, p: 'Two events in quick succession.', accept: ['Hardly had we arrived when it started raining.'], en: "Hardly had + subject + past participle ... when ...", he: 'Hardly had + נושא + צורה שלישית ... when ...', g: ['inversion'] }),
-  sb({ id: 'rk-sb-a1-likes', level: 'A1', d: 1, p: 'Say what he likes.', accept: ['He likes playing football.'], en: "He + likes + -ing.", he: 'He + likes + פועל עם ing.', g: ['present-simple-3rd-person'] }),
-  sb({ id: 'rk-sb-a2-taller', level: 'A2', d: 2, p: 'Compare the two brothers.', accept: ['Ben is taller than his brother.'], en: 'Comparative + than.', he: 'דרגת יתרון + than.', g: ['comparatives'] }),
-  sb({ id: 'rk-sb-b1-been', level: 'B1', d: 3, p: 'Ask about experience.', accept: ['Have you ever been to London?'], en: "Present Perfect question: Have you ever + past participle?", he: 'שאלה ב-Present Perfect: Have you ever + צורה שלישית?', g: ['present-perfect-experience'] }),
-  sb({ id: 'rk-sb-b2-asked', level: 'B2', d: 4, p: 'Report the question.', accept: ['She asked me where I lived.'], en: 'Reported questions use statement word order.', he: 'בשאלה מדווחת סדר המילים כמו במשפט חיווי.', g: ['reported-speech'] }),
-  sb({ id: 'rk-sb-c1-had-known', level: 'C1', d: 5, p: 'Regret about the past (formal).', accept: ['Had I known, I would have helped.'], en: "Inverted third conditional: Had I known…", he: 'תנאי שלישי בהיפוך: Had I known…', g: ['conditional-inversion'] }),
-  sb({ id: 'rk-sb-c2-little', level: 'C2', d: 5, p: 'Emphasise what they did not realise.', accept: ['Little did they know what was coming.'], en: "Inversion after 'Little'.", he: 'היפוך אחרי Little.', g: ['inversion'] }),
-];
+export interface RankedPool {
+  source: RankedPoolSource;
+  items: ContentItem[];
+  /** Human-readable notes (never contains item content). */
+  notes: string[];
+}
 
-export const RANKED_ITEMS: ContentItem[] = RANKED_RAW_ITEMS.map((i) => contentItemSchema.parse(i));
+const norm = (s: string) => s.toLowerCase().replace(/[^a-z]+/g, ' ').trim();
+
+/** Validates a candidate private pool: schema, unique ids, and no overlap with any public item. */
+export function parseRankedPool(raw: unknown): { items: ContentItem[]; errors: string[] } {
+  const errors: string[] = [];
+  if (!Array.isArray(raw)) return { items: [], errors: ['the pool must be a JSON array of content items'] };
+  const items: ContentItem[] = [];
+  const ids = new Set<string>();
+  const publicIds = new Set(CONTENT_ITEMS.map((i) => i.id));
+  const publicPrompts = new Set(CONTENT_ITEMS.map((i) => `${norm(i.prompt)}|${norm(i.context ?? '')}`));
+  const sampleIds = new Set(DEV_RANKED_SAMPLE.map((i) => i.id));
+  const samplePrompts = new Set(DEV_RANKED_SAMPLE.map((i) => `${norm(i.prompt)}|${norm(i.context ?? '')}`));
+  raw.forEach((entry, n) => {
+    const parsed = contentItemSchema.safeParse(entry);
+    if (!parsed.success) {
+      errors.push(`item #${n}: ${parsed.error.issues[0]?.path.join('.')} ${parsed.error.issues[0]?.message}`);
+      return;
+    }
+    const item = parsed.data;
+    const key = `${norm(item.prompt)}|${norm(item.context ?? '')}`;
+    if (ids.has(item.id)) errors.push(`${item.id}: duplicate id`);
+    if (publicIds.has(item.id) || publicPrompts.has(key)) errors.push(`${item.id}: overlaps the public content bank`);
+    // The committed sample is public too, so a private pool must not reuse it.
+    if (sampleIds.has(item.id) || samplePrompts.has(key)) errors.push(`${item.id}: overlaps the public development sample`);
+    ids.add(item.id);
+    items.push(item);
+  });
+  return { items, errors };
+}
+
+/** Ranked needs enough option items per bracket for a full match. */
+export function poolCoverage(items: ContentItem[]): Record<string, number> {
+  return Object.fromEntries(BRACKETS.map((b) => [b, items.filter((i) => i.grading.mode === 'option' && BRACKET_LEVELS[b].includes(i.level)).length]));
+}
+
+export async function loadRankedPool(opts: {
+  production: boolean;
+  file?: string | undefined;
+  allowPublicSample?: boolean | undefined;
+  supabase?: { url: string; serviceRoleKey: string } | undefined;
+}): Promise<RankedPool> {
+  const notes: string[] = [];
+  if (opts.file) {
+    try {
+      const { items, errors } = parseRankedPool(JSON.parse(readFileSync(opts.file, 'utf8')));
+      if (errors.length === 0 && items.length > 0) return { source: 'private-file', items, notes: [`loaded ${items.length} items from RANKED_POOL_FILE`] };
+      notes.push(`RANKED_POOL_FILE rejected: ${errors.slice(0, 5).join('; ')}${errors.length > 5 ? ` (+${errors.length - 5} more)` : ''}`);
+    } catch (e) {
+      notes.push(`RANKED_POOL_FILE could not be read: ${(e as Error).message}`);
+    }
+  }
+  if (opts.supabase) {
+    try {
+      const db = createClient(opts.supabase.url, opts.supabase.serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } });
+      const { data, error } = await db.from('content_items').select('id, current_version, content_versions(version, payload)').eq('is_ranked_only', true);
+      if (error) throw new Error(error.message);
+      type Row = { current_version: number; content_versions: { version: number; payload: unknown }[] };
+      const payloads = ((data ?? []) as Row[]).map((r) => r.content_versions.find((v) => v.version === r.current_version)?.payload).filter(Boolean);
+      const { items, errors } = parseRankedPool(payloads);
+      if (errors.length === 0 && items.length > 0) return { source: 'supabase', items, notes: [`loaded ${items.length} items from Supabase`] };
+      notes.push(items.length === 0 && errors.length === 0 ? 'Supabase has no ranked-only items' : `Supabase pool rejected: ${errors.slice(0, 5).join('; ')}`);
+    } catch (e) {
+      notes.push(`Supabase ranked pool unavailable: ${(e as Error).message}`);
+    }
+  }
+  const allowSample = opts.allowPublicSample ?? !opts.production;
+  if (allowSample) {
+    notes.push('using the PUBLIC development sample — not suitable for real ranked play');
+    return { source: 'public-sample', items: DEV_RANKED_SAMPLE, notes };
+  }
+  notes.push('no private ranked pool configured — the ranked queue is disabled');
+  return { source: 'disabled', items: [], notes };
+}

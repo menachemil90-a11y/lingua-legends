@@ -5,8 +5,8 @@ import { loadConfig } from '../src/config';
 import { startServer, type RunningServer } from '../src/app';
 import { MemoryStore } from '../src/store/memoryStore';
 
-export async function testServer(): Promise<RunningServer> {
-  const cfg = loadConfig({ NODE_ENV: 'test', SERVER_SECRET: 'test-secret-'.padEnd(48, 'x'), ALLOWED_ORIGINS: 'http://localhost:5173', READY_TIMEOUT_MS: '4000', HOST: '127.0.0.1', MAX_CONNECTIONS_PER_IP: '200', GUEST_TOKENS_PER_MINUTE: '600' } as NodeJS.ProcessEnv);
+export async function testServer(overrides: Record<string, string> = {}): Promise<RunningServer> {
+  const cfg = loadConfig({ NODE_ENV: 'test', SERVER_SECRET: 'test-secret-'.padEnd(48, 'x'), ALLOWED_ORIGINS: 'http://localhost:5173', READY_TIMEOUT_MS: '4000', HOST: '127.0.0.1', MAX_CONNECTIONS_PER_IP: '200', GUEST_TOKENS_PER_MINUTE: '600', ...overrides } as NodeJS.ProcessEnv);
   return startServer(cfg, new MemoryStore(null), 0);
 }
 

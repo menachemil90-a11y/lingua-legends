@@ -555,6 +555,7 @@ export const en = {
   'error.network': 'Network unavailable.',
   'error.roomNotFound': 'Room not found or expired.',
   'error.roomFull': 'That room is already full.',
+  'error.rankedUnavailable': 'Ranked play is not available on this server yet. Casual matches and private rooms still work.',
 
   'offline.notice': 'You are offline. Offline modes still work.',
 } as const;

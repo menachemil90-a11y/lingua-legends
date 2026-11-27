@@ -52,7 +52,8 @@ create a private room in one and open the invite link in the other.
 | `pnpm typecheck` | `tsc` in every package |
 | `pnpm test` | Vitest: rules/hosts, learning engine, content, i18n, server integration tests with real WebSocket clients |
 | `pnpm test:e2e` | Playwright: real browser + real server, including two independent browsers playing online |
-| `pnpm content:validate` | Validates the public content bank and the server-only ranked pool |
+| `pnpm content:validate` | Validates the public content bank and the public ranked development sample |
+| `pnpm ranked:validate <file>` / `ranked:export-sql` | Validate a PRIVATE ranked pool / export it for Supabase (never commit it — see HANDOFF §11) |
 | `pnpm content:export` | Regenerates `supabase/seed.sql` (public items only) |
 | `pnpm db:test` | Applies migrations to a throw-away local PostgreSQL and runs the RLS test suite |
 | `pnpm build` | Production builds (`apps/web/dist`, `apps/server/dist`) |
@@ -76,7 +77,8 @@ All game rules live in `packages/shared` as *hosts* (`WordBattleHost`, `GrammarR
 The same host code runs **on the server** for online matches and **in the browser** for offline bot practice,
 behind one `MatchTransport` interface, so the UI only ever renders server-style events. Clients send intents
 (`ANSWER_SUBMIT`, `ABILITY_USE`…); hosts decide correctness, damage, scores and winners, and answer keys are never
-sent before a round ends. Ranked matches draw questions from a server-only pool that is not in the client bundle.
+sent before a round ends. Ranked matches draw questions from a server-only pool that is never in the client bundle; because this
+repository is public, production loads that pool from a private file or Supabase (HANDOFF §11) and refuses ranked play without one.
 Details: `docs/ARCHITECTURE.md`.
 
 ## Deployment
@@ -91,7 +93,7 @@ WebSockets (Render / Koyeb / any VPS) + Supabase Free. Exact steps and environme
 - The exam structure in Bagrut Academy is a configurable draft pending verification against the official booklet.
 - All content is original but AI-drafted (`reviewStatus: 'ai-drafted'`) and must be reviewed by a teacher.
 - No AI writing feedback, no speech recognition (clearly labelled in the UI).
-- Content volume is still small (228 public + 120 server-only ranked items) and must grow before release.
+- Content volume is still small (228 public items; a 120-item public ranked *development sample*; a 99-item private ranked pool delivered outside the repository) and must grow before release.
 - Online English Conquest and co-op Escape Room are private-room only and unranked.
 - Offline (vs bot) rewards are stored on the device only; only online-match rewards are server-verified.
 

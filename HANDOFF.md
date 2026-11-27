@@ -28,6 +28,7 @@ settings or in a local `.env` that is never committed.
 | Multiplayer hosting | 🟡 | `apps/server` builds to `dist/index.js` (Node 20+) |
 | AI writing feedback / conversation | ⛔ | Provider interfaces documented in `docs/ARCHITECTURE.md`; UI clearly says "not available" |
 | Speech recognition / pronunciation | ⛔ | Not faked; COBE uses a timer + self-check. Browser text-to-speech (free, on-device) is used for listening tasks |
+| Private ranked question pool | 🟡 | **Required before real ranked play.** The repository is public, so the committed pool is a public development sample. Production must load a private pool (section 11). Without it, the ranked queue is disabled automatically |
 | Bagrut exam structure verification | 🟡 | The official 2025 booklet could not be downloaded from the development environment (host blocked). See section 7 |
 
 ---
@@ -147,3 +148,30 @@ Claude Code pushes to its working branch only. Creating releases, enabling GitHu
 ## 10. Privacy and legal (people)
 
 The game may be used by minors. Before public launch with accounts: a privacy policy, terms of use, parental-consent review where required, a data-retention policy for `learning_events`, and a process that runs `process_account_deletion` for rows in `account_deletion_requests`. This needs a qualified human/legal review.
+
+## 11. Private ranked question pool (security — required for ranked play)
+
+1. **Why:** ranked answer keys must never be publicly readable. This GitHub repository is **public**, so every item committed
+   to it — including the 120 items in `apps/server/src/content/devRankedSample.ts` and anything in git history — is public.
+   Those items are kept only as a *development sample* for local play and tests.
+2. **What the server does now:** at startup it loads the ranked pool from, in order: `RANKED_POOL_FILE` (a private JSON
+   file on the server host) → Supabase rows with `is_ranked_only = true` (when `STORE=supabase`) → the public sample
+   (only outside production, or with `ALLOW_PUBLIC_RANKED_SAMPLE=true`). In production with no private pool, ranked
+   queues answer `RANKED_UNAVAILABLE` and the app tells players that casual and private play still work.
+   `GET /health` reports `ranked: { source, size }` (never content).
+3. **The private pool:** a starter private pool (new items, not in the repository) was delivered to the owner as a file
+   in the chat, named `ranked-pool.private.json`. Keep it out of GitHub. Teachers can extend it; new items must not
+   repeat any public prompt (the validator checks this).
+4. **Option A — file on the server host (simplest, free):**
+   - Upload `ranked-pool.private.json` to the host as a *secret file* (Render: "Secret Files"; Koyeb/VPS: a file outside the repo).
+   - Set `RANKED_POOL_FILE=/etc/secrets/ranked-pool.private.json` (use the path your host gives).
+   - Check `GET /health` → `ranked.source` must be `private-file`.
+5. **Option B — Supabase (when STORE=supabase):**
+   - On a computer with the repository: `pnpm ranked:validate ranked-pool.private.json` then
+     `pnpm ranked:export-sql ranked-pool.private.json ranked.private.sql`.
+   - Paste `ranked.private.sql` into the Supabase SQL editor, run it, then delete the file.
+   - RLS already hides `is_ranked_only` items from `anon`/`authenticated` (covered by `pnpm db:test`).
+   - Check `GET /health` → `ranked.source` must be `supabase`.
+6. **Never:** commit the private pool, paste it into an issue/PR, put it in a `VITE_*` variable or the frontend host,
+   or set `ALLOW_PUBLIC_RANKED_SAMPLE=true` in production.
+7. **Rotation:** if the private pool ever leaks, replace the items (new prompts), redeploy, and consider resetting the season.

@@ -1,6 +1,6 @@
 /* Validates the public content bank and the server-only ranked pool. */
 import { RAW_ITEMS, RAW_PASSAGES, validateContent } from '../packages/content/src/index';
-import { RANKED_RAW_ITEMS } from '../apps/server/src/content/rankedPool';
+import { DEV_RANKED_SAMPLE_RAW as RANKED_RAW_ITEMS } from '../apps/server/src/content/devRankedSample';
 
 const pub = validateContent(RAW_ITEMS, RAW_PASSAGES);
 // The ranked pool is small and does not have to meet the public minimum targets.

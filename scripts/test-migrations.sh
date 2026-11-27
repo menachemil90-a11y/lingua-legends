@@ -23,3 +23,28 @@ done
 echo "Applying seed.sql (public content bank)"
 "${PSQL[@]}" -d lingua_test -f "$ROOT/supabase/seed.sql" >/dev/null
 "${PSQL[@]}" -d lingua_test -t -c "select count(*) || ' public content items seeded' from public.content_items"
+# Optional: verify a PRIVATE ranked pool export (never committed) loads and stays hidden by RLS.
+#   RANKED_SQL=private/ranked.private.sql pnpm db:test
+if [ -n "${RANKED_SQL:-}" ]; then
+  echo "Applying private ranked pool from \$RANKED_SQL"
+  "${PSQL[@]}" -d lingua_test -f "$RANKED_SQL" >/dev/null
+  "${PSQL[@]}" -d lingua_test <<'SQL'
+do $$
+declare n int; v int;
+begin
+  select count(*) into n from public.content_items where is_ranked_only;
+  if n = 0 then raise exception 'TEST FAILED: no ranked-only items were loaded'; end if;
+  set local role anon;
+  select count(*) into v from public.content_items where is_ranked_only;
+  if v <> 0 then raise exception 'TEST FAILED: anon can see % ranked items', v; end if;
+  select count(*) into v from public.content_versions cv join public.content_items ci on ci.id = cv.item_id where ci.is_ranked_only;
+  if v <> 0 then raise exception 'TEST FAILED: anon can read ranked answer keys'; end if;
+  reset role;
+  set local role authenticated;
+  select count(*) into v from public.content_versions where item_id like 'pr-%';
+  if v <> 0 then raise exception 'TEST FAILED: authenticated users can read ranked answer keys'; end if;
+  reset role;
+  raise notice 'PRIVATE RANKED POOL: % items loaded and hidden from anon/authenticated', n;
+end $$;
+SQL
+fi

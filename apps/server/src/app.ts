@@ -26,6 +26,8 @@ import { MatchManager } from './matches';
 import { Matchmaker, Rooms } from './lobby';
 import { Friends } from './friends';
 import type { ServerStore } from './store/types';
+import { loadRankedPool } from './content/rankedPool';
+import { rankedAvailable, rankedPoolInfo, setRankedPool } from './content/sources';
 
 export const SERVER_VERSION = '0.1.0';
 
@@ -76,6 +78,14 @@ function clientIp(req: IncomingMessage): string {
 }
 
 export async function startServer(cfg: Config, store: ServerStore, port = cfg.PORT): Promise<RunningServer> {
+  const pool = await loadRankedPool({
+    production: cfg.NODE_ENV === 'production',
+    file: cfg.RANKED_POOL_FILE,
+    ...(cfg.ALLOW_PUBLIC_RANKED_SAMPLE ? { allowPublicSample: cfg.ALLOW_PUBLIC_RANKED_SAMPLE === 'true' } : {}),
+    ...(cfg.STORE === 'supabase' && cfg.SUPABASE_URL && cfg.SUPABASE_SERVICE_ROLE_KEY ? { supabase: { url: cfg.SUPABASE_URL, serviceRoleKey: cfg.SUPABASE_SERVICE_ROLE_KEY } } : {}),
+  });
+  setRankedPool(pool);
+  if (cfg.NODE_ENV !== 'test') console.log(`[ranked] source=${pool.source} items=${pool.items.length} — ${pool.notes.join(' | ')}`);
   const auth = new Auth(cfg);
   const hub = new Hub();
   const matches = new MatchManager(hub, store, { readyTimeoutMs: cfg.READY_TIMEOUT_MS });
@@ -111,7 +121,7 @@ export async function startServer(cfg: Config, store: ServerStore, port = cfg.PO
     const url = new URL(req.url ?? '/', 'http://localhost');
     try {
       if (req.method === 'GET' && url.pathname === '/health') {
-        return json(res, 200, { ok: true, version: SERVER_VERSION, supabase: auth.supabaseEnabled, online: hub.size, liveMatches: matches.liveCount }, corsOrigin);
+        return json(res, 200, { ok: true, version: SERVER_VERSION, supabase: auth.supabaseEnabled, online: hub.size, liveMatches: matches.liveCount, ranked: rankedPoolInfo() }, corsOrigin);
       }
       if (req.method === 'POST' && url.pathname === '/api/auth/guest') {
         if (!guestLimiter.take(ip)) return json(res, 429, { error: 'rate limited' }, corsOrigin);
@@ -304,6 +314,7 @@ export async function startServer(cfg: Config, store: ServerStore, port = cfg.PO
         return hub.sendSession(s, { type: 'PONG', clientTime: msg.clientTime, serverTime: Date.now() });
       case 'QUEUE_JOIN':
         if (matches.isBusy(playerId)) return fail(ERROR_CODES.INVALID_STATE, 'Already in a match');
+        if (msg.queue === 'ranked' && !rankedAvailable(msg.mode, msg.bracket)) return fail(ERROR_CODES.RANKED_UNAVAILABLE, 'Ranked play is not available on this server yet');
         rooms.leave(playerId);
         return matchmaker.join(playerId, msg.mode, msg.queue, msg.bracket);
       case 'QUEUE_LEAVE':

@@ -1,7 +1,23 @@
 /** Question sources per mode/queue. Ranked matches use the server-only pool. */
 import { BRACKET_LEVELS, shuffle, type Bracket, type ContentItem, type OnlineModeId, type QuestionSource, type RandomFn } from '@lingua/shared';
 import { grammarRacePool, sentencePool, wordBattlePool } from '@lingua/content';
-import { RANKED_ITEMS } from './rankedPool';
+import type { RankedPool } from './rankedPool';
+
+let RANKED_ITEMS: ContentItem[] = [];
+let RANKED_SOURCE: RankedPool['source'] = 'disabled';
+
+/** Installs the ranked pool chosen at startup (see rankedPool.ts). */
+export function setRankedPool(pool: RankedPool): void {
+  RANKED_ITEMS = pool.items;
+  RANKED_SOURCE = pool.source;
+}
+export function rankedPoolInfo(): { source: RankedPool['source']; size: number } {
+  return { source: RANKED_SOURCE, size: RANKED_ITEMS.length };
+}
+/** Ranked play needs a full match worth of server-only items in that bracket. */
+export function rankedAvailable(mode: OnlineModeId, bracket: Bracket): boolean {
+  return RANKED_ITEMS.length > 0 && rankedPool(mode, bracket, Math.random).length >= (mode === 'sentence-master' ? 3 : 10);
+}
 
 const GRAMMAR_CATS = new Set(['sentence-completion', 'grammar-correction', 'grammar', 'connector']);
 

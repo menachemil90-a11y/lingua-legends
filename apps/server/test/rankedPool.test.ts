@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { BRACKET_LEVELS, BRACKETS, gradeAnswer, prepareRoundQuestion, seededRandom, tokenize } from '@lingua/shared';
 import { CONTENT_ITEMS } from '@lingua/content';
-import { RANKED_ITEMS } from '../src/content/rankedPool';
+import { DEV_RANKED_SAMPLE as RANKED_ITEMS } from '../src/content/devRankedSample';
 
-describe('server-only ranked pool', () => {
+describe('ranked pool development sample (public)', () => {
   it('every option item grades its own key as correct and every distractor as wrong', () => {
     for (const item of RANKED_ITEMS.filter((i) => i.grading.mode === 'option')) {
       const rq = prepareRoundQuestion(item, 'r', seededRandom(3));
