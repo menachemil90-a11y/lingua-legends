@@ -138,7 +138,7 @@ The official booklet <https://meyda.education.gov.il/files/pop/0files/english/Ch
 
 ## 8. Content review (people, not a service)
 
-All 180 public items and 54 ranked items are marked `reviewStatus: 'ai-drafted'`. Before a public release an English teacher should review answers, distractors, explanations and Hebrew translations, then update `reviewStatus` to `reviewed`/`approved`. `pnpm content:validate` checks structure but cannot judge pedagogy.
+All 216 public items, 120 ranked items and the Real Life dialogues are marked `reviewStatus: 'ai-drafted'`. Before a public release an English teacher should review answers, distractors, explanations and Hebrew translations, then update `reviewStatus` to `reviewed`/`approved`. `pnpm content:validate` checks structure but cannot judge pedagogy.
 
 ## 9. GitHub permissions
 

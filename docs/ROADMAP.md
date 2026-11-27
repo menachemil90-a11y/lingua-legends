@@ -56,6 +56,7 @@ Status as of development session 2 (2026-11-27).
 - [ ] Expanded C1/C2 curriculum
 
 ## Ongoing
+- [x] Ranked pool expanded from 54 to 120 server-only items, with a test that it never overlaps the public bank
 - [ ] Teacher review of all content (`reviewStatus`), grow the bank substantially (quality over quantity)
 - [ ] Tournaments, seasons rollover tooling
 - [ ] Android packaging (TWA/Capacitor) from the PWA
