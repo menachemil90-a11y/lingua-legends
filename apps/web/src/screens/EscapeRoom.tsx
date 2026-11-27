@@ -1,6 +1,6 @@
 /** Escape Room (solo): read signs, notes and messages in English to open every lock. */
 import { useEffect, useMemo, useState } from 'react';
-import { checkEscapeAnswer, ESCAPE_ROOMS, type EscapePuzzle, type EscapeRoom as Room } from '@lingua/content';
+import { bracketForEscapeRoom, checkEscapeAnswer, ESCAPE_ROOMS, type EscapeAnswer, type EscapePuzzle, type EscapeRoom as Room } from '@lingua/content';
 import { shuffle } from '@lingua/shared';
 import type { LearningEvent } from '@lingua/learning';
 import { HOTSPOTS, RoomScene } from '../art/rooms';
@@ -14,7 +14,7 @@ import { uid } from '../state/storage';
 import { Explanation } from '../games/shared/components';
 import { TileBoard } from '../games/sentenceMaster/TileBoard';
 
-const OBJECT_ICON: Record<EscapePuzzle['object'], IconName> = {
+export const OBJECT_ICON: Record<EscapePuzzle['object'], IconName> = {
   note: 'scroll',
   clock: 'clock',
   bookshelf: 'book',
@@ -27,7 +27,7 @@ const OBJECT_ICON: Record<EscapePuzzle['object'], IconName> = {
   radio: 'volume',
 };
 
-function puzzleEvent(room: Room, p: EscapePuzzle, correct: boolean, attempt: number, hintUsed: boolean): LearningEvent {
+export function puzzleEvent(room: Room, p: EscapePuzzle, correct: boolean, attempt: number, hintUsed: boolean): LearningEvent {
   return {
     id: uid('ev_'),
     playerId: '',
@@ -46,33 +46,32 @@ function puzzleEvent(room: Room, p: EscapePuzzle, correct: boolean, attempt: num
   };
 }
 
-function PuzzlePanel({ room, puzzle, onSolved }: { room: Room; puzzle: EscapePuzzle; onSolved: (attempts: number, hint: boolean) => void }) {
+/** Presentational puzzle UI shared by solo play and the online co-op room. */
+export function PuzzleView({
+  puzzle,
+  solved,
+  hintShown,
+  wrongSignal,
+  onSubmit,
+  onHint,
+  solvedNote,
+}: {
+  puzzle: EscapePuzzle;
+  solved: boolean;
+  hintShown: boolean;
+  /** Increments on every wrong attempt (drives the "try again" notice). */
+  wrongSignal: number;
+  onSubmit: (answer: EscapeAnswer) => void;
+  onHint: () => void;
+  solvedNote?: React.ReactNode;
+}) {
   const t = useT();
-  const recordLearning = usePlayer((s) => s.recordLearning);
-  const [attempts, setAttempts] = useState(0);
-  const [hint, setHint] = useState(false);
-  const [solved, setSolved] = useState(false);
-  const [wrong, setWrong] = useState(0);
   const [text, setText] = useState('');
   const [order, setOrder] = useState<string[]>([]);
   const choiceOrder = useMemo(() => (puzzle.kind === 'choice' ? shuffle(puzzle.options.map((_, i) => i), Math.random) : []), [puzzle]);
   const stepTiles = useMemo(() => (puzzle.kind === 'order' ? shuffle(puzzle.steps.map((s, i) => ({ id: `s${i}`, text: s })), Math.random) : []), [puzzle]);
-
-  const submit = (answer: Parameters<typeof checkEscapeAnswer>[1]) => {
-    if (solved) return;
-    const ok = checkEscapeAnswer(puzzle, answer);
-    const n = attempts + 1;
-    setAttempts(n);
-    if (ok) {
-      setSolved(true);
-      sfx.play('correct');
-      recordLearning([puzzleEvent(room, puzzle, n === 1 && !hint, n, hint)]);
-      onSolved(n, hint);
-    } else {
-      sfx.play('wrong');
-      setWrong((w) => w + 1);
-      if (n === 1) recordLearning([puzzleEvent(room, puzzle, false, 1, hint)]);
-    }
+  const submit = (a: EscapeAnswer) => {
+    if (!solved) onSubmit(a);
   };
 
   return (
@@ -102,10 +101,10 @@ function PuzzlePanel({ room, puzzle, onSolved }: { room: Room; puzzle: EscapePuz
           className="row"
           onSubmit={(e) => {
             e.preventDefault();
-            if (text.trim()) submit({ kind: 'text', text });
+            if (text.trim()) submit({ kind: 'text', text: text.slice(0, 80) });
           }}
         >
-          <input className="input en escape-input" dir="ltr" lang="en" value={text} onChange={(e) => setText(e.target.value)} disabled={solved} aria-label={puzzle.question} autoComplete="off" autoCapitalize="none" spellCheck={false} />
+          <input className="input en escape-input" dir="ltr" lang="en" value={text} maxLength={80} onChange={(e) => setText(e.target.value)} disabled={solved} aria-label={puzzle.question} autoComplete="off" autoCapitalize="none" spellCheck={false} />
           <Button type="submit" variant="secondary" icon="check" disabled={solved || !text.trim()}>
             {t('common.check')}
           </Button>
@@ -124,28 +123,56 @@ function PuzzlePanel({ room, puzzle, onSolved }: { room: Room; puzzle: EscapePuz
           </div>
         </>
       )}
-      {wrong > 0 && !solved && (
-        <p key={wrong} className="sm__retry" role="status">
+      {wrongSignal > 0 && !solved && (
+        <p key={wrongSignal} className="sm__retry" role="status">
           <Icon name="x" /> {t('match.wrong')}
         </p>
       )}
       {!solved && (
-        <Button size="sm" variant="ghost" icon="info" onClick={() => setHint(true)} disabled={hint}>
+        <Button size="sm" variant="ghost" icon="info" onClick={onHint} disabled={hintShown}>
           {t('common.hint')}
         </Button>
       )}
-      {hint && !solved && <Explanation exp={puzzle.hint} compact />}
+      {hintShown && !solved && <Explanation exp={puzzle.hint} compact />}
       {solved && (
         <div className="feedback feedback--good" role="status">
           <div className="feedback__head">
             <Icon name="check" />
             <strong>{t('escape.unlocked')}</strong>
+            {solvedNote}
           </div>
           <Explanation exp={puzzle.explanation} />
         </div>
       )}
     </div>
   );
+}
+
+function PuzzlePanel({ room, puzzle, onSolved }: { room: Room; puzzle: EscapePuzzle; onSolved: (attempts: number, hint: boolean) => void }) {
+  const recordLearning = usePlayer((s) => s.recordLearning);
+  const [attempts, setAttempts] = useState(0);
+  const [hint, setHint] = useState(false);
+  const [solved, setSolved] = useState(false);
+  const [wrong, setWrong] = useState(0);
+
+  const submit = (answer: EscapeAnswer) => {
+    if (solved) return;
+    const ok = checkEscapeAnswer(puzzle, answer);
+    const n = attempts + 1;
+    setAttempts(n);
+    if (ok) {
+      setSolved(true);
+      sfx.play('correct');
+      recordLearning([puzzleEvent(room, puzzle, n === 1 && !hint, n, hint)]);
+      onSolved(n, hint);
+    } else {
+      sfx.play('wrong');
+      setWrong((w) => w + 1);
+      if (n === 1) recordLearning([puzzleEvent(room, puzzle, false, 1, hint)]);
+    }
+  };
+
+  return <PuzzleView puzzle={puzzle} solved={solved} hintShown={hint} wrongSignal={wrong} onSubmit={submit} onHint={() => setHint(true)} />;
 }
 
 function RoomPlay({ room }: { room: Room }) {
@@ -327,7 +354,16 @@ export function EscapeRoomScreen({ roomId }: { roomId?: string }) {
           </button>
         ))}
       </div>
-      <p className="tiny muted">{t('escape.coopNote')}</p>
+      <Panel title={t('escape.playTogether')}>
+        <p className="small muted">{t('escape.coopNote')}</p>
+        <div className="row">
+          {ESCAPE_ROOMS.map((r) => (
+            <Button key={r.id} size="sm" variant="secondary" icon="users" onClick={() => go({ id: 'online', mode: 'escape-room', flow: 'room', bracket: bracketForEscapeRoom(r.id) })} data-testid={`escape-coop-${r.id}`}>
+              {lang === 'he' ? r.titleHe : r.title} · {r.level}
+            </Button>
+          ))}
+        </div>
+      </Panel>
     </div>
   );
 }

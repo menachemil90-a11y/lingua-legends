@@ -15,6 +15,7 @@ import { WordBattleScreen } from './wordBattle/WordBattleScreen';
 import { GrammarRaceScreen } from './grammarRace/GrammarRaceScreen';
 import { SentenceDuelScreen } from './sentenceMaster/SentenceDuelScreen';
 import { ConquestOnlineScreen } from './conquest/ConquestOnlineScreen';
+import { EscapeCoopScreen } from './escape/EscapeCoopScreen';
 
 export function MatchScreen({ params }: { params: LocalMatchParams | OnlineMatchParams }) {
   const t = useT();
@@ -133,5 +134,6 @@ export function MatchScreen({ params }: { params: LocalMatchParams | OnlineMatch
   if (params.mode === 'grammar-race') return <GrammarRaceScreen key={key} transport={transport} onEnd={onEnd} onExit={onExit} />;
   if (params.mode === 'sentence-master') return <SentenceDuelScreen key={key} transport={transport} onEnd={onEnd} onExit={onExit} />;
   if (params.mode === 'english-conquest') return <ConquestOnlineScreen key={key} transport={transport} onEnd={onEnd} onExit={onExit} />;
+  if (params.mode === 'escape-room') return <EscapeCoopScreen key={key} transport={transport} onEnd={onEnd} onExit={onExit} />;
   return <WordBattleScreen key={key} transport={transport} onEnd={onEnd} onExit={onExit} />;
 }

@@ -3,7 +3,7 @@ import type { ClientIntent, OnlineModeId, PublicPlayer, ServerMessage } from '@l
 /** Intents a match UI may send. The host/server decides every outcome. */
 export type MatchIntent = Extract<
   ClientIntent,
-  { type: 'ANSWER_SUBMIT' | 'ABILITY_USE' | 'CONQUEST_ACTION' | 'QUICK_CHAT' | 'REMATCH_REQUEST' | 'MATCH_LEAVE' | 'READY' }
+  { type: 'ANSWER_SUBMIT' | 'ABILITY_USE' | 'CONQUEST_ACTION' | 'ESCAPE_ACTION' | 'QUICK_CHAT' | 'REMATCH_REQUEST' | 'MATCH_LEAVE' | 'READY' }
 >;
 
 export interface MatchTransport {

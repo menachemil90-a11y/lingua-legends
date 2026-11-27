@@ -105,7 +105,7 @@ interface Room {
 }
 
 export function roomCapacity(mode: OnlineModeId): number {
-  return mode === 'grammar-race' || mode === 'english-conquest' ? 4 : 2;
+  return mode === 'grammar-race' || mode === 'english-conquest' || mode === 'escape-room' ? 4 : 2;
 }
 
 export class Rooms {

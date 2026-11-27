@@ -6,6 +6,7 @@ import { randomBytes } from 'node:crypto';
 import {
   applyResult,
   ConquestHost,
+  EscapeCoopHost,
   currentSeason,
   ERROR_CODES,
   GrammarRaceHost,
@@ -21,6 +22,7 @@ import {
   type Bracket,
   type Clock,
   type ConquestAction,
+  type EscapeAction,
   type MatchHost,
   type MatchOutcome,
   type OnlineModeId,
@@ -31,6 +33,7 @@ import {
 import type { Hub } from './hub';
 import type { ServerStore, ServerLearningEvent } from './store/types';
 import { questionSource } from './content/sources';
+import { escapeRoomForBracket } from '@lingua/content';
 
 export type MatchQueue = 'ranked' | 'casual' | 'private';
 
@@ -186,7 +189,9 @@ export class MatchManager {
           ? new SentenceDuelHost(deps)
           : m.mode === 'english-conquest'
             ? new ConquestHost(deps)
-            : new WordBattleHost(deps);
+            : m.mode === 'escape-room'
+              ? new EscapeCoopHost(deps, escapeRoomForBracket(m.bracket))
+              : new WordBattleHost(deps);
     // Players who are offline at start count as disconnected.
     for (const p of m.players) if (!this.hub.isOnline(p.playerId)) m.host.setConnected(p.playerId, false);
     m.host.start();
@@ -302,6 +307,14 @@ export class MatchManager {
     if ('error' in m) return { code: m.error, message: 'Not in this match' };
     if (!m.host || m.state !== 'live' || !m.host.submitAction) return { code: ERROR_CODES.INVALID_STATE, message: 'Match is not live' };
     const r = m.host.submitAction(playerId, action);
+    return r.ok ? null : { code: r.code, message: r.message };
+  }
+
+  escape(playerId: string, matchId: string, action: EscapeAction): { code: string; message: string } | null {
+    const m = this.get(playerId, matchId);
+    if ('error' in m) return { code: m.error, message: 'Not in this match' };
+    if (!m.host || m.state !== 'live' || !m.host.submitEscape) return { code: ERROR_CODES.INVALID_STATE, message: 'Match is not live' };
+    const r = m.host.submitEscape(playerId, action);
     return r.ok ? null : { code: r.code, message: r.message };
   }
 

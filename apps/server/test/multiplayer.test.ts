@@ -1,6 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { RunningServer } from '../src/app';
 import { guestToken, testServer, TestClient } from './helpers';
+import { escapeRoomForBracket } from '@lingua/content';
+import type { EscapeAnswer } from '@lingua/shared';
 
 let server: RunningServer;
 const clients: TestClient[] = [];
@@ -245,6 +247,45 @@ describe('English Conquest rooms', () => {
     // The first leaver was released from the match and earns no shards if they still get the result.
     if (endLeaver) expect(endLeaver.shardsEarned).toBe(0);
   }, 40_000);
+});
+
+describe('co-op Escape Room', () => {
+  it('two players share one server-checked room and escape together', async () => {
+    const a = await client('Ori');
+    const b = await client('Gal');
+    a.send({ type: 'ROOM_CREATE', mode: 'escape-room', bracket: 'foundation' });
+    const room = await a.waitFor('ROOM_STATE', (m) => m.members.length === 1);
+    expect(room.capacity).toBe(4);
+    b.send({ type: 'ROOM_JOIN', code: room.code });
+    await a.waitFor('ROOM_STATE', (m) => m.members.length === 2);
+    a.send({ type: 'ROOM_START' });
+    const found = await a.waitFor('MATCH_FOUND');
+    for (const p of [a, b]) p.send({ type: 'READY', matchId: found.matchId });
+    await b.waitFor('MATCH_START');
+    const er = escapeRoomForBracket('foundation');
+    // Wait until the room is open (after the countdown).
+    await new Promise((r) => setTimeout(r, 3300));
+    const [p1, p2, ...rest] = er.puzzles;
+    const answerFor = (p: (typeof er.puzzles)[number]): EscapeAnswer =>
+      p.kind === 'choice' ? { kind: 'choice', index: p.answer } : p.kind === 'text' ? { kind: 'text', text: p.accepted[0]! } : { kind: 'order', order: p.steps };
+    // A wrong answer is checked on the server and shared with the teammate.
+    const wrong: EscapeAnswer = p1!.kind === 'choice' ? { kind: 'choice', index: (p1!.answer + 1) % p1!.options.length } : { kind: 'text', text: 'definitely wrong' };
+    a.send({ type: 'ESCAPE_ACTION', matchId: found.matchId, action: { type: 'answer', puzzleId: p1!.id, answer: wrong } });
+    const tried = await b.waitFor('PLAYER_STATE', (m) => m.state.mode === 'escape-room' && m.state.last?.by === a.playerId);
+    if (tried.state.mode !== 'escape-room') throw new Error('mode');
+    expect(tried.state.last!.correct).toBe(false);
+    // Unknown locks are rejected.
+    b.send({ type: 'ESCAPE_ACTION', matchId: found.matchId, action: { type: 'hint', puzzleId: 'not-a-lock' } });
+    expect((await b.waitFor('ERROR', (e) => e.code === 'BAD_MESSAGE')).code).toBe('BAD_MESSAGE');
+    b.send({ type: 'ESCAPE_ACTION', matchId: found.matchId, action: { type: 'answer', puzzleId: p1!.id, answer: answerFor(p1!) } });
+    await a.waitFor('PLAYER_STATE', (m) => m.state.mode === 'escape-room' && m.state.solved.some((x) => x.puzzleId === p1!.id && x.by === b.playerId));
+    for (const p of [p2!, ...rest]) a.send({ type: 'ESCAPE_ACTION', matchId: found.matchId, action: { type: 'answer', puzzleId: p.id, answer: answerFor(p) } });
+    const end = await b.waitFor('MATCH_END', () => true, 9000);
+    expect(end.mode).toBe('escape-room');
+    expect(end.ranked).toBe(false);
+    expect(end.outcomes.every((o) => o.result === 'win')).toBe(true);
+    expect(end.shardsEarned).toBeGreaterThan(0);
+  }, 30_000);
 });
 
 describe('ranked matchmaking', () => {

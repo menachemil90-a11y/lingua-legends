@@ -40,7 +40,7 @@ Status as of development session 2 (2026-11-27).
 - [x] English Detective — two cases (preview)
 - [ ] More Detective cases + co-op investigations
 - [x] Escape Room — solo, relaxed or timed, 3 rooms
-- [ ] Escape Room co-op (online)
+- [x] Escape Room co-op online — `EscapeCoopHost`, 2–4 players, shared locks/hints/attempts, team timer (1.5× the solo time), brute-force limit
 - [x] English Conquest vs 1–3 bots (original 12-island map, 4 factions, pure tested rules)
 - [x] English Conquest online — authoritative `ConquestHost`, private rooms for 2–4 players, turn timers, absent-player skips, leavers' islands turn neutral
 - [ ] 2v2 / 4-player online modes using the existing multi-player host abstraction

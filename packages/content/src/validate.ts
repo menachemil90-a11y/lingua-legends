@@ -15,7 +15,7 @@ import {
 import { MOCK_EXAMS, OPEN_TASKS, BAGRUT_CURRICULUM } from './bagrut';
 import { ADVENTURE_REGIONS, WORD_BATTLE_SETS } from './sets';
 import { DETECTIVE_CASES, REAL_LIFE_SCENARIOS } from './story';
-import { ESCAPE_ROOMS } from './escape';
+import { ESCAPE_ROOM_FOR_BRACKET, ESCAPE_ROOMS } from './escape';
 
 export interface ValidationIssue {
   severity: 'error' | 'warning';
@@ -180,6 +180,9 @@ function checkReferences(issues: ValidationIssue[], ids: Set<string>, passageIds
       return ok;
     };
     if (nodeIds.has(s.start) && !reaches(s.start, new Set())) issues.push({ severity: 'error', ref: s.id, message: 'some path never reaches an end node' });
+  }
+  for (const [bracket, roomId] of Object.entries(ESCAPE_ROOM_FOR_BRACKET)) {
+    if (!ESCAPE_ROOMS.some((r) => r.id === roomId)) issues.push({ severity: 'error', ref: `escape:${bracket}`, message: `co-op room ${roomId} does not exist` });
   }
   const puzzleIds = new Set<string>();
   for (const room of ESCAPE_ROOMS) {

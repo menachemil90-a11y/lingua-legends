@@ -2,52 +2,9 @@
  * Escape Room content: original rooms whose locks open only by reading and using English.
  * All puzzles are graded deterministically.
  */
-import { normalizeText, type CefrLevel } from '@lingua/shared';
+import type { Bracket, EscapeRoom } from '@lingua/shared';
 
-interface PuzzleBase {
-  id: string;
-  /** Hotspot in the room scene that opens this puzzle. */
-  object: 'note' | 'clock' | 'bookshelf' | 'desk' | 'telescope' | 'logbook' | 'chest' | 'door-panel' | 'map' | 'radio';
-  title: string;
-  /** The English material to read (sign, note, document). */
-  text?: string;
-  question: string;
-  explanation: { en: string; he: string };
-  hint: { en: string; he: string };
-  vocabulary: string[];
-}
-
-export type EscapePuzzle =
-  | (PuzzleBase & { kind: 'choice'; options: string[]; answer: number })
-  | (PuzzleBase & { kind: 'text'; accepted: string[] })
-  | (PuzzleBase & { kind: 'order'; steps: string[] });
-
-export interface EscapeRoom {
-  id: string;
-  title: string;
-  titleHe: string;
-  level: CefrLevel;
-  theme: 'workshop' | 'observatory' | 'station';
-  intro: string;
-  introHe: string;
-  /** Suggested time for the optional timed mode. */
-  timedSeconds: number;
-  puzzles: EscapePuzzle[];
-  outro: string;
-  outroHe: string;
-}
-
-export type EscapeAnswer = { kind: 'choice'; index: number } | { kind: 'text'; text: string } | { kind: 'order'; order: string[] };
-
-export function checkEscapeAnswer(p: EscapePuzzle, a: EscapeAnswer): boolean {
-  if (p.kind === 'choice' && a.kind === 'choice') return a.index === p.answer;
-  if (p.kind === 'text' && a.kind === 'text') {
-    const n = normalizeText(a.text).replace(/^(a|an|the)\s+/, '');
-    return p.accepted.some((x) => normalizeText(x).replace(/^(a|an|the)\s+/, '') === n);
-  }
-  if (p.kind === 'order' && a.kind === 'order') return a.order.length === p.steps.length && a.order.every((s, i) => s === p.steps[i]);
-  return false;
-}
+export { checkEscapeAnswer, type EscapeAnswer, type EscapePuzzle, type EscapeRoom } from '@lingua/shared';
 
 export const ESCAPE_ROOMS: EscapeRoom[] = [
   {
@@ -238,3 +195,18 @@ export const ESCAPE_ROOMS: EscapeRoom[] = [
     ],
   },
 ];
+
+/** Co-op rooms are chosen by the room's language bracket (one room per bracket). */
+export const ESCAPE_ROOM_FOR_BRACKET: Record<Bracket, string> = {
+  foundation: 'escape-clockmaker',
+  core: 'escape-station',
+  advanced: 'escape-observatory',
+};
+
+export function escapeRoomForBracket(bracket: Bracket): EscapeRoom {
+  return ESCAPE_ROOMS.find((r) => r.id === ESCAPE_ROOM_FOR_BRACKET[bracket]) ?? ESCAPE_ROOMS[0]!;
+}
+
+export function bracketForEscapeRoom(roomId: string): Bracket {
+  return (Object.entries(ESCAPE_ROOM_FOR_BRACKET).find(([, id]) => id === roomId)?.[0] as Bracket | undefined) ?? 'foundation';
+}

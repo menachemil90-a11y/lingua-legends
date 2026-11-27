@@ -18,7 +18,7 @@ CEFR A1–C2, Israeli 5-unit Bagrut preparation, and real authoritative multipla
 | Post-match screen — result, accuracy, XP, rank change, mistakes with English/Hebrew explanations, **“Practise my mistakes”** session (exact public items, or similar public items for server-only ranked questions) | ✅ |
 | Bagrut Academy — Module E/F/G, COBE speaking practice (timers + TTS listening), project planner, timed mock exams | ✅ (exam structure = unverified draft, see `docs/BAGRUT.md`) |
 | Adventure map — 5 regions, chapters, bosses, stars | ✅ |
-| **Escape Room** — 3 original rooms (A2/B1/B2), choice/text/order puzzles, hints, relaxed or timed | ✅ solo (co-op planned) |
+| **Escape Room** — 3 original rooms (A2/B1/B2), choice/text/order puzzles, hints, relaxed or timed | ✅ solo, ✅ online co-op for 2–4 friends (server checks every answer; unranked) |
 | **English Conquest** — 12-island strategy map, 4 factions, answer questions for gold, recruit/fortify/attack/move | ✅ vs 1–3 labelled bots, ✅ online private rooms for 2–4 friends (authoritative server host, unranked) |
 | **Debate Arena** — private written practice: opening → opposing view → rebuttal, rule-based structure/grammar check (not AI) | ✅ practice (AI feedback ⛔ needs approval) |
 | Listening lab — 12 listening items using free on-device browser text-to-speech; transcript hidden until answered | ✅ (falls back to reading when TTS is unavailable, and is then not counted as listening evidence) |
@@ -91,7 +91,7 @@ WebSockets (Render / Koyeb / any VPS) + Supabase Free. Exact steps and environme
 - All content is original but AI-drafted (`reviewStatus: 'ai-drafted'`) and must be reviewed by a teacher.
 - No AI writing feedback, no speech recognition (clearly labelled in the UI).
 - Content volume is still small (228 public + 120 server-only ranked items) and must grow before release.
-- Escape Room is single-player for now (co-op not implemented). Online English Conquest is private-room only and unranked.
+- Online English Conquest and co-op Escape Room are private-room only and unranked.
 - Offline (vs bot) rewards are stored on the device only; only online-match rewards are server-verified.
 
 ## Licenses

@@ -14,9 +14,9 @@ export const GAME_MODE_IDS = [
 export type GameModeId = (typeof GAME_MODE_IDS)[number];
 
 /** Modes with an authoritative multiplayer host (rooms, friends' challenges). */
-export const ONLINE_MODE_IDS = ['word-battle', 'grammar-race', 'sentence-master', 'english-conquest'] as const;
+export const ONLINE_MODE_IDS = ['word-battle', 'grammar-race', 'sentence-master', 'english-conquest', 'escape-room'] as const;
 export type OnlineModeId = (typeof ONLINE_MODE_IDS)[number];
-/** Modes available in matchmaking queues and leaderboards (English Conquest is private-room only). */
+/** Modes available in matchmaking queues and leaderboards (Conquest and co-op Escape Room are private-room only). */
 export const QUEUE_MODE_IDS = ['word-battle', 'grammar-race', 'sentence-master'] as const satisfies readonly OnlineModeId[];
 export type QueueModeId = (typeof QUEUE_MODE_IDS)[number];
 export const isQueueMode = (m: OnlineModeId): m is QueueModeId => (QUEUE_MODE_IDS as readonly string[]).includes(m);

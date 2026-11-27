@@ -46,6 +46,21 @@ export const conquestActionSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('end') }),
 ]);
 
+/** Co-op Escape Room intents (the server checks answers and keeps the shared state). */
+export const escapeActionSchema = z.discriminatedUnion('type', [
+  z.object({
+    type: z.literal('answer'),
+    puzzleId: id,
+    answer: z.discriminatedUnion('kind', [
+      z.object({ kind: z.literal('choice'), index: z.number().int().min(0).max(9) }),
+      z.object({ kind: z.literal('text'), text: z.string().min(1).max(80) }),
+      z.object({ kind: z.literal('order'), order: z.array(z.string().max(300)).min(1).max(12) }),
+    ]),
+  }),
+  z.object({ type: z.literal('hint'), puzzleId: id }),
+]);
+export type EscapeAction = z.infer<typeof escapeActionSchema>;
+
 const cosmeticsSchema = z.object({
   characterId: z.string().max(32).default('vexa'),
   vehicleId: z.string().max(32).default('comet'),
@@ -72,6 +87,7 @@ export const clientMessageSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('ANSWER_SUBMIT'), ...base, matchId: id, roundId: id, answer: answerPayloadSchema }),
   z.object({ type: z.literal('ABILITY_USE'), ...base, matchId: id, ability: abilitySchema }),
   z.object({ type: z.literal('CONQUEST_ACTION'), ...base, matchId: id, action: conquestActionSchema }),
+  z.object({ type: z.literal('ESCAPE_ACTION'), ...base, matchId: id, action: escapeActionSchema }),
   z.object({ type: z.literal('REMATCH_REQUEST'), ...base, matchId: id }),
   z.object({ type: z.literal('MATCH_LEAVE'), ...base, matchId: id }),
   z.object({ type: z.literal('QUICK_CHAT'), ...base, matchId: id, phraseId: z.enum(QUICK_CHAT_IDS) }),
@@ -188,6 +204,17 @@ export const playerStatePayloadSchema = z.discriminatedUnion('mode', [
     connected: z.array(id),
     /** Server time when the current phase (question or actions) times out. */
     phaseDeadline: z.number().nullable(),
+  }),
+  z.object({
+    mode: z.literal('escape-room'),
+    roomId: z.string(),
+    solved: z.array(z.object({ puzzleId: z.string(), by: id, attempts: z.number(), hinted: z.boolean() })),
+    attempts: z.record(z.string(), z.number()),
+    hints: z.array(z.string()),
+    connected: z.array(id),
+    /** The most recent attempt, so every teammate sees what happened. */
+    last: z.object({ puzzleId: z.string(), by: id, correct: z.boolean(), seq: z.number() }).nullable(),
+    escaped: z.boolean(),
   }),
 ]);
 export type PlayerStatePayload = z.infer<typeof playerStatePayloadSchema>;

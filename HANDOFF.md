@@ -18,7 +18,7 @@ settings or in a local `.env` that is never committed.
 | Area | Status | Notes |
 | --- | --- | --- |
 | Offline game (Word Battle, Grammar Race with up to 3 bots, Sentence Master, Escape Room, English Conquest vs bots, Debate practice, listening lab, learning engine, Bagrut Academy, adventure) | ✅ | Runs fully in the browser; progress saved on the device. Bots are always labelled |
-| Authoritative multiplayer server (rooms incl. 4-racer race rooms and 2–4 player English Conquest rooms, queues, ranked MMR, friends, reconnection) | ✅ locally | Tested with integration tests + two real browsers. Not deployed |
+| Authoritative multiplayer server (rooms incl. 4-racer race rooms and 2–4 player English Conquest and co-op Escape Room rooms, queues, ranked MMR, friends, reconnection) | ✅ locally | Tested with integration tests + two real browsers. Not deployed |
 | Server-computed rewards for online matches (XP, shards, match achievements; `GET /api/me/wallet`) | ✅ locally / 🟡 Supabase | Tested with the memory store. With `STORE=supabase` they are written to `wallets` and `user_achievements` (service role) — not yet verified against a live project |
 | Database schema + RLS (`supabase/migrations`) | ✅ locally | Applied and tested on local PostgreSQL 16 with a Supabase-like auth stub. Not applied to a real Supabase project |
 | Supabase Auth (registered accounts, magic-link email) | 🟡 | Client + server token verification implemented, never exercised against a live project |

@@ -327,6 +327,10 @@ export async function startServer(cfg: Config, store: ServerStore, port = cfg.PO
         const err = matches.answer(playerId, msg.matchId, msg.roundId, msg.answer);
         return err ? fail(err.code, err.message) : undefined;
       }
+      case 'ESCAPE_ACTION': {
+        const err = matches.escape(playerId, msg.matchId, msg.action);
+        return err ? fail(err.code, err.message) : undefined;
+      }
       case 'CONQUEST_ACTION': {
         const err = matches.action(playerId, msg.matchId, msg.action);
         return err ? fail(err.code, err.message) : undefined;

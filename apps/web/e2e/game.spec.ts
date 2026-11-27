@@ -160,6 +160,35 @@ test('two browsers play English Conquest online: question for the active player,
   await ctxB.close();
 });
 
+test('two browsers solve a co-op Escape Room lock together through the server', async ({ browser }) => {
+  const ctxA = await browser.newContext();
+  const ctxB = await browser.newContext();
+  const a = await ctxA.newPage();
+  const b = await ctxB.newPage();
+  await skipOnboarding(a);
+  await skipOnboarding(b);
+  await pickMode(a, 'Escape Room');
+  await a.getByTestId('escape-coop-escape-clockmaker').click();
+  await a.getByTestId('create-room').click();
+  const code = (await a.getByTestId('room-code').textContent())!.trim();
+  await b.goto(`/?room=${code}`);
+  await a.getByTestId('start-room').click({ timeout: 20_000 });
+  for (const p of [a, b]) await p.getByRole('button', { name: /אישור|Accept/ }).click({ timeout: 20_000 });
+  for (const p of [a, b]) await expect(p.locator('.room-scene')).toBeVisible({ timeout: 20_000 });
+  const room = ESCAPE_ROOMS.find((r) => r.id === 'escape-clockmaker')!;
+  const puzzle = room.puzzles.find((p) => p.kind === 'choice');
+  if (!puzzle || puzzle.kind !== 'choice') throw new Error('expected a choice puzzle');
+  await a.waitForTimeout(3500); // countdown
+  await a.getByRole('button', { name: puzzle.title }).click();
+  await a.locator('.answer', { hasText: puzzle.options[puzzle.answer]! }).click();
+  // Player B sees the lock open and who opened it.
+  await expect(b.locator('.lock--open')).toHaveCount(1, { timeout: 15_000 });
+  await expect(b.getByTestId('escape-feed')).toBeVisible();
+  await expect(b.locator('.chip--bot')).toHaveCount(0);
+  await ctxA.close();
+  await ctxB.close();
+});
+
 /**
  * Elements that stick out of the viewport. `body` hides horizontal overflow, so content wider than the
  * screen is silently cut off rather than scrollable; we look for elements no ancestor clips or scrolls.

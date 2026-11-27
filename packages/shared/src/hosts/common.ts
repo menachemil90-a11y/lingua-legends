@@ -1,6 +1,6 @@
 import type { ContentItem, OnlineModeId } from '../content/schema';
 import type { RoundQuestion } from '../content/grading';
-import type { AnswerPayload, PlayerMatchStats, PublicPlayer, ServerMessage } from '../protocol';
+import type { AnswerPayload, EscapeAction, PlayerMatchStats, PublicPlayer, ServerMessage } from '../protocol';
 import type { RandomFn } from '../random';
 import type { ConquestAction } from '../rules/conquest';
 
@@ -112,6 +112,8 @@ export interface MatchHost {
   useAbility(playerId: string, ability: string): ActionResult;
   /** Turn-based strategy intents (English Conquest only). */
   submitAction?(playerId: string, action: ConquestAction): ActionResult;
+  /** Co-op Escape Room intents. */
+  submitEscape?(playerId: string, action: EscapeAction): ActionResult;
   setConnected(playerId: string, connected: boolean): void;
   forfeit(playerId: string): void;
   /** Messages that restore a reconnecting player's view of the match. */
