@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { ESCAPE_ROOMS } from '@lingua/content';
+import { DETECTIVE_CASES, ESCAPE_ROOMS } from '@lingua/content';
 /* End-to-end tests: real browser, real multiplayer server (see playwright.config.ts). */
 
 async function skipOnboarding(page: Page) {
@@ -127,6 +127,21 @@ test('Real Life: open a scenario from the list and get feedback on a reply (regr
   await page.locator('.answer').first().click();
   await expect(page.locator('.convo .chip--good').first()).toBeVisible();
   expect(errors).toEqual([]);
+});
+
+test('English Detective: solve the A2 case by reading the evidence (options are shuffled)', async ({ page }) => {
+  await skipOnboarding(page);
+  await pickMode(page, 'English Detective');
+  const c = DETECTIVE_CASES.find((x) => x.id === 'case-wrong-cake')!;
+  await page.locator('.tile', { hasText: c.titleHe }).click();
+  for (const q of c.questions) {
+    await page.locator('.answer', { hasText: q.options[q.answer]! }).click();
+    await expect(page.locator('.answer--correct')).toHaveCount(1);
+    await page.getByRole('button', { name: /הבא|Next/ }).click();
+  }
+  const culprit = c.suspects.find((s) => s.id === c.culpritId)!;
+  await page.getByRole('button', { name: new RegExp(culprit.name) }).click();
+  await expect(page.locator('.feedback--good')).toBeVisible();
 });
 
 test('two browsers play English Conquest online: question for the active player, turn passes', async ({ browser }) => {

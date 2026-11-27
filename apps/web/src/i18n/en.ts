@@ -435,6 +435,7 @@ export const en = {
   'realLife.ok': 'Understandable',
   'realLife.poor': 'Needs work',
   'realLife.speechNote': 'Text mode. Speech recognition is not enabled in this version.',
+  'realLife.textOnly': 'Text conversation',
 
   'escape.intro': 'Read signs, notes and messages in English to open every lock. Play relaxed or against the clock.',
   'escape.mode': 'Mode',
@@ -526,7 +527,7 @@ export const en = {
   'detective.evidence': 'Evidence board',
   'detective.suspects': 'Suspects',
   'detective.questions': 'Investigation',
-  'detective.accuse': 'Name the culprit',
+  'detective.accuse': 'Who is responsible?',
   'detective.solved': 'Case solved!',
   'detective.wrong': 'Not quite — review the evidence and try again.',
 

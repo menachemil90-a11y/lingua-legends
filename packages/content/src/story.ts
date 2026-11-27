@@ -524,4 +524,36 @@ export const DETECTIVE_CASES: DetectiveCase[] = [
       he: 'בן, שהסתקרן מהרובוט, הוציא את השבב כדי לחקור אותו אחרי שיעל הכניסה אותו לקחת את הבקבוק — ושבר פין. הוא הזמין שבב חלופי וקיווה שאיש לא ישים לב. יעל פישטה את הסיפור שלה כי לא הייתה אמורה להכניס חברים חדשים לבד.',
     },
   },
+  {
+    id: 'case-wrong-cake',
+    title: 'The Wrong Cake',
+    titleHe: 'העוגה הלא נכונה',
+    level: 'A2',
+    briefing: "On Friday, a birthday cake with the words 'Happy Birthday Noa' went to the wrong customer. Noa's party was at 5 pm and her cake was missing! Read the evidence and find out who made the mistake.",
+    briefingHe: "ביום שישי עוגת יום הולדת עם הכיתוב 'Happy Birthday Noa' נמסרה ללקוח הלא נכון. המסיבה של נועה הייתה ב-5 והעוגה שלה נעלמה! קראו את הראיות וגלו מי טעה.",
+    suspects: [
+      { id: 'tom', name: 'Tom', role: 'New shop assistant' },
+      { id: 'mrs-gold', name: 'Mrs. Gold', role: 'Bakery owner' },
+      { id: 'dan', name: 'Dan', role: 'Delivery driver' },
+    ],
+    evidence: [
+      { id: 'wc-order-214', kind: 'document', title: 'Order slip 214', body: 'Order 214 — Name: Noa Levi\nChocolate cake with the words "Happy Birthday Noa"\nPick-up: Friday, 4 pm' },
+      { id: 'wc-order-241', kind: 'document', title: 'Order slip 241', body: 'Order 241 — Name: Noam Lev\nChocolate cake, no writing\nDelivery: Friday, 3 pm, to 12 Rose Street' },
+      { id: 'wc-gold-msg', kind: 'message', title: "Mrs. Gold's message (Friday 1:00 pm)", from: 'Mrs. Gold', body: "Tom, I'm at the bank until 3. Please pack the delivery orders for Dan. Thanks!" },
+      { id: 'wc-tom', kind: 'statement', title: "Tom's statement", from: 'Tom', body: 'I packed the cake for order 241 at 2:30. I was in a hurry, so I only looked at the number quickly.' },
+      { id: 'wc-dan', kind: 'statement', title: "Dan's statement", from: 'Dan', body: 'I took the box that was ready at 2:45 and delivered it at 3:00. The customer said, "There is writing on my cake," but he kept it.' },
+      { id: 'wc-notice', kind: 'notice', title: 'Notice in the kitchen', body: 'ALWAYS read the full name AND the order number before you pack a cake! — Mrs. Gold' },
+    ],
+    questions: [
+      { id: 'wq1', prompt: 'Why is it easy to mix up the two orders?', options: ['Both cakes are for delivery.', 'The numbers and the names look very similar.', 'Both cakes have writing on them.'], answer: 1, explanation: { en: '214 and 241 have the same digits, and "Noa Levi" and "Noam Lev" look almost the same.', he: 'ל-214 ול-241 יש אותן ספרות, ו-Noa Levi ו-Noam Lev נראים כמעט אותו דבר.' }, evidenceIds: ['wc-order-214', 'wc-order-241'] },
+      { id: 'wq2', prompt: 'Why did Mrs. Gold not pack the delivery orders herself?', options: ['She was at the party.', 'She was driving the van.', 'She was at the bank until 3 pm.'], answer: 2, explanation: { en: "Her message says: 'I'm at the bank until 3.'", he: "בהודעה שלה כתוב: 'I'm at the bank until 3' — היא הייתה בבנק עד 3." }, evidenceIds: ['wc-gold-msg'] },
+      { id: 'wq3', prompt: 'Which cake did Dan deliver at 3:00?', options: ['The cake with "Happy Birthday Noa" on it.', 'A cake with no writing.', 'No cake at all.'], answer: 0, explanation: { en: 'The customer said there was writing on his cake — but order 241 had no writing.', he: 'הלקוח אמר שיש כיתוב על העוגה — אבל בהזמנה 241 לא היה כיתוב.' }, evidenceIds: ['wc-dan', 'wc-order-241'] },
+      { id: 'wq4', prompt: 'Which rule from the notice did someone forget?', options: ['Deliver all cakes before 3 pm.', 'Read the full name and the order number before packing.', 'Never put writing on chocolate cakes.'], answer: 1, explanation: { en: "Tom says he 'only looked at the number quickly' — he did not read the full name.", he: "תום אומר שהוא 'רק הסתכל על המספר מהר' — הוא לא קרא את השם המלא." }, evidenceIds: ['wc-notice', 'wc-tom'] },
+    ],
+    culpritId: 'tom',
+    solution: {
+      en: "It was an honest mistake. Tom was in a hurry and packed order 214 instead of 241, because the numbers and names look alike. Dan delivered the box he was given. Mrs. Gold quickly baked a new cake, and Noa got it just in time for her party. Now Tom always reads the full name — out loud!",
+      he: 'זו הייתה טעות תמימה. תום מיהר וארז את הזמנה 214 במקום 241, כי המספרים והשמות דומים. דן מסר את הקופסה שקיבל. גברת גולד אפתה במהירות עוגה חדשה, ונועה קיבלה אותה בדיוק בזמן למסיבה. מאז תום תמיד קורא את השם המלא — בקול!',
+    },
+  },
 ];

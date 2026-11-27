@@ -2,6 +2,12 @@
 
 Every mode reports `LearningEvent`s and asks the same engine what to show next.
 
+## Evidence from story modes
+English Detective answers are recorded as `inference` evidence (secondary: reading). Real Life replies are recorded as
+reading evidence with grammar/vocabulary as secondary skills — **never as speaking**, because no speech is captured. Escape
+Room locks record reading evidence on the first attempt (hints mark the event). Each item id is namespaced
+(`detective:…`, `real-life:…`, `escape:…`) so the scheduler can bring them back for review.
+
 ## Content model (`packages/shared/src/content/schema.ts`)
 `ContentItem`: id, version, CEFR level, primary/secondary skills, difficulty 1–5, type (multiple-choice, cloze,
 sentence-build, error-correction), category, prompt, optional context, options (with per-distractor feedback and

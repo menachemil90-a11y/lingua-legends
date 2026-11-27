@@ -37,7 +37,7 @@ Status as of development session 2 (2026-11-27).
 
 ## Phase 5 — Game universe expansion
 - [x] Adventure map (5 regions, chapters, bosses, stars)
-- [x] English Detective — two cases (preview)
+- [x] English Detective — three cases (A2, B1, B2), shuffled options, learning events + progress
 - [ ] More Detective cases + co-op investigations
 - [x] Escape Room — solo, relaxed or timed, 3 rooms
 - [x] Escape Room co-op online — `EscapeCoopHost`, 2–4 players, shared locks/hints/attempts, team timer (1.5× the solo time), brute-force limit

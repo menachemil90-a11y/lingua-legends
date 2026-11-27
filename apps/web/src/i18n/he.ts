@@ -437,6 +437,7 @@ export const he: Record<MessageKey, string> = {
   'realLife.ok': 'מובן',
   'realLife.poor': 'דורש שיפור',
   'realLife.speechNote': 'מצב טקסט. זיהוי דיבור אינו מופעל בגרסה זו.',
+  'realLife.textOnly': 'שיחה בכתב',
 
   'escape.intro': 'קראו שלטים, פתקים והודעות באנגלית כדי לפתוח כל מנעול. שחקו בנחת או נגד השעון.',
   'escape.mode': 'מצב',
@@ -528,7 +529,7 @@ export const he: Record<MessageKey, string> = {
   'detective.evidence': 'לוח הראיות',
   'detective.suspects': 'חשודים',
   'detective.questions': 'חקירה',
-  'detective.accuse': 'מי האשם?',
+  'detective.accuse': 'מי אחראי/ת?',
   'detective.solved': 'התיק פוענח!',
   'detective.wrong': 'לא בדיוק — עברו שוב על הראיות ונסו שוב.',
 

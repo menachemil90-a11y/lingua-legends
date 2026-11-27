@@ -200,6 +200,12 @@ function checkReferences(issues: ValidationIssue[], ids: Set<string>, passageIds
   for (const c of DETECTIVE_CASES) {
     const evIds = new Set(c.evidence.map((e) => e.id));
     if (!c.suspects.some((s) => s.id === c.culpritId)) issues.push({ severity: 'error', ref: c.id, message: 'culprit is not a suspect' });
+    if (!HEBREW.test(c.briefingHe) || !HEBREW.test(c.solution.he) || !HEBREW.test(c.titleHe)) issues.push({ severity: 'error', ref: c.id, message: 'case lacks Hebrew title/briefing/solution' });
+    if (c.questions.length < 3) issues.push({ severity: 'error', ref: c.id, message: 'a case needs at least 3 questions' });
+    for (const qn of c.questions) {
+      if (!HEBREW.test(qn.explanation.he)) issues.push({ severity: 'error', ref: `${c.id}/${qn.id}`, message: 'explanation lacks Hebrew' });
+      if (new Set(qn.options).size !== qn.options.length) issues.push({ severity: 'error', ref: `${c.id}/${qn.id}`, message: 'duplicate options' });
+    }
     for (const qn of c.questions) {
       if (qn.answer < 0 || qn.answer >= qn.options.length) issues.push({ severity: 'error', ref: `${c.id}/${qn.id}`, message: 'answer index out of range' });
       for (const e of qn.evidenceIds) if (!evIds.has(e)) issues.push({ severity: 'error', ref: `${c.id}/${qn.id}`, message: `unknown evidence ${e}` });

@@ -1,6 +1,6 @@
 /** Adventure map, Real Life conversations, English Detective and roadmap info for planned modes. */
-import { useState } from 'react';
-import { BRACKET_LEVELS, bracketForLevel, modeDef, type GameModeId } from '@lingua/shared';
+import { useMemo, useState } from 'react';
+import { BRACKET_LEVELS, bracketForLevel, modeDef, shuffle, type GameModeId } from '@lingua/shared';
 import { ADVENTURE_REGIONS, DETECTIVE_CASES, REAL_LIFE_SCENARIOS, type DialogueChoice } from '@lingua/content';
 import { Hero } from '../art/Art';
 import { Icon } from '../art/icons';
@@ -9,6 +9,8 @@ import { useT, useLang, type MessageKey } from '../i18n';
 import { sfx } from '../audio/sfx';
 import { usePlayer } from '../state/player';
 import { useNav } from '../state/nav';
+import { uid } from '../state/storage';
+import type { LearningEvent } from '@lingua/learning';
 import { Explanation } from '../games/shared/components';
 
 export function Adventure() {
@@ -112,6 +114,26 @@ export function Adventure() {
   );
 }
 
+/** Learning evidence for story modes. Real Life is text-only, so it is never counted as speaking. */
+function storyEvent(o: { itemId: string; mode: 'real-life' | 'english-detective'; correct: boolean; level: LearningEvent['level']; primarySkill: LearningEvent['primarySkill']; secondarySkills: LearningEvent['secondarySkills']; category: string }): LearningEvent {
+  return {
+    id: uid('ev_'),
+    playerId: '',
+    itemId: o.itemId,
+    mode: o.mode,
+    correct: o.correct,
+    responseMs: null,
+    attempt: 1,
+    hintUsed: false,
+    timestamp: Date.now(),
+    level: o.level,
+    primarySkill: o.primarySkill,
+    secondarySkills: o.secondarySkills,
+    tags: [`i:${o.itemId}`],
+    category: o.category,
+  };
+}
+
 export function RealLife({ scenarioId }: { scenarioId?: string }) {
   const t = useT();
   const back = useNav((s) => s.back);
@@ -120,13 +142,15 @@ export function RealLife({ scenarioId }: { scenarioId?: string }) {
   const scenario = REAL_LIFE_SCENARIOS.find((s) => s.id === scenarioId);
   const [nodeId, setNodeId] = useState(scenario?.start ?? '');
   const [log, setLog] = useState<{ line: string; choice: DialogueChoice }[]>([]);
+  const recordLearning = usePlayer((s) => s.recordLearning);
+  const recordMatch = usePlayer((s) => s.recordMatch);
   if (!scenario) {
     return (
       <div className="page">
         <div className="page__head">
           <Button variant="ghost" icon="back" aria-label={t('common.back')} onClick={back} />
           <h1 className="page__title">{t('realLife.title')}</h1>
-          <Chip tone="purple">{t('common.preview')}</Chip>
+          <Chip tone="purple">{t('realLife.textOnly')}</Chip>
         </div>
         <p className="small muted">{t('realLife.speechNote')}</p>
         <div className="grid-auto">
@@ -180,8 +204,16 @@ export function RealLife({ scenarioId }: { scenarioId?: string }) {
                 className="answer"
                 onClick={() => {
                   sfx.play(c.quality === 'poor' ? 'wrong' : 'correct');
-                  setLog([...log, { line: node.line, choice: c }]);
+                  const nextLog = [...log, { line: node.line, choice: c }];
+                  recordLearning([
+                    storyEvent({ itemId: `real-life:${scenario.id}:${node.id}`, mode: 'real-life', correct: c.quality === 'best', level: scenario.level, primarySkill: 'reading', secondarySkills: ['grammar', 'vocabulary'], category: 'functional-language' }),
+                  ]);
+                  setLog(nextLog);
                   setNodeId(c.next);
+                  if (scenario.nodes.find((n) => n.id === c.next)?.end) {
+                    const best = nextLog.filter((l) => l.choice.quality === 'best').length;
+                    recordMatch({ mode: 'real-life', online: false, queue: 'solo', opponent: null, result: 'complete', correct: best, incorrect: nextLog.length - best, accuracy: best / nextLog.length, bestCombo: 0, xp: 20 + best * 5, shards: 5 + best });
+                  }
                 }}
               >
                 <En className="answer__text">{c.text}</En>
@@ -227,7 +259,6 @@ export function Detective({ caseId }: { caseId?: string }) {
         <div className="page__head">
           <Button variant="ghost" icon="back" aria-label={t('common.back')} onClick={back} />
           <h1 className="page__title">{t('detective.title')}</h1>
-          <Chip tone="purple">{t('common.preview')}</Chip>
         </div>
         <div className="grid-auto">
           {DETECTIVE_CASES.map((d) => (
@@ -258,6 +289,11 @@ function DetectiveCaseView({ c }: { c: (typeof DETECTIVE_CASES)[number] }) {
   const [qi, setQi] = useState(0);
   const [picked, setPicked] = useState<number | null>(null);
   const [accused, setAccused] = useState<string | null>(null);
+  const [score, setScore] = useState(0);
+  const recordLearning = usePlayer((s) => s.recordLearning);
+  const recordMatch = usePlayer((s) => s.recordMatch);
+  // Options are shown in a shuffled order so the answer's position never gives it away.
+  const orders = useMemo(() => new Map(c.questions.map((x) => [x.id, shuffle(x.options.map((_, i) => i), Math.random)])), [c]);
   const q = c.questions[qi];
   const finished = qi >= c.questions.length;
   return (
@@ -265,7 +301,6 @@ function DetectiveCaseView({ c }: { c: (typeof DETECTIVE_CASES)[number] }) {
       <div className="page__head">
         <Button variant="ghost" icon="back" aria-label={t('common.back')} onClick={back} />
         <h1 className="page__title">{lang === 'he' ? c.titleHe : c.title}</h1>
-        <Chip tone="purple">{t('common.preview')}</Chip>
         <Chip>{c.level}</Chip>
       </div>
       <p>{lang === 'he' ? c.briefingHe : c.briefing}</p>
@@ -288,18 +323,22 @@ function DetectiveCaseView({ c }: { c: (typeof DETECTIVE_CASES)[number] }) {
                 {q.prompt}
               </En>
               <div className="answer-grid">
-                {q.options.map((o, i) => (
+                {(orders.get(q.id) ?? q.options.map((_, i) => i)).map((i) => (
                   <button
-                    key={o}
+                    key={i}
                     type="button"
                     disabled={picked !== null}
                     className={`answer ${picked !== null && i === q.answer ? 'answer--correct' : ''} ${picked === i && i !== q.answer ? 'answer--wrong' : ''}`}
                     onClick={() => {
                       setPicked(i);
                       sfx.play(i === q.answer ? 'correct' : 'wrong');
+                      if (i === q.answer) setScore((n) => n + 1);
+                      recordLearning([
+                        storyEvent({ itemId: `detective:${c.id}:${q.id}`, mode: 'english-detective', correct: i === q.answer, level: c.level, primarySkill: 'inference', secondarySkills: ['reading'], category: 'reading-inference' }),
+                      ]);
                     }}
                   >
-                    <En className="answer__text">{o}</En>
+                    <En className="answer__text">{q.options[i]}</En>
                   </button>
                 ))}
               </div>
@@ -329,6 +368,10 @@ function DetectiveCaseView({ c }: { c: (typeof DETECTIVE_CASES)[number] }) {
                     key={s.id}
                     variant={accused === s.id ? (s.id === c.culpritId ? 'secondary' : 'danger') : 'default'}
                     onClick={() => {
+                      if (accused === null) {
+                        const solved = s.id === c.culpritId;
+                        recordMatch({ mode: 'english-detective', online: false, queue: 'solo', opponent: null, result: 'complete', correct: score, incorrect: c.questions.length - score, accuracy: score / c.questions.length, bestCombo: 0, xp: 30 + score * 8 + (solved ? 20 : 0), shards: 8 + score * 2 });
+                      }
                       setAccused(s.id);
                       sfx.play(s.id === c.culpritId ? 'victory' : 'wrong');
                     }}
