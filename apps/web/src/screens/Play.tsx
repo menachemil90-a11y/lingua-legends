@@ -8,10 +8,13 @@ import { Button, Chip, Panel, Segmented, StateMessage } from '../design';
 import { useT, useLang, type MessageKey } from '../i18n';
 import { usePlayer } from '../state/player';
 import { useNav } from '../state/nav';
+import { TacticPicker } from '../games/wordBattle/TacticPicker';
 import { checkServer } from '../net/api';
 import { connection, useConnection } from '../net/connection';
 
 export function Play({ initialMode }: { initialMode?: GameModeId }) {
+  const preferredTactic = usePlayer((s) => s.preferredTactic);
+  const setTactic = usePlayer((s) => s.setTactic);
   const t = useT();
   const lang = useLang();
   const go = useNav((s) => s.go);
@@ -45,6 +48,7 @@ export function Play({ initialMode }: { initialMode?: GameModeId }) {
         levels,
         botTier: tier,
         ...(setId && mode === 'word-battle' ? { setId } : {}),
+        ...(mode === 'word-battle' ? { tactic: preferredTactic } : {}),
         ...(mode === 'grammar-race' ? { racers: Number(racers) } : {}),
       },
     });
@@ -78,6 +82,15 @@ export function Play({ initialMode }: { initialMode?: GameModeId }) {
           </button>
         ))}
       </div>
+
+      {mode === 'word-battle' && (
+        <Panel title={t('tactic.title')}>
+          <p className="small muted" style={{ marginBottom: 10 }}>
+            {t('tactic.intro')}
+          </p>
+          <TacticPicker value={preferredTactic} onChange={setTactic} />
+        </Panel>
+      )}
 
       <Panel title={t('play.bracket')}>
         <Segmented label={t('play.bracket')} value={bracket} onChange={setBracket} options={BRACKETS.map((b) => ({ value: b, label: t(`play.bracket.${b}` as MessageKey) }))} />

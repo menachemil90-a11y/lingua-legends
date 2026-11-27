@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { Bracket, CefrLevel, GameModeId, OnlineModeId, PublicPlayer } from '@lingua/shared';
-import type { BotTier } from '@lingua/shared';
+import type { BotTier, TacticId } from '@lingua/shared';
 import type { MistakeTarget } from '@lingua/learning';
 
 export interface LocalMatchParams {
@@ -15,6 +15,8 @@ export interface LocalMatchParams {
   chapterId?: string;
   /** Part of the offline Champion's Cup. */
   cup?: boolean;
+  /** Word Battle tactic. */
+  tactic?: TacticId;
 }
 
 export interface OnlineMatchParams {

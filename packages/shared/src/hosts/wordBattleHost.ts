@@ -8,7 +8,7 @@
 import { correctAnswerText, gradeAnswer, prepareRoundQuestion, type GradeResult, type RoundQuestion } from '../content/grading';
 import type { AnswerPayload, CombatEvent, ServerMessage, WordBattlePlayerState } from '../protocol';
 import { ERROR_CODES } from '../protocol';
-import { computeDamage, decideBattle, WORD_BATTLE, type WordBattleConfig } from '../rules/wordBattle';
+import { computeDamage, decideBattle, TACTICS, WORD_BATTLE, type TacticId, type WordBattleConfig } from '../rules/wordBattle';
 import {
   averageOf,
   fail,
@@ -23,6 +23,8 @@ import {
 
 interface Fighter {
   playerId: string;
+  tactic: TacticId;
+  maxHp: number;
   hp: number;
   combo: number;
   bestCombo: number;
@@ -69,13 +71,18 @@ export class WordBattleHost implements MatchHost {
     this.deps = deps;
     this.matchId = deps.matchId;
     this.cfg = { ...WORD_BATTLE, ...cfg };
-    this.fighters = deps.players.map((p) => ({
+    this.fighters = deps.players.map((p) => {
+      const tactic = deps.tactics?.[p.playerId] ?? 'balanced';
+      const tt = TACTICS[tactic];
+      return {
       playerId: p.playerId,
-      hp: this.cfg.maxHp,
+      tactic,
+      maxHp: tt.maxHp,
+      hp: tt.maxHp,
       combo: 0,
       bestCombo: 0,
       abilityCharged: false,
-      shield: false,
+      shield: tt.startShield,
       surge: false,
       connected: true,
       disconnectedAt: null,
@@ -83,7 +90,8 @@ export class WordBattleHost implements MatchHost {
       correct: 0,
       responseTimes: [],
       damageDealt: 0,
-    }));
+      };
+    });
   }
 
   start(): void {
@@ -204,7 +212,7 @@ export class WordBattleHost implements MatchHost {
       events.push({ kind: 'surge-ready', from: playerId });
     } else if (ability === 'focus') {
       const before = f.hp;
-      f.hp = Math.min(this.cfg.maxHp, f.hp + this.cfg.focusHeal);
+      f.hp = Math.min(f.maxHp, f.hp + this.cfg.focusHeal + TACTICS[f.tactic].focusHealDelta);
       events.push({ kind: 'heal', from: playerId, to: playerId, amount: f.hp - before });
     } else {
       return fail(ERROR_CODES.BAD_MESSAGE, 'Unknown ability');
@@ -239,7 +247,7 @@ export class WordBattleHost implements MatchHost {
         att.responseTimes.push(ans.responseMs);
         att.combo++;
         att.bestCombo = Math.max(att.bestCombo, att.combo);
-        const { damage, speedBonus } = computeDamage(ans.responseMs, roundMs, att.surge, this.cfg);
+        const { damage, speedBonus } = computeDamage(ans.responseMs, roundMs, att.surge, { ...this.cfg, baseDamage: this.cfg.baseDamage + TACTICS[att.tactic].damageDelta });
         const surged = att.surge;
         att.surge = false;
         if (def.shield) {
@@ -250,13 +258,16 @@ export class WordBattleHost implements MatchHost {
           att.damageDealt += damage;
           events.push({ kind: 'attack', from: att.playerId, to: def.playerId, amount: damage, surge: surged, speedBonus });
         }
-        if (att.combo % this.cfg.comboForCharge === 0 && !att.abilityCharged) {
+        if (att.combo % TACTICS[att.tactic].comboForCharge === 0 && !att.abilityCharged) {
           att.abilityCharged = true;
           events.push({ kind: 'charged', from: att.playerId });
         }
       } else {
         att.combo = 0;
         events.push({ kind: 'miss', from: att.playerId });
+        // Striker's risk: a wrong answer (not a timeout) costs HP.
+        const selfDamage = ans ? TACTICS[att.tactic].wrongSelfDamage : 0;
+        if (selfDamage > 0) att.hp = Math.max(0, att.hp - selfDamage);
       }
     }
 
@@ -332,7 +343,8 @@ export class WordBattleHost implements MatchHost {
     } else if (reason === 'cancelled') {
       results = { a: 'draw', b: 'draw' };
     } else {
-      results = decideBattle(a.hp, b.hp);
+      // On a timeout the share of HP left decides (fair when tactics have different max HP).
+      results = a.hp <= 0 || b.hp <= 0 ? decideBattle(a.hp, b.hp) : decideBattle(a.hp / a.maxHp, b.hp / b.maxHp);
     }
     const winnerId = results.a === 'win' ? a.playerId : results.b === 'win' ? b.playerId : null;
     const outcome: MatchOutcome = {
@@ -425,8 +437,9 @@ export class WordBattleHost implements MatchHost {
   private stateMessage(): ServerMessage {
     const players: WordBattlePlayerState[] = this.fighters.map((f) => ({
       playerId: f.playerId,
+      tactic: f.tactic,
       hp: f.hp,
-      maxHp: this.cfg.maxHp,
+      maxHp: f.maxHp,
       combo: f.combo,
       abilityCharged: f.abilityCharged,
       shield: f.shield,

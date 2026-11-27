@@ -11,6 +11,7 @@ import {
   matchXp,
   realClock,
   SentenceDuelHost,
+  TACTIC_IDS,
   WordBattleHost,
   type BotTier,
   type CefrLevel,
@@ -21,6 +22,7 @@ import {
   type PublicPlayer,
   type QuestionSource,
   type ServerMessage,
+  type TacticId,
 } from '@lingua/shared';
 import { selectItems, type LearnerProfile } from '@lingua/learning';
 import { grammarRacePool, itemById, sentencePool, WORD_BATTLE_SETS, wordBattlePool } from '@lingua/content';
@@ -60,6 +62,8 @@ export interface LocalMatchOptions {
   setId?: string;
   /** Grammar Race only: total racers including the player (2–4). */
   racers?: number;
+  /** Word Battle tactic chosen by the player. */
+  tactic?: TacticId;
   me: PublicPlayer;
   learner: LearnerProfile;
 }
@@ -133,6 +137,8 @@ export function createLocalMatch(opts: LocalMatchOptions): MatchTransport {
     questions: source,
     random: Math.random,
     onEnd,
+    // Bots pick a tactic too (they are labelled as bots, and their tactic is shown).
+    tactics: Object.fromEntries([[opts.me.playerId, opts.tactic ?? 'balanced'], ...bots.map((b) => [b.playerId, TACTIC_IDS[Math.floor(Math.random() * TACTIC_IDS.length)]!])]),
     emit: (to: string | null, msg: ServerMessage) => {
       for (const [id, ctl] of botCtls) if (to === null || to === id) ctl.handle(msg);
       if (to === null || to === opts.me.playerId) deliver(msg);

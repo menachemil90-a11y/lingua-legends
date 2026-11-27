@@ -288,6 +288,29 @@ describe('co-op Escape Room', () => {
   }, 30_000);
 });
 
+describe('Word Battle tactics online', () => {
+  it('applies the tactics chosen in the ready check on the server and shows them to both players', async () => {
+    const a = await client('Eden');
+    const b = await client('Yoav');
+    a.send({ type: 'ROOM_CREATE', mode: 'word-battle', bracket: 'core' });
+    const room = await a.waitFor('ROOM_STATE', (m) => m.members.length === 1);
+    b.send({ type: 'ROOM_JOIN', code: room.code });
+    const found = await a.waitFor('MATCH_FOUND');
+    await b.waitFor('MATCH_FOUND');
+    // An unknown tactic is rejected by validation.
+    b.sendRaw({ type: 'READY', msgId: b.id(), matchId: found.matchId, tactic: 'berserker' });
+    expect((await b.waitFor('ERROR', (e) => e.code === 'BAD_MESSAGE')).code).toBe('BAD_MESSAGE');
+    a.send({ type: 'READY', matchId: found.matchId, tactic: 'scholar' });
+    b.send({ type: 'READY', matchId: found.matchId, tactic: 'guardian' });
+    const st = await b.waitFor('PLAYER_STATE', (m) => m.state.mode === 'word-battle');
+    if (st.state.mode !== 'word-battle') throw new Error('mode');
+    expect(st.state.players.find((p) => p.playerId === a.playerId)).toMatchObject({ tactic: 'scholar', maxHp: 90 });
+    expect(st.state.players.find((p) => p.playerId === b.playerId)).toMatchObject({ tactic: 'guardian', shield: true });
+    a.send({ type: 'MATCH_LEAVE', matchId: found.matchId });
+    await b.waitFor('MATCH_END', () => true, 9000);
+  }, 30_000);
+});
+
 describe('friends tournaments', () => {
   it('runs a 3-player bracket with a bye, walkovers and a champion with server rewards', async () => {
     const a = await client('Tal');

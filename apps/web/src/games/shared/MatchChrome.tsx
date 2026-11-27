@@ -3,6 +3,8 @@ import { Button } from '../../design';
 import { useT } from '../../i18n';
 import { useConnection } from '../../net/connection';
 import type { MatchTransport } from '../../net/transport';
+import { usePlayer } from '../../state/player';
+import { TacticPicker } from '../wordBattle/TacticPicker';
 
 export function MatchClock({ endsAt, finalRound }: { endsAt: number | null; finalRound?: boolean }) {
   const t = useT();
@@ -31,6 +33,8 @@ export function ReadyCheck({ transport }: { transport: MatchTransport }) {
   const readyIds = useConnection((s) => s.readyIds);
   const pending = useConnection((s) => s.pendingMatch);
   const [sent, setSent] = useState(false);
+  const preferred = usePlayer((s) => s.preferredTactic);
+  const setTactic = usePlayer((s) => s.setTactic);
   const iAmReady = sent || readyIds.includes(transport.selfId);
   const deadline = pending?.readyDeadline ? pending.readyDeadline - useConnection.getState().offsetMs : null;
   const [now, setNow] = useState(Date.now());
@@ -48,6 +52,12 @@ export function ReadyCheck({ transport }: { transport: MatchTransport }) {
           </span>
         ))}
       </div>
+      {transport.mode === 'word-battle' && !iAmReady && (
+        <div className="stack">
+          <span className="tiny muted center">{t('tactic.choose')}</span>
+          <TacticPicker value={preferred} onChange={setTactic} compact />
+        </div>
+      )}
       {deadline && <p className="tiny muted center num">{Math.max(0, Math.ceil((deadline - now) / 1000))}s</p>}
       <Button
         variant="primary"
@@ -56,7 +66,7 @@ export function ReadyCheck({ transport }: { transport: MatchTransport }) {
         disabled={iAmReady}
         onClick={() => {
           setSent(true);
-          transport.send({ type: 'READY', matchId: transport.matchId });
+          transport.send({ type: 'READY', matchId: transport.matchId, ...(transport.mode === 'word-battle' ? { tactic: preferred } : {}) });
         }}
       >
         {iAmReady ? t('room.ready') : t('queue.accept')}

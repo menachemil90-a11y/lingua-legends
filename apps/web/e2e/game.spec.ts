@@ -145,6 +145,18 @@ test('English Detective: solve the A2 case by reading the evidence (options are 
   await expect(page.locator('.feedback--good')).toBeVisible();
 });
 
+test('Word Battle tactics: choose Striker on the Play screen and see it in the match HUD', async ({ page }) => {
+  await skipOnboarding(page);
+  await page.locator('.lobby-tile').first().click();
+  await page.getByTestId('tactic-striker').click();
+  await expect(page.getByTestId('tactic-striker')).toHaveAttribute('aria-checked', 'true');
+  await page.getByTestId('start-bot').click();
+  await expect(page.locator('canvas')).toBeVisible({ timeout: 15_000 });
+  // The player's own tag (left) shows Striker; the bot picks its own tactic, also shown.
+  await expect(page.locator('.ptag--left .chip--tactic')).toContainText(/תוקף|Striker/, { timeout: 15_000 });
+  await expect(page.locator('.ptag--right .chip--tactic, .ptag--right .chip--good').first()).toBeVisible();
+});
+
 test("Champion's Cup: start a cup and play the quarter-final against a labelled bot", async ({ page }) => {
   await skipOnboarding(page);
   await page.locator('.lobby-tile').first().click();

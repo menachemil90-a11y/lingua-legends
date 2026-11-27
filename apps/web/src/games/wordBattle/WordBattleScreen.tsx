@@ -9,6 +9,7 @@ import { usePlayer } from '../../state/player';
 import type { MatchTransport } from '../../net/transport';
 import type { ArenaApi, Side } from '../../phaser/ArenaScene';
 import { Countdown, MatchIntro, PlayerTag, QuestionCard, RoundFeedback, VisualCue } from '../shared/components';
+import { TacticChip } from './TacticPicker';
 import { useMatch, type MatchView } from '../shared/useMatch';
 import { MatchClock, ReadyCheck } from '../shared/MatchChrome';
 
@@ -142,13 +143,13 @@ export function WordBattleScreen({ transport, onEnd, onExit }: { transport: Matc
       <header className="game__hud">
         <Button variant="ghost" size="sm" icon="back" aria-label={t('match.leave')} onClick={() => setLeaveOpen(true)} />
         <div className="wb__fighter">
-          <PlayerTag player={me} side="left" />
+          <PlayerTag player={me} side="left" extra={<TacticChip tactic={meState?.tactic} />} />
           <HealthBar hp={meState?.hp ?? 100} max={meState?.maxHp ?? 100} label={`${me.nickname} HP`} />
           <ComboPips combo={meState?.combo ?? 0} charged={!!meState?.abilityCharged} shield={!!meState?.shield} surge={!!meState?.surge} />
         </div>
         <MatchClock endsAt={view.endsAt} finalRound={!!view.round?.finalRound} />
         <div className="wb__fighter wb__fighter--foe">
-          <PlayerTag player={foe} side="right" extra={foeAnswered ? <span className="chip chip--good">{t('match.opponentAnswered')}</span> : null} />
+          <PlayerTag player={foe} side="right" extra={foeAnswered ? <span className="chip chip--good">{t('match.opponentAnswered')}</span> : <TacticChip tactic={foeState?.tactic} />} />
           <HealthBar hp={foeState?.hp ?? 100} max={foeState?.maxHp ?? 100} label={`${foe.nickname} HP`} />
           <ComboPips combo={foeState?.combo ?? 0} charged={!!foeState?.abilityCharged} shield={!!foeState?.shield} surge={!!foeState?.surge} />
         </div>

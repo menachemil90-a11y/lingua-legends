@@ -22,6 +22,19 @@ Vehicles: Comet GT, Viper X, Aurum Royale, Ember Nova. All art is code-generated
 | End | KO (0 HP) → other player wins; both 0 in the same round → draw; timeout → higher HP wins, equal HP → draw |
 | Disconnect | 30 s grace, then forfeit; both gone → cancelled |
 
+**Tactics** (chosen before the match, shown openly in both HUDs, applied by the host):
+| Tactic | Effect |
+| --- | --- |
+| Balanced | standard rules |
+| Guardian | starts with a Shield already up; hits deal 2 less damage |
+| Striker | hits deal 1 more damage; a *wrong* answer costs 2 HP (a timeout does not) |
+| Scholar | abilities charge after 2 correct answers in a row; 90 max HP |
+
+A timeout is decided by the *share* of HP left, so different max HP stays fair. The values come from a bot-vs-bot parameter
+search; measured win rates vs Balanced (160 matches per level, rookie / adept / champion): Guardian 48 / 47 / 39 %,
+Striker 49 / 57 / 53 %, Scholar 57 / 55 / 49 %. `packages/shared/test/tactics.test.ts` re-runs a simulation and fails if any
+tactic leaves a fair band. Bots pick tactics too (and remain labelled as bots).
+
 Balance notes: speed can add at most 40 % to base damage, so accuracy dominates. Typical match ≈ 13–16 rounds; a 70 %
 accurate player KOs an inaccurate one in about two minutes. Both answers resolve simultaneously; attack order in the animation follows the result list.
 

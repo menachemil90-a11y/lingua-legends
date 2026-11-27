@@ -3,6 +3,7 @@ import type { RoundQuestion } from '../content/grading';
 import type { AnswerPayload, EscapeAction, PlayerMatchStats, PublicPlayer, ServerMessage } from '../protocol';
 import type { RandomFn } from '../random';
 import type { ConquestAction } from '../rules/conquest';
+import type { TacticId } from '../rules/wordBattle';
 
 export type TimerHandle = unknown;
 
@@ -100,6 +101,8 @@ export interface MatchHostDeps {
   random: RandomFn;
   onEnd: (outcome: MatchOutcome) => void;
   onRound?: (log: RoundLog) => void;
+  /** Word Battle tactics chosen before the match (missing = balanced). */
+  tactics?: Record<string, TacticId>;
 }
 
 export type ActionResult = { ok: true } | { ok: false; code: string; message: string };

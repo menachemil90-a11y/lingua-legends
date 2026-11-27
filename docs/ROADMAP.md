@@ -61,5 +61,6 @@ Status as of development session 2 (2026-11-27).
 - [x] Tournaments: offline Champion's Cup vs bots; friends' knockout brackets online (3–8 players)
 - [ ] Public scheduled tournaments, seasons rollover tooling
 - [x] Learning Journey milestones tied to mastery (9 milestones, 8 new cosmetics)
+- [x] Word Battle tactics (4 styles) balanced by bot simulation
 - [ ] Android packaging (TWA/Capacitor) from the PWA
 - [ ] Analytics for `docs/METRICS.md` (privacy-preserving, opt-in where required)

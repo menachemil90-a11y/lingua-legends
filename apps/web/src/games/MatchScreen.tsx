@@ -42,6 +42,7 @@ export function MatchScreen({ params }: { params: LocalMatchParams | OnlineMatch
             botTier: params.botTier,
             ...(params.setId ? { setId: params.setId } : {}),
             ...(params.racers ? { racers: params.racers } : {}),
+            ...(params.tactic ? { tactic: params.tactic } : {}),
             learner: p.learner,
             me: {
               playerId: 'me',

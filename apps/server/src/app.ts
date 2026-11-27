@@ -340,7 +340,7 @@ export async function startServer(cfg: Config, store: ServerStore, port = cfg.PO
       case 'ROOM_START':
         return fail(await rooms.start(playerId), 'Cannot start this room');
       case 'READY':
-        return fail(matches.ready(playerId, msg.matchId), 'Not in this match');
+        return fail(matches.ready(playerId, msg.matchId, msg.tactic), 'Not in this match');
       case 'ANSWER_SUBMIT': {
         const err = matches.answer(playerId, msg.matchId, msg.roundId, msg.answer);
         return err ? fail(err.code, err.message) : undefined;

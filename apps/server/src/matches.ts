@@ -23,6 +23,7 @@ import {
   type Clock,
   type ConquestAction,
   type EscapeAction,
+  type TacticId,
   type MatchHost,
   type MatchOutcome,
   type OnlineModeId,
@@ -53,6 +54,8 @@ interface LiveMatch {
   learning: ServerLearningEvent[];
   /** Rematches are always unranked to prevent rating farming between the same pair. */
   isRematch: boolean;
+  /** Word Battle tactics chosen during the ready check (visible to both players once the match starts). */
+  tactics: Record<string, TacticId>;
 }
 
 export interface MatchOptions {
@@ -126,6 +129,7 @@ export class MatchManager {
       endedAt: null,
       learning: [],
       isRematch: !!o.isRematch,
+      tactics: {},
     };
     this.matches.set(id, m);
     for (const pid of o.playerIds) {
@@ -156,10 +160,11 @@ export class MatchManager {
     return m;
   }
 
-  ready(playerId: string, matchId: string): string | null {
+  ready(playerId: string, matchId: string, tactic?: TacticId): string | null {
     const m = this.get(playerId, matchId);
     if ('error' in m) return m.error;
     if (m.state !== 'ready-check') return null; // idempotent
+    if (tactic && m.mode === 'word-battle') m.tactics[playerId] = tactic;
     m.ready.add(playerId);
     this.broadcast(m, { type: 'READY_STATE', matchId, ready: [...m.ready] });
     if (m.players.every((p) => m.ready.has(p.playerId))) this.startHost(m);
@@ -191,6 +196,7 @@ export class MatchManager {
         else this.hub.send(to, msg);
       },
       onEnd: (o: MatchOutcome) => void this.finish(m, o),
+      tactics: m.tactics,
       onRound: (log: { item: { id: string }; results: { playerId: string; correct: boolean; responseMs: number | null }[] }) => {
         for (const r of log.results) {
           m.learning.push({ playerId: r.playerId, itemId: log.item.id, mode: m.mode, correct: r.correct, responseMs: r.responseMs, matchId: m.id, occurredAt: Date.now() });

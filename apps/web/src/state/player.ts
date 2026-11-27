@@ -16,6 +16,7 @@ import {
   reachedMilestones,
   type BotTier,
   type JourneyMetric,
+  type TacticId,
   type CefrLevel,
   type GameModeId,
   type OnlineModeId,
@@ -112,6 +113,8 @@ export interface PlayerState {
   cup: CupRun | null;
   cupTitles: number;
   debates: DebateRecord[];
+  preferredTactic: TacticId;
+  setTactic: (t: TacticId) => void;
   recordDebate: (rec: Omit<DebateRecord, 'at'>) => void;
   startCup: (run: Omit<CupRun, 'results' | 'startedAt'>) => void;
   recordCupResult: (result: 'win' | 'loss' | 'draw') => string[];
@@ -206,6 +209,7 @@ function initial(): Omit<PlayerState, keyof PlayerActions> {
     cup: null,
     cupTitles: 0,
     debates: [],
+    preferredTactic: 'balanced',
   };
 }
 
@@ -228,6 +232,7 @@ type PlayerActions = Pick<
   | 'recordCupResult'
   | 'endCup'
   | 'recordDebate'
+  | 'setTactic'
   | 'reset'
 >;
 
@@ -325,6 +330,7 @@ export const usePlayer = create<PlayerState>()(
           return [];
         },
         endCup: () => set({ cup: null }),
+        setTactic: (tactic) => set({ preferredTactic: tactic }),
         recordDebate: (rec) => set({ debates: [...get().debates, { ...rec, at: Date.now() }].slice(-40) }),
         reset: () => set({ ...initial() }),
       };

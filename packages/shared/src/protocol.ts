@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { BRACKETS, CEFR_LEVELS, SKILLS } from './cefr';
 import { ONLINE_MODE_IDS, QUEUE_MODE_IDS, ERROR_CATEGORIES, publicQuestionSchema, bilingualSchema } from './content/schema';
 import { CONQUEST_MAP, FACTION_IDS, LOG_KINDS } from './rules/conquest';
+import { TACTIC_IDS } from './rules/wordBattle';
 import { QUICK_CHAT_IDS } from './catalog';
 import { RANK_TIERS } from './ranking';
 
@@ -83,7 +84,8 @@ export const clientMessageSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('ROOM_LEAVE'), ...base }),
   /** Host starts a room early (Grammar Race rooms hold up to 4 racers). */
   z.object({ type: z.literal('ROOM_START'), ...base }),
-  z.object({ type: z.literal('READY'), ...base, matchId: id }),
+  /** Word Battle players may choose a tactic when they accept the match. */
+  z.object({ type: z.literal('READY'), ...base, matchId: id, tactic: z.enum(TACTIC_IDS).optional() }),
   z.object({ type: z.literal('ANSWER_SUBMIT'), ...base, matchId: id, roundId: id, answer: answerPayloadSchema }),
   z.object({ type: z.literal('ABILITY_USE'), ...base, matchId: id, ability: abilitySchema }),
   z.object({ type: z.literal('CONQUEST_ACTION'), ...base, matchId: id, action: conquestActionSchema }),
@@ -140,6 +142,7 @@ export type PublicPlayer = z.infer<typeof publicPlayerSchema>;
 
 const wordBattlePlayerState = z.object({
   playerId: id,
+  tactic: z.enum(TACTIC_IDS).optional(),
   hp: z.number(),
   maxHp: z.number(),
   combo: z.number(),
