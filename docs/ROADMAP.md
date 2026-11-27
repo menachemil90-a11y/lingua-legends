@@ -42,7 +42,7 @@ Status as of development session 2 (2026-11-27).
 - [x] Escape Room — solo, relaxed or timed, 3 rooms
 - [ ] Escape Room co-op (online)
 - [x] English Conquest vs 1–3 bots (original 12-island map, 4 factions, pure tested rules)
-- [ ] English Conquest online (server host for 2–4 players)
+- [x] English Conquest online — authoritative `ConquestHost`, private rooms for 2–4 players, turn timers, absent-player skips, leavers' islands turn neutral
 - [ ] 2v2 / 4-player online modes using the existing multi-player host abstraction
 
 ## Phase 6 — Advanced learning

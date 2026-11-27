@@ -16,3 +16,4 @@ export * from './hosts/common';
 export * from './hosts/wordBattleHost';
 export * from './hosts/grammarRaceHost';
 export * from './hosts/sentenceDuelHost';
+export * from './hosts/conquestHost';

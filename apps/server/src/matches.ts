@@ -5,6 +5,7 @@
 import { randomBytes } from 'node:crypto';
 import {
   applyResult,
+  ConquestHost,
   currentSeason,
   ERROR_CODES,
   GrammarRaceHost,
@@ -19,6 +20,7 @@ import {
   type AnswerPayload,
   type Bracket,
   type Clock,
+  type ConquestAction,
   type MatchHost,
   type MatchOutcome,
   type OnlineModeId,
@@ -177,7 +179,14 @@ export class MatchManager {
         }
       },
     };
-    m.host = m.mode === 'grammar-race' ? new GrammarRaceHost(deps) : m.mode === 'sentence-master' ? new SentenceDuelHost(deps) : new WordBattleHost(deps);
+    m.host =
+      m.mode === 'grammar-race'
+        ? new GrammarRaceHost(deps)
+        : m.mode === 'sentence-master'
+          ? new SentenceDuelHost(deps)
+          : m.mode === 'english-conquest'
+            ? new ConquestHost(deps)
+            : new WordBattleHost(deps);
     // Players who are offline at start count as disconnected.
     for (const p of m.players) if (!this.hub.isOnline(p.playerId)) m.host.setConnected(p.playerId, false);
     m.host.start();
@@ -216,7 +225,8 @@ export class MatchManager {
       const completed = o.reason !== 'cancelled';
       xp.set(p.playerId, matchXp(stats, result, completed));
       // A forfeiting player earns no shards; rewards are computed only here, server-side.
-      shards.set(p.playerId, o.reason === 'forfeit' && result === 'loss' ? 0 : matchShards(stats, result, completed));
+      const leftEarly = o.forfeited?.includes(p.playerId) || (o.reason === 'forfeit' && result === 'loss');
+      shards.set(p.playerId, leftEarly ? 0 : matchShards(stats, result, completed));
       const ids: string[] = [];
       if (result === 'win') ids.push('first-victory');
       if (result === 'win' && m.mode === 'grammar-race') ids.push('race-winner');
@@ -287,6 +297,14 @@ export class MatchManager {
     return r.ok ? null : { code: r.code, message: r.message };
   }
 
+  action(playerId: string, matchId: string, action: ConquestAction): { code: string; message: string } | null {
+    const m = this.get(playerId, matchId);
+    if ('error' in m) return { code: m.error, message: 'Not in this match' };
+    if (!m.host || m.state !== 'live' || !m.host.submitAction) return { code: ERROR_CODES.INVALID_STATE, message: 'Match is not live' };
+    const r = m.host.submitAction(playerId, action);
+    return r.ok ? null : { code: r.code, message: r.message };
+  }
+
   leave(playerId: string, matchId: string): void {
     const m = this.matches.get(matchId);
     if (!m || !this.member(m, playerId)) return;
@@ -295,7 +313,11 @@ export class MatchManager {
       if (m.readyTimer) clearTimeout(m.readyTimer);
       this.broadcast(m, { type: 'MATCH_CANCELLED', matchId, reason: 'player-left' });
       this.cleanup(matchId);
-    } else if (m.state === 'live') m.host?.forfeit(playerId);
+    } else if (m.state === 'live') {
+      m.host?.forfeit(playerId);
+      // Multi-player conquests continue without the leaver; free them for other games.
+      if (m.state === 'live' && !m.host?.isEnded() && this.byPlayer.get(playerId) === matchId) this.byPlayer.delete(playerId);
+    }
   }
 
   async quickChat(playerId: string, matchId: string, phraseId: string): Promise<void> {

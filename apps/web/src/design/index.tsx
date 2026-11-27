@@ -181,7 +181,24 @@ export function StateMessage({ icon = 'info', title, children, error, action }: 
   );
 }
 
-export function Dialog({ open, title, onClose, children, actions, labelledBy }: { open: boolean; title: ReactNode; onClose: () => void; children: ReactNode; actions?: ReactNode; labelledBy?: string }) {
+export function Dialog({
+  open,
+  title,
+  onClose,
+  children,
+  actions,
+  labelledBy,
+  dismissible = true,
+}: {
+  open: boolean;
+  title: ReactNode;
+  onClose: () => void;
+  children: ReactNode;
+  actions?: ReactNode;
+  labelledBy?: string;
+  /** When false there is no close button and Escape / backdrop clicks are ignored (a decision is required). */
+  dismissible?: boolean;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const t = useT();
   useEffect(() => {
@@ -189,24 +206,24 @@ export function Dialog({ open, title, onClose, children, actions, labelledBy }: 
     const prev = document.activeElement as HTMLElement | null;
     ref.current?.querySelector<HTMLElement>('button, [href], input, textarea, select')?.focus();
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape' && dismissible) onClose();
     };
     window.addEventListener('keydown', onKey);
     return () => {
       window.removeEventListener('keydown', onKey);
       prev?.focus?.();
     };
-  }, [open, onClose]);
+  }, [open, onClose, dismissible]);
   if (!open) return null;
   const id = labelledBy ?? 'dialog-title';
   return (
-    <div className="dialog-backdrop" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
+    <div className="dialog-backdrop" onMouseDown={(e) => dismissible && e.target === e.currentTarget && onClose()}>
       <div className="panel dialog" role="dialog" aria-modal="true" aria-labelledby={id} ref={ref}>
         <div className="dialog__head">
           <h2 className="dialog__title" id={id}>
             {title}
           </h2>
-          <Button variant="ghost" size="sm" icon="x" aria-label={t('common.close')} onClick={onClose} />
+          {dismissible && <Button variant="ghost" size="sm" icon="x" aria-label={t('common.close')} onClick={onClose} />}
         </div>
         {children}
         {actions && <div className="dialog__actions">{actions}</div>}

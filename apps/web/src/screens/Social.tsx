@@ -1,6 +1,6 @@
 /** Leaderboards, friends, blocking and reporting. All data comes from the real server — never faked. */
 import { useEffect, useState } from 'react';
-import { BRACKETS, ONLINE_MODE_IDS, currentSeason, type Bracket, type OnlineModeId } from '@lingua/shared';
+import { BRACKETS, ONLINE_MODE_IDS, QUEUE_MODE_IDS, currentSeason, type Bracket, type OnlineModeId } from '@lingua/shared';
 import { RankEmblem } from '../art/Art';
 import { Button, Chip, Dialog, Loading, Panel, Segmented, StateMessage, toast } from '../design';
 import { useT, type MessageKey } from '../i18n';
@@ -39,7 +39,7 @@ export function Leaderboard() {
         </Chip>
       </div>
       <div className="row">
-        <Segmented label={t('play.mode')} value={mode} onChange={setMode} options={ONLINE_MODE_IDS.map((m) => ({ value: m, label: t(`mode.${m}` as MessageKey) }))} />
+        <Segmented label={t('play.mode')} value={mode} onChange={setMode} options={QUEUE_MODE_IDS.map((m) => ({ value: m, label: t(`mode.${m}` as MessageKey) }))} />
         <Segmented label={t('play.bracket')} value={bracket} onChange={setBracket} options={BRACKETS.map((b) => ({ value: b, label: t(`play.bracket.${b}` as MessageKey) }))} />
       </div>
       <Panel flush>

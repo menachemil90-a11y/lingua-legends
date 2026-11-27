@@ -2,6 +2,7 @@ import type { ContentItem, OnlineModeId } from '../content/schema';
 import type { RoundQuestion } from '../content/grading';
 import type { AnswerPayload, PlayerMatchStats, PublicPlayer, ServerMessage } from '../protocol';
 import type { RandomFn } from '../random';
+import type { ConquestAction } from '../rules/conquest';
 
 export type TimerHandle = unknown;
 
@@ -80,6 +81,8 @@ export interface MatchOutcome {
   stats: PlayerMatchStats[];
   startedAt: number;
   endedAt: number;
+  /** Players who left before the end (multi-player modes keep going without them). */
+  forfeited?: string[];
 }
 
 export interface RoundLog {
@@ -107,6 +110,8 @@ export interface MatchHost {
   start(): void;
   submitAnswer(playerId: string, roundId: string, answer: AnswerPayload): ActionResult;
   useAbility(playerId: string, ability: string): ActionResult;
+  /** Turn-based strategy intents (English Conquest only). */
+  submitAction?(playerId: string, action: ConquestAction): ActionResult;
   setConnected(playerId: string, connected: boolean): void;
   forfeit(playerId: string): void;
   /** Messages that restore a reconnecting player's view of the match. */

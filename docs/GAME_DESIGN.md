@@ -76,7 +76,13 @@ Original 12-island archipelago, factions Azure, Gilded, Violet and Ember. Each t
 and a +2 Focus bonus for the next attack), then up to 3 actions — recruit (2 gold), fortify (5 gold, +2 defence),
 move, attack. Attack succeeds when troops + focus > defenders + fort; the preview shows the exact odds before you commit.
 Win by holding 8 islands, or after 12 rounds by most islands, then most troops. Bots use the same rules
-(`packages/shared/src/rules/conquest.ts`) and are labelled as bots. Online play is planned.
+(`packages/shared/src/rules/conquest.ts`) and are labelled as bots.
+
+**Online (private rooms, 2–4 friends, unranked).** The server's `ConquestHost` owns the state. Only the active player
+receives the question (the key stays on the server until they answer); everyone sees the board, gold and log update live.
+A turn has a question timer from the item and 45 s for actions, and passes automatically when the three actions are spent.
+An absent player's turn is skipped after 8 s (no bonus); after 60 s away — or on leaving — their islands turn neutral and
+the others play on. The last player standing wins by forfeit. Leavers earn no shards.
 
 ## Debate Arena (private practice)
 Pick a topic and a side, write an opening statement, read the opposing view, write a rebuttal. A rule-based checker
@@ -84,5 +90,5 @@ Pick a topic and a side, write an opening statement, read the opposing view, wri
 connectors, long sentences and common errors. It is clearly labelled as an automatic structure check, not AI or a teacher.
 
 ## Planned modes
-Online English Conquest (2–4), co-op Escape Room, Debate Arena AI feedback (once approved), full Real Life (speech once approved),
+Co-op Escape Room, Debate Arena AI feedback (once approved), full Real Life (speech once approved),
 more Detective cases. See `docs/ROADMAP.md`.

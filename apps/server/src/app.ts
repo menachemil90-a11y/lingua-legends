@@ -10,7 +10,7 @@ import {
   currentSeason,
   ERROR_CODES,
   MAX_MESSAGE_BYTES,
-  ONLINE_MODE_IDS,
+  QUEUE_MODE_IDS,
   BRACKETS,
   rankFromRating,
   type ClientMessage,
@@ -127,7 +127,7 @@ export async function startServer(cfg: Config, store: ServerStore, port = cfg.PO
       if (req.method === 'GET' && url.pathname === '/api/leaderboard') {
         const mode = url.searchParams.get('mode') as OnlineModeId;
         const bracket = url.searchParams.get('bracket') as Bracket;
-        if (!ONLINE_MODE_IDS.includes(mode) || !BRACKETS.includes(bracket)) return json(res, 400, { error: 'bad params' }, corsOrigin);
+        if (!(QUEUE_MODE_IDS as readonly string[]).includes(mode) || !BRACKETS.includes(bracket)) return json(res, 400, { error: 'bad params' }, corsOrigin);
         const season = currentSeason();
         const rows = await store.leaderboard(mode, bracket, season.id, 50);
         return json(
@@ -325,6 +325,10 @@ export async function startServer(cfg: Config, store: ServerStore, port = cfg.PO
         return fail(matches.ready(playerId, msg.matchId), 'Not in this match');
       case 'ANSWER_SUBMIT': {
         const err = matches.answer(playerId, msg.matchId, msg.roundId, msg.answer);
+        return err ? fail(err.code, err.message) : undefined;
+      }
+      case 'CONQUEST_ACTION': {
+        const err = matches.action(playerId, msg.matchId, msg.action);
         return err ? fail(err.code, err.message) : undefined;
       }
       case 'ABILITY_USE': {

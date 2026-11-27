@@ -1,6 +1,6 @@
 /** Online matchmaking queue and private rooms. Matches start via the global MATCH_FOUND router. */
 import { useEffect, useRef, useState } from 'react';
-import type { Bracket, OnlineModeId } from '@lingua/shared';
+import { isQueueMode, type Bracket, type OnlineModeId } from '@lingua/shared';
 import { Hero } from '../art/Art';
 import { Button, Chip, Panel, StateMessage, toast } from '../design';
 import { useT, type MessageKey } from '../i18n';
@@ -31,7 +31,7 @@ export function Online({ mode, flow, queue, bracket, roomCode }: { mode: OnlineM
     started.current = true;
     void connection.connect().then((ok) => {
       if (!ok) return;
-      if (flow === 'queue' && queue) connection.send({ type: 'QUEUE_JOIN', mode, queue, bracket });
+      if (flow === 'queue' && queue && isQueueMode(mode)) connection.send({ type: 'QUEUE_JOIN', mode, queue, bracket });
       if (flow === 'room' && roomCode) connection.send({ type: 'ROOM_JOIN', code: roomCode });
     });
     return () => {

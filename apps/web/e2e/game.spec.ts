@@ -117,6 +117,37 @@ test('Listening lab starts a session with a play control', async ({ page }) => {
   await expect(page.locator('.answer').first()).toBeVisible();
 });
 
+test('two browsers play English Conquest online: question for the active player, turn passes', async ({ browser }) => {
+  const ctxA = await browser.newContext();
+  const ctxB = await browser.newContext();
+  const a = await ctxA.newPage();
+  const b = await ctxB.newPage();
+  await skipOnboarding(a);
+  await skipOnboarding(b);
+  await pickMode(a, 'English Conquest');
+  await a.getByTestId('conquest-online').click();
+  await a.getByTestId('create-room').click();
+  const code = (await a.getByTestId('room-code').textContent())!.trim();
+  await b.goto(`/?room=${code}`);
+  await a.getByTestId('start-room').click({ timeout: 20_000 });
+  for (const p of [a, b]) await p.getByRole('button', { name: /אישור|Accept/ }).click({ timeout: 20_000 });
+  for (const p of [a, b]) await expect(p.locator('.conquest-map')).toBeVisible({ timeout: 20_000 });
+
+  // Exactly one player gets the question dialog.
+  const qcard = (p: Page) => p.locator('.qcard');
+  await expect.poll(async () => (await qcard(a).count()) + (await qcard(b).count()), { timeout: 20_000 }).toBe(1);
+  const [active, other] = (await qcard(a).count()) > 0 ? [a, b] : [b, a];
+  await expect(qcard(other)).toHaveCount(0);
+  await active.locator('.answer').first().click();
+  await active.getByTestId('cq-continue').click({ timeout: 15_000 });
+  await active.getByTestId('cq-end-turn').click();
+  // The turn passes to the other browser, which now receives its own question.
+  await expect(qcard(other)).toBeVisible({ timeout: 20_000 });
+  await expect(a.locator('.chip--bot')).toHaveCount(0);
+  await ctxA.close();
+  await ctxB.close();
+});
+
 test('@mobile lobby has no horizontal overflow and the play button is reachable', async ({ page }) => {
   await skipOnboarding(page);
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);

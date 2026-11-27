@@ -25,6 +25,8 @@ export const CONQUEST_FACTIONS = [
   { id: 'ember', name: 'Ember Artisans', nameHe: 'אומני הגחלים', color: '#ff8a3d' },
 ] as const;
 export type FactionId = (typeof CONQUEST_FACTIONS)[number]['id'];
+export const FACTION_IDS = CONQUEST_FACTIONS.map((f) => f.id) as unknown as readonly [FactionId, ...FactionId[]];
+export const LOG_KINDS = ['income', 'answer', 'recruit', 'fortify', 'capture', 'repelled', 'move', 'eliminated', 'victory'] as const;
 
 const T = (id: string, name: string, x: number, y: number, yld: number, neighbors: string[]): Territory => ({ id, name, x, y, yield: yld, neighbors });
 
@@ -98,7 +100,7 @@ export interface LogEntry {
   round: number;
   playerId: string;
   text: string;
-  kind: 'income' | 'answer' | 'recruit' | 'fortify' | 'capture' | 'repelled' | 'move' | 'eliminated' | 'victory';
+  kind: (typeof LOG_KINDS)[number];
 }
 
 export interface ConquestState {
@@ -323,6 +325,30 @@ export function endTurn(state: ConquestState): ConquestState {
     return finish(s, tie ? null : top.id, 'rounds');
   }
   return startTurn(s);
+}
+
+/**
+ * Removes a player who left or forfeited: their islands turn neutral (troops stay as
+ * garrisons, forts fall), the game checks for a winner, and their turn is skipped.
+ */
+export function eliminatePlayer(state: ConquestState, playerId: string): ConquestState {
+  if (state.phase === 'ended') return state;
+  const s = clone(state);
+  const p = s.players.find((x) => x.id === playerId);
+  if (!p || !p.alive) return s;
+  const wasTurn = currentPlayer(s).id === playerId;
+  p.alive = false;
+  for (const t of Object.values(s.territories)) {
+    if (t.owner === playerId) {
+      t.owner = null;
+      t.fort = false;
+      t.troops = Math.max(1, t.troops);
+    }
+  }
+  s.log.push({ round: s.round, playerId, kind: 'eliminated', text: `${p.name} left the conquest` });
+  const v = checkVictory(s);
+  if (v.phase === 'ended' || !wasTurn) return v;
+  return endTurn(v);
 }
 
 // ---------------------------------------------------------------------------

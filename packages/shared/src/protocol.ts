@@ -7,7 +7,8 @@
  */
 import { z } from 'zod';
 import { BRACKETS, CEFR_LEVELS, SKILLS } from './cefr';
-import { ONLINE_MODE_IDS, ERROR_CATEGORIES, publicQuestionSchema, bilingualSchema } from './content/schema';
+import { ONLINE_MODE_IDS, QUEUE_MODE_IDS, ERROR_CATEGORIES, publicQuestionSchema, bilingualSchema } from './content/schema';
+import { CONQUEST_MAP, FACTION_IDS, LOG_KINDS } from './rules/conquest';
 import { QUICK_CHAT_IDS } from './catalog';
 import { RANK_TIERS } from './ranking';
 
@@ -21,6 +22,7 @@ const msgId = z.string().regex(/^[A-Za-z0-9_-]{8,64}$/);
 const base = { msgId };
 
 export const modeSchema = z.enum(ONLINE_MODE_IDS);
+export const queueModeSchema = z.enum(QUEUE_MODE_IDS);
 export const bracketSchema = z.enum(BRACKETS);
 export const queueKindSchema = z.enum(['ranked', 'casual']);
 export type QueueKind = z.infer<typeof queueKindSchema>;
@@ -32,6 +34,17 @@ export const answerPayloadSchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('tiles'), tileIds: z.array(z.string().min(1).max(8)).min(1).max(40) }),
 ]);
 export type AnswerPayload = z.infer<typeof answerPayloadSchema>;
+
+const territoryId = z.enum(CONQUEST_MAP.map((t) => t.id) as [string, ...string[]]);
+const troopCount = z.number().int().min(1).max(999);
+/** English Conquest intents. The host validates legality against the authoritative state. */
+export const conquestActionSchema = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('recruit'), at: territoryId }),
+  z.object({ type: z.literal('fortify'), at: territoryId }),
+  z.object({ type: z.literal('attack'), from: territoryId, to: territoryId, troops: troopCount, useFocus: z.boolean() }),
+  z.object({ type: z.literal('move'), from: territoryId, to: territoryId, troops: troopCount }),
+  z.object({ type: z.literal('end') }),
+]);
 
 const cosmeticsSchema = z.object({
   characterId: z.string().max(32).default('vexa'),
@@ -48,7 +61,7 @@ export const clientMessageSchema = z.discriminatedUnion('type', [
     protocol: z.literal(PROTOCOL_VERSION),
     cosmetics: cosmeticsSchema.optional(),
   }),
-  z.object({ type: z.literal('QUEUE_JOIN'), ...base, mode: modeSchema, queue: queueKindSchema, bracket: bracketSchema }),
+  z.object({ type: z.literal('QUEUE_JOIN'), ...base, mode: queueModeSchema, queue: queueKindSchema, bracket: bracketSchema }),
   z.object({ type: z.literal('QUEUE_LEAVE'), ...base }),
   z.object({ type: z.literal('ROOM_CREATE'), ...base, mode: modeSchema, bracket: bracketSchema }),
   z.object({ type: z.literal('ROOM_JOIN'), ...base, code: z.string().regex(/^[A-Z0-9]{6}$/) }),
@@ -58,6 +71,7 @@ export const clientMessageSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('READY'), ...base, matchId: id }),
   z.object({ type: z.literal('ANSWER_SUBMIT'), ...base, matchId: id, roundId: id, answer: answerPayloadSchema }),
   z.object({ type: z.literal('ABILITY_USE'), ...base, matchId: id, ability: abilitySchema }),
+  z.object({ type: z.literal('CONQUEST_ACTION'), ...base, matchId: id, action: conquestActionSchema }),
   z.object({ type: z.literal('REMATCH_REQUEST'), ...base, matchId: id }),
   z.object({ type: z.literal('MATCH_LEAVE'), ...base, matchId: id }),
   z.object({ type: z.literal('QUICK_CHAT'), ...base, matchId: id, phraseId: z.enum(QUICK_CHAT_IDS) }),
@@ -138,10 +152,43 @@ const sentencePlayerState = z.object({
 });
 export type SentencePlayerState = z.infer<typeof sentencePlayerState>;
 
+const conquestPlayerSchema = z.object({
+  id,
+  name: z.string(),
+  faction: z.enum(FACTION_IDS),
+  isBot: z.boolean(),
+  botTier: z.string().optional(),
+  gold: z.number(),
+  focus: z.number(),
+  alive: z.boolean(),
+  capital: z.string(),
+  correctAnswers: z.number(),
+  questionsAnswered: z.number(),
+});
+export const conquestStateSchema = z.object({
+  round: z.number(),
+  turn: z.number(),
+  phase: z.enum(['question', 'actions', 'ended']),
+  actionsLeft: z.number(),
+  players: z.array(conquestPlayerSchema),
+  territories: z.record(z.string(), z.object({ owner: z.string().nullable(), troops: z.number(), fort: z.boolean() })),
+  /** The server sends only the most recent log entries. */
+  log: z.array(z.object({ round: z.number(), playerId: z.string(), text: z.string(), kind: z.enum(LOG_KINDS) })),
+  winnerId: z.string().nullable(),
+  endReason: z.enum(['domination', 'elimination', 'rounds']).nullable(),
+});
+
 export const playerStatePayloadSchema = z.discriminatedUnion('mode', [
   z.object({ mode: z.literal('word-battle'), players: z.array(wordBattlePlayerState) }),
   z.object({ mode: z.literal('grammar-race'), trackLength: z.number(), elapsedMs: z.number(), players: z.array(racePlayerState) }),
   z.object({ mode: z.literal('sentence-master'), players: z.array(sentencePlayerState) }),
+  z.object({
+    mode: z.literal('english-conquest'),
+    state: conquestStateSchema,
+    connected: z.array(id),
+    /** Server time when the current phase (question or actions) times out. */
+    phaseDeadline: z.number().nullable(),
+  }),
 ]);
 export type PlayerStatePayload = z.infer<typeof playerStatePayloadSchema>;
 

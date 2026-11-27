@@ -184,6 +184,69 @@ describe('Grammar Race rooms', () => {
   }, 30_000);
 });
 
+describe('English Conquest rooms', () => {
+  it('runs a 3-player conquest on the server: private questions, validated actions, leavers', async () => {
+    const a = await client('Lia');
+    const b = await client('Max');
+    const c = await client('Noa');
+    // Conquest is private-room only: the queue rejects it at validation.
+    a.sendRaw({ type: 'QUEUE_JOIN', msgId: a.id(), mode: 'english-conquest', queue: 'casual', bracket: 'core' });
+    expect((await a.waitFor('ERROR', (e) => e.code === 'BAD_MESSAGE')).code).toBe('BAD_MESSAGE');
+    a.send({ type: 'ROOM_CREATE', mode: 'english-conquest', bracket: 'core' });
+    const room = await a.waitFor('ROOM_STATE', (m) => m.members.length === 1);
+    expect(room.capacity).toBe(4);
+    b.send({ type: 'ROOM_JOIN', code: room.code });
+    c.send({ type: 'ROOM_JOIN', code: room.code });
+    await a.waitFor('ROOM_STATE', (m) => m.members.length === 3);
+    a.send({ type: 'ROOM_START' });
+    const found = await a.waitFor('MATCH_FOUND');
+    expect(found.mode).toBe('english-conquest');
+    for (const p of [a, b, c]) p.send({ type: 'READY', matchId: found.matchId });
+    const st0 = await b.waitFor('PLAYER_STATE', (m) => m.state.mode === 'english-conquest');
+    if (st0.state.mode !== 'english-conquest') throw new Error('mode');
+    const first = st0.state.state.players[0]!.id;
+    const active = [a, b, c].find((x) => x.playerId === first)!;
+    const others = [a, b, c].filter((x) => x !== active) as [TestClient, TestClient];
+    const q = await active.waitFor('ROUND_START', () => true, 9000);
+    // Only the active player receives the question, and never the key.
+    expect(JSON.stringify(q)).not.toContain('acceptedAnswers');
+    await new Promise((r) => setTimeout(r, 200));
+    for (const o of others) expect(o.messages.some((m) => m.type === 'ROUND_START')).toBe(false);
+    // Another player cannot answer or act for the active player.
+    others[0].send({ type: 'ANSWER_SUBMIT', matchId: found.matchId, roundId: q.roundId, answer: { kind: 'option', optionId: q.question.options![0]!.id } });
+    expect((await others[0].waitFor('ERROR', (e) => e.code === 'FORBIDDEN')).code).toBe('FORBIDDEN');
+    const key = server.matches.peekRound(found.matchId, q.roundId)!.key.correctOptionIds![0]!;
+    active.send({ type: 'ANSWER_SUBMIT', matchId: found.matchId, roundId: q.roundId, answer: { kind: 'option', optionId: key } });
+    const res = await active.waitFor('ANSWER_RESULT');
+    expect(res.results[0]).toMatchObject({ playerId: active.playerId, correct: true });
+    const afterAnswer = await others[1].waitFor('PLAYER_STATE', (m) => m.state.mode === 'english-conquest' && m.state.state.phase === 'actions');
+    if (afterAnswer.state.mode !== 'english-conquest') throw new Error('mode');
+    const capital = afterAnswer.state.state.players.find((p) => p.id === active.playerId)!.capital;
+    // A forged, illegal action (recruiting on someone else's island) is rejected by the server rules.
+    const foreign = afterAnswer.state.state.players.find((p) => p.id !== active.playerId)!.capital;
+    active.send({ type: 'CONQUEST_ACTION', matchId: found.matchId, action: { type: 'recruit', at: foreign } });
+    expect((await active.waitFor('ERROR', (e) => e.code === 'INVALID_STATE')).code).toBe('INVALID_STATE');
+    active.send({ type: 'CONQUEST_ACTION', matchId: found.matchId, action: { type: 'recruit', at: capital } });
+    await others[0].waitFor('PLAYER_STATE', (m) => m.state.mode === 'english-conquest' && m.state.state.territories[capital]!.troops === 4);
+    active.send({ type: 'CONQUEST_ACTION', matchId: found.matchId, action: { type: 'end' } });
+    const nextQ = await others[0].waitFor('ROUND_START', () => true, 9000);
+    expect(nextQ.roundId).not.toBe(q.roundId);
+    // One player leaves: the conquest continues for the other two; then a second leaves and the last one wins.
+    active.send({ type: 'MATCH_LEAVE', matchId: found.matchId });
+    const st = await others[1].waitFor('PLAYER_STATE', (m) => m.state.mode === 'english-conquest' && m.state.state.players.some((p) => p.id === active.playerId && !p.alive));
+    if (st.state.mode !== 'english-conquest') throw new Error('mode');
+    expect(Object.values(st.state.state.territories).some((t) => t.owner === active.playerId)).toBe(false);
+    others[0].send({ type: 'MATCH_LEAVE', matchId: found.matchId });
+    const end = await others[1].waitFor('MATCH_END', () => true, 9000);
+    expect(end.winnerId).toBe(others[1].playerId);
+    expect(end.ranked).toBe(false);
+    expect(end.outcomes.filter((o) => o.result === 'loss')).toHaveLength(2);
+    const endLeaver = await active.waitFor('MATCH_END', () => true, 9000).catch(() => null);
+    // The first leaver was released from the match and earns no shards if they still get the result.
+    if (endLeaver) expect(endLeaver.shardsEarned).toBe(0);
+  }, 40_000);
+});
+
 describe('ranked matchmaking', () => {
   it('matches two real players, updates MMR server-side and shows them on the leaderboard', async () => {
     const a = await client('Rina');
