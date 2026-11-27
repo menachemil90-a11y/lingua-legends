@@ -21,7 +21,7 @@ CEFR A1–C2, Israeli 5-unit Bagrut preparation, and real authoritative multipla
 | **Escape Room** — 4 original illustrated rooms (A2/B1/B2/C1), choice/text/order puzzles, hints, relaxed or timed | ✅ solo, ✅ online co-op for 2–4 friends (server checks every answer; unranked) |
 | **English Conquest** — 12-island strategy map, 4 factions, answer questions for gold, recruit/fortify/attack/move | ✅ vs 1–3 labelled bots, ✅ online private rooms for 2–4 friends (authoritative server host, unranked) |
 | **Debate Arena** — 10 motions B1–C2; opening → the other side's prepared argument → rebuttal → their prepared closing → your closing; transparent 8-point checklist (not a grade, not AI), key vocabulary with Hebrew, debate history | ✅ private practice (AI feedback ⛔ needs approval; live debates between players are intentionally not offered — no free text between players) |
-| Listening lab — 12 listening items using free on-device browser text-to-speech; transcript hidden until answered | ✅ (falls back to reading when TTS is unavailable, and is then not counted as listening evidence) |
+| Listening lab — 20 listening items using free on-device browser text-to-speech; transcript hidden until answered | ✅ (falls back to reading when TTS is unavailable, and is then not counted as listening evidence) |
 | **Real Life** — 8 branching text conversations A2–C1 (airport, hotel, shop return, restaurant, support call, job interview, university office hours, tech stand-up) | ✅ text mode (speech recognition not enabled) |
 | **English Detective** — 4 cases (A2, B1, B2, C1): read evidence, answer shuffled questions, name who is responsible | ✅ |
 | **Tournaments** — offline Champion's Cup (3 knockout rounds vs labelled bots of rising strength) and friends' knockouts online (3–8 players, byes, automatic rounds, explainable tie-breaks, walkovers, server rewards) | ✅ cup offline, ✅ online locally (unranked) |
@@ -94,7 +94,7 @@ WebSockets (Render / Koyeb / any VPS) + Supabase Free. Exact steps and environme
 - The exam structure in Bagrut Academy is a configurable draft pending verification against the official booklet.
 - All content is original but AI-drafted (`reviewStatus: 'ai-drafted'`) and must be reviewed by a teacher.
 - No AI writing feedback, no speech recognition (clearly labelled in the UI).
-- Content volume is still small (228 public items; a 120-item public ranked *development sample*; a 99-item private ranked pool delivered outside the repository) and must grow before release.
+- Content volume is still small (282 public items; a 120-item public ranked *development sample*; a 99-item private ranked pool delivered outside the repository) and must grow before release.
 - Online English Conquest and co-op Escape Room are private-room only and unranked.
 - Offline (vs bot) rewards are stored on the device only; only online-match rewards are server-verified.
 
