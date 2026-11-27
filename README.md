@@ -90,7 +90,7 @@ WebSockets (Render / Koyeb / any VPS) + Supabase Free. Exact steps and environme
 - The exam structure in Bagrut Academy is a configurable draft pending verification against the official booklet.
 - All content is original but AI-drafted (`reviewStatus: 'ai-drafted'`) and must be reviewed by a teacher.
 - No AI writing feedback, no speech recognition (clearly labelled in the UI).
-- Content volume is still small (216 public + 120 server-only ranked items) and must grow before release.
+- Content volume is still small (228 public + 120 server-only ranked items) and must grow before release.
 - Escape Room is single-player for now (co-op not implemented). Online English Conquest is private-room only and unranked.
 - Offline (vs bot) rewards are stored on the device only; only online-match rewards are server-verified.
 

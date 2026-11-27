@@ -7,9 +7,9 @@ All commands were executed in the development container (Node 22, pnpm 10, Postg
 | Lint | `pnpm lint` | ✅ 0 problems |
 | Type checking | `pnpm typecheck` | ✅ all 5 packages |
 | Unit + integration tests | `pnpm test` | ✅ 12 files, 68 tests |
-| Content validation | `pnpm content:validate` | ✅ 216 public items (A1 25, A2 24, B1 24, B2 24, C1 19, C2 14 general; 22 sentence; 32 race; 20 reading; 12 listening; 10 sets; 15 open tasks; 3 escape rooms) + 120 server-only ranked items (34 foundation, 35 core, 30 advanced option items + 21 sentence puzzles) |
+| Content validation | `pnpm content:validate` | ✅ 228 public items (A1 25, A2 24, B1 24, B2 24, C1 25, C2 20 general; 22 sentence; 32 race; 20 reading; 12 listening; 10 sets; 15 open tasks; 3 escape rooms) + 120 server-only ranked items (34 foundation, 35 core, 30 advanced option items + 21 sentence puzzles) |
 | Production build | `pnpm build` | ✅ web (`apps/web/dist`) + server (`apps/server/dist/index.js`) |
-| Database migrations + RLS | `pnpm db:test` | ✅ "ALL RLS TESTS PASSED"; seed of 216 public items applied |
+| Database migrations + RLS | `pnpm db:test` | ✅ "ALL RLS TESTS PASSED"; seed of 228 public items applied |
 | End-to-end (browser + real server) | `pnpm test:e2e` | ✅ 11/11 (desktop 1366 px + mobile 360 px) |
 
 ## What the automated tests cover
