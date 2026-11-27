@@ -13,7 +13,7 @@ CEFR A1–C2, Israeli 5-unit Bagrut preparation, and real authoritative multipla
 | **Word Battle** — 1v1 arena (Phaser): HP, damage with modest speed bonus, 3-combo abilities (Shield / Surge / Focus), KO/timeout/draw rules | ✅ vs labelled bots offline, ✅ online (private rooms, casual & ranked queues) |
 | **Grammar Race** — animated hover-racing (Phaser): boosts, turbo streaks, stalls, finish line, positions | ✅ offline vs 1–3 labelled bots (2–4 racers), ✅ online 1v1 queues + private rooms for up to 4 racers (host can start with 2+) |
 | **Sentence Master** — tile building with drag & drop, tap, and full keyboard control; multiple valid answers; structural feedback | ✅ untimed practice, ✅ duel vs bot, ✅ online duel |
-| Lobby, onboarding, mode picker, profile, settings, customization, leaderboards, friends | ✅ |
+| Lobby, onboarding, mode picker, profile (with the Learning Journey: milestones from real mastery, no streaks), settings, customization (frames, titles, characters, vehicles, arenas, effects), leaderboards, friends | ✅ |
 | Shared learning engine — spaced repetition, mastery per knowledge component, Elo-style skill estimates, adaptive selection, placement test | ✅ |
 | Post-match screen — result, accuracy, XP, rank change, mistakes with English/Hebrew explanations, **“Practise my mistakes”** session (exact public items, or similar public items for server-only ranked questions) | ✅ |
 | Bagrut Academy — Module E/F/G, COBE speaking practice (timers + TTS listening), project planner, timed mock exams | ✅ (exam structure = unverified draft, see `docs/BAGRUT.md`) |

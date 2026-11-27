@@ -55,7 +55,13 @@ Rematches are unranked to prevent rating farming. No outcome manipulation of any
 XP per match = 20 participation + 4 × correct + outcome (25/15/8) + combo (≤ 15) — losing still earns XP.
 Shards (cosmetic currency) are earned only by playing; nothing is for sale. Cosmetics are deterministic unlocks
 (level or achievement) and never affect gameplay. Weekly Momentum shows active days this week (Sunday-first) and never removes progress.
-Achievements: First Victory, Podium Finish, Architect, Wordsmith, Combo Master, On Fire, Scholar, Know Thyself, Memory Keeper.
+Achievements: First Victory, Podium Finish, Architect, Wordsmith, Combo Master, On Fire, Scholar, Know Thyself, Memory Keeper,
+Cup Champion, Tournament Champion.
+
+**Learning Journey** (Profile): permanent milestones driven by real learning and exploration — words mastered (25/50/100),
+grammar topics mastered (5/15), different modes played (5/8) and *total* days with learning (7/30; any days, never a streak).
+Each milestone unlocks a cosmetic (Verdant Ring, Runic Circle and Prism Halo frames; Lexicon Keeper, Syntax Sage,
+World Explorer, Steady Learner and Devoted Scholar titles). Nothing expires, nothing can be lost, nothing is for sale.
 Online matches: the server computes XP, shards and the match-based achievements (First Victory, Podium Finish, Combo Master)
 and stores them per player; a player who forfeits earns no shards. Offline (vs bot) rewards stay on the device.
 After any match, **Practise my mistakes** replays the public items that were missed; ranked (server-only) items are

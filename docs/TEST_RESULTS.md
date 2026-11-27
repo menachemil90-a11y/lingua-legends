@@ -6,7 +6,7 @@ All commands were executed in the development container (Node 22, pnpm 10, Postg
 | --- | --- | --- |
 | Lint | `pnpm lint` | ✅ 0 problems |
 | Type checking | `pnpm typecheck` | ✅ all 5 packages |
-| Unit + integration tests | `pnpm test` | ✅ 15 files, 87 tests |
+| Unit + integration tests | `pnpm test` | ✅ 16 files, 89 tests |
 | Content validation | `pnpm content:validate` | ✅ 228 public items (A1 25, A2 24, B1 24, B2 24, C1 25, C2 20 general; 22 sentence; 32 race; 20 reading; 12 listening; 10 sets; 15 open tasks; 3 escape rooms) + 120-item ranked **development sample** (public; 34/35/30 option items + 21 sentence puzzles). The 99-item private pool is validated with `pnpm ranked:validate` outside git |
 | Production build | `pnpm build` | ✅ web (`apps/web/dist`) + server (`apps/server/dist/index.js`) |
 | Database migrations + RLS | `pnpm db:test` | ✅ "ALL RLS TESTS PASSED"; seed of 228 public items applied |

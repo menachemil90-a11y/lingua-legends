@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
-import { SKILLS, type GameModeId } from '@lingua/shared';
+import { COSMETICS, journeyProgress, SKILLS, type GameModeId } from '@lingua/shared';
 import { estimateAll, masteredTags, topErrors, upcomingReviews, weakTopics, dueReviews } from '@lingua/learning';
 import { Hero, RankEmblem } from '../art/Art';
 import { Icon } from '../art/icons';
 import { Button, Chip, Dialog, En, Panel, ProgressBar, Stat, StateMessage } from '../design';
 import { useT, type MessageKey } from '../i18n';
-import { ACHIEVEMENTS, playerLevel, usePlayer } from '../state/player';
+import { ACHIEVEMENTS, journeyMetrics, playerLevel, usePlayer } from '../state/player';
 import { useNav } from '../state/nav';
 import { useConnection } from '../net/connection';
 import { fetchMyRatings, fetchMyWallet, type RemoteRating, type RemoteWallet } from '../net/api';
@@ -89,6 +89,37 @@ export function Profile() {
           </div>
           <p className="tiny muted">{t('profile.privacyNote')}</p>
         </div>
+      </Panel>
+
+      <Panel title={t('journey.title')} data-testid="journey">
+        <p className="small muted" style={{ marginBottom: 12 }}>
+          {t('journey.intro')}
+        </p>
+        <ul className="journey">
+          {journeyProgress(journeyMetrics(p)).map(({ milestone, value, done }) => {
+            const reward = COSMETICS.find((c) => c.unlock.kind === 'achievement' && c.unlock.achievementId === milestone.id);
+            return (
+              <li key={milestone.id} className={`journey__item ${done ? 'journey__item--done' : ''}`}>
+                <span className="journey__icon">
+                  <Icon name={done ? 'check' : milestone.metric === 'words' ? 'book' : milestone.metric === 'grammar' ? 'brain' : milestone.metric === 'modes' ? 'map' : 'star'} />
+                </span>
+                <span className="stack" style={{ gap: 4 }}>
+                  <span className="row small" style={{ justifyContent: 'space-between' }}>
+                    <strong>{t(`achievement.${milestone.id}` as MessageKey)}</strong>
+                    <span className="num tiny muted">
+                      {done ? t('journey.done') : `${value}/${milestone.target}`}
+                    </span>
+                  </span>
+                  <ProgressBar value={value / milestone.target} tone={done ? 'good' : 'gold'} label={t(`achievement.${milestone.id}.desc` as MessageKey)} height={6} />
+                  <span className="tiny muted">
+                    {t(`achievement.${milestone.id}.desc` as MessageKey)}
+                    {reward ? ` · ${t('journey.reward', { name: reward.name })}` : ''}
+                  </span>
+                </span>
+              </li>
+            );
+          })}
+        </ul>
       </Panel>
 
       <div className="grid-auto">

@@ -13,7 +13,9 @@ import {
   isUnlocked,
   levelFromXp,
   VEHICLES,
+  reachedMilestones,
   type BotTier,
+  type JourneyMetric,
   type CefrLevel,
   type GameModeId,
   type OnlineModeId,
@@ -142,7 +144,25 @@ export const ACHIEVEMENTS = [
   'reviewer',
   'cup-champion',
   'tournament-champion',
+  'words-50',
+  'words-100',
+  'grammar-5',
+  'grammar-15',
+  'explorer-5',
+  'explorer-8',
+  'days-7',
+  'days-30',
 ] as const;
+
+/** Inputs for the Learning Journey (real mastery and exploration; total days, never streaks). */
+export function journeyMetrics(s: Pick<PlayerState, 'learner' | 'matches' | 'activeDays'>): Record<JourneyMetric, number> {
+  return {
+    words: masteredTags(s.learner, 'v:').length,
+    grammar: masteredTags(s.learner, 'g:').length,
+    modes: new Set(s.matches.map((m) => m.mode)).size,
+    days: s.activeDays.length,
+  };
+}
 
 function today(): string {
   const d = new Date();
@@ -244,7 +264,7 @@ export const usePlayer = create<PlayerState>()(
           for (const ev of events) learner = recordEvent(learner, { ...ev, playerId: get().playerId });
           set({ learner });
           markActive();
-          if (masteredTags(learner, 'v:').length >= 25) unlock(['words-25']);
+          unlock(reachedMilestones(journeyMetrics(get())));
         },
         recordMatch: (rec) => {
           const before = levelFromXp(get().xp).level;
@@ -260,13 +280,14 @@ export const usePlayer = create<PlayerState>()(
             counters,
           });
           markActive();
+          const journey = unlock(reachedMilestones(journeyMetrics(get())));
           const ids: string[] = [];
           if (rec.result === 'win') ids.push('first-victory');
           if (rec.result === 'win' && rec.mode === 'grammar-race') ids.push('race-winner');
           if (counters.winStreak >= 3) ids.push('win-streak-3');
           if (rec.bestCombo >= 6) ids.push('combo-master');
           const unlocked = unlock(ids);
-          return { levelBefore: before, levelAfter: levelFromXp(get().xp).level, unlocked };
+          return { levelBefore: before, levelAfter: levelFromXp(get().xp).level, unlocked: [...journey, ...unlocked] };
         },
         equip: (patch) => set({ loadout: { ...get().loadout, ...patch } }),
         selectMode: (mode) => set({ selectedMode: mode }),
