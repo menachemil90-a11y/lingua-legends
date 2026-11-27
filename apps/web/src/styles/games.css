@@ -479,13 +479,25 @@
   color: var(--c-cyan-2);
   animation: pop-in 0.3s var(--ease-snap);
 }
-.vcue--wrong {
+.vcue--bad {
   border-color: var(--c-bad);
   color: var(--c-bad);
 }
-.vcue--correct {
+.vcue--good {
   border-color: var(--c-good);
   color: var(--c-good);
+}
+.vcue--gold {
+  border-color: var(--c-gold);
+  color: var(--c-gold-2);
+}
+/* App-wide fallback cue for screens without a game stage. */
+.vcue--screen {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 72px);
+  inset-inline-end: 16px;
+  z-index: 60;
+  pointer-events: none;
 }
 
 /* ===================== Grammar Race ===================== */

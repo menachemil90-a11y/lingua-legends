@@ -67,7 +67,7 @@ function Workspace({ topic }: { topic: DebateTopic }) {
   const advance = (to: Step) => {
     persist();
     setStep(to);
-    sfx.play('whoosh');
+    sfx.play('page');
   };
   const finish = () => {
     persist();

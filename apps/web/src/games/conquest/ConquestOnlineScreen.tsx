@@ -30,7 +30,7 @@ export function ConquestOnlineScreen({ transport, onEnd, onExit }: { transport: 
         const last = log[log.length - 1];
         const key = last ? `${last.round}:${log.length}:${last.text}` : '';
         if (key && key !== seenLog.current) {
-          if (last!.kind === 'capture') sfx.play('hit');
+          if (last!.kind === 'capture') sfx.play('capture');
           else if (last!.kind === 'repelled') sfx.play('shield');
           else if (last!.kind === 'recruit' || last!.kind === 'fortify') sfx.play('tile');
           seenLog.current = key;

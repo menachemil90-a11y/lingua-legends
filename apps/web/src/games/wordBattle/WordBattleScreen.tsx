@@ -131,6 +131,16 @@ export function WordBattleScreen({ transport, onEnd, onExit }: { transport: Matc
 
   const wb = view.state?.mode === 'word-battle' ? view.state.players : [];
   const meState: WordBattlePlayerState | undefined = wb.find((p) => p.playerId === selfId);
+  const myCombo = meState?.combo ?? 0;
+  const prevCombo = useRef(myCombo);
+  useEffect(() => {
+    const grew = myCombo >= 2 && myCombo > prevCombo.current;
+    prevCombo.current = myCombo;
+    if (!grew) return;
+    // Lands just after the "correct" chime; each further step of the streak rises in pitch.
+    const id = setTimeout(() => sfx.play('combo', { level: myCombo - 2 }), 260);
+    return () => clearTimeout(id);
+  }, [myCombo]);
   const foeState = wb.find((p) => p.playerId !== selfId);
   const me = view.players.find((p) => p.playerId === selfId) ?? view.players[0]!;
   const foe = view.players.find((p) => p.playerId !== selfId) ?? view.players[1]!;

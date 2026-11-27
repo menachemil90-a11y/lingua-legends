@@ -62,5 +62,7 @@ Status as of development session 2 (2026-11-27).
 - [ ] Public scheduled tournaments, seasons rollover tooling
 - [x] Learning Journey milestones tied to mastery (9 milestones, 8 new cosmetics)
 - [x] Word Battle tactics (4 styles) balanced by bot simulation
+- [x] Sound design pass: mode-specific cues, mystery music theme, limiter, visual twins for every important cue, background suspend
+- [x] Content batch 4: 36 general items (6 per level), 10 sentence puzzles, 8 listening items (282 public items)
 - [ ] Android packaging (TWA/Capacitor) from the PWA
 - [ ] Analytics for `docs/METRICS.md` (privacy-preserving, opt-in where required)

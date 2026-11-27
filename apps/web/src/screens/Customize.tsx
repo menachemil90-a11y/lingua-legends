@@ -7,6 +7,7 @@ import { useT, type MessageKey } from '../i18n';
 import { VictoryEffect } from '../art/effects';
 import { unlockedCharacters, unlockedCosmetics, unlockedVehicles, usePlayer } from '../state/player';
 import { useNav } from '../state/nav';
+import { sfx } from '../audio/sfx';
 
 type Tab = 'characters' | 'vehicles' | 'titles' | 'frames' | 'arenas' | 'effects';
 
@@ -14,6 +15,10 @@ export function Customize() {
   const t = useT();
   const back = useNav((s) => s.back);
   const p = usePlayer();
+  const select = (patch: Parameters<typeof p.equip>[0]) => {
+    sfx.play('select');
+    p.equip(patch);
+  };
   const [tab, setTab] = useState<Tab>('characters');
   const chars = unlockedCharacters(p);
   const cars = unlockedVehicles(p);
@@ -53,7 +58,7 @@ export function Customize() {
                 <strong className="display">{c.name}</strong>
                 <span className="tiny muted">{c.title}</span>
                 {unlocked ? (
-                  <Button variant={equipped ? 'default' : 'secondary'} size="sm" disabled={equipped} onClick={() => p.equip({ characterId: c.id })}>
+                  <Button variant={equipped ? 'default' : 'secondary'} size="sm" silent disabled={equipped} onClick={() => select({ characterId: c.id })}>
                     {equipped ? t('customize.equipped') : t('customize.equip')}
                   </Button>
                 ) : (
@@ -71,7 +76,7 @@ export function Customize() {
                 <Vehicle id={v.id} className="cos-card__car" />
                 <strong className="display">{v.name}</strong>
                 {unlocked ? (
-                  <Button variant={equipped ? 'default' : 'secondary'} size="sm" disabled={equipped} onClick={() => p.equip({ vehicleId: v.id })}>
+                  <Button variant={equipped ? 'default' : 'secondary'} size="sm" silent disabled={equipped} onClick={() => select({ vehicleId: v.id })}>
                     {equipped ? t('customize.equipped') : t('customize.equip')}
                   </Button>
                 ) : (
@@ -99,7 +104,7 @@ export function Customize() {
                 )}
                 <strong className="display">{c.name}</strong>
                 {unlocked ? (
-                  <Button variant={equipped ? 'default' : 'secondary'} size="sm" disabled={equipped} onClick={() => p.equip({ [key]: c.id })}>
+                  <Button variant={equipped ? 'default' : 'secondary'} size="sm" silent disabled={equipped} onClick={() => select({ [key]: c.id })}>
                     {equipped ? t('customize.equipped') : t('customize.equip')}
                   </Button>
                 ) : (

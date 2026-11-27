@@ -57,7 +57,7 @@ export function MatchScreen({ params }: { params: LocalMatchParams | OnlineMatch
         : createOnlineMatch(params.matchId, params.mode, params.players);
     finalized.current = false;
     setTransport(t);
-    sfx.setMusic('battle');
+    sfx.setMusic(params.mode === 'escape-room' ? 'mystery' : 'battle');
     return () => t.dispose();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [matchKey]);

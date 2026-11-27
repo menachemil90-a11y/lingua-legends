@@ -7,6 +7,7 @@ import { Icon } from '../art/icons';
 import { Button, Chip, En, Panel, StateMessage } from '../design';
 import { useT, useLang, type MessageKey } from '../i18n';
 import { sfx } from '../audio/sfx';
+import { useMusic } from '../audio/useMusic';
 import { usePlayer } from '../state/player';
 import { useNav } from '../state/nav';
 import { uid } from '../state/storage';
@@ -283,6 +284,7 @@ export function Detective({ caseId }: { caseId?: string }) {
 }
 
 function DetectiveCaseView({ c }: { c: (typeof DETECTIVE_CASES)[number] }) {
+  useMusic('mystery');
   const t = useT();
   const lang = useLang();
   const back = useNav((s) => s.back);
@@ -331,7 +333,7 @@ function DetectiveCaseView({ c }: { c: (typeof DETECTIVE_CASES)[number] }) {
                     className={`answer ${picked !== null && i === q.answer ? 'answer--correct' : ''} ${picked === i && i !== q.answer ? 'answer--wrong' : ''}`}
                     onClick={() => {
                       setPicked(i);
-                      sfx.play(i === q.answer ? 'correct' : 'wrong');
+                      sfx.play(i === q.answer ? 'clue' : 'wrong');
                       if (i === q.answer) setScore((n) => n + 1);
                       recordLearning([
                         storyEvent({ itemId: `detective:${c.id}:${q.id}`, mode: 'english-detective', correct: i === q.answer, level: c.level, primarySkill: 'inference', secondarySkills: ['reading'], category: 'reading-inference' }),

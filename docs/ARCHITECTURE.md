@@ -88,4 +88,6 @@ a shared queue (Redis or Postgres) and match ownership per process. Not needed f
 - When the browser is idle, the most likely next screens (Play, match, practice) are prefetched; ~8 s later every other
   chunk (including Phaser) is fetched once so the service worker caches it — skipped when the user enabled *Save data*.
   Verified: after the warm-up, Escape Room and a Word Battle match open with the network switched off.
+- Audio is synthesised at runtime (no audio files to download). While the page is hidden the `AudioContext` is suspended
+  and the music scheduler stopped, so a backgrounded phone does no audio work; both resume when the app returns.
 

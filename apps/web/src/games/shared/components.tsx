@@ -1,10 +1,10 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { COSMETICS, type PublicPlayer, type PublicQuestion, type ServerMessageOf } from '@lingua/shared';
-import { Icon } from '../../art/icons';
+import { Icon, type IconName } from '../../art/icons';
 import { Hero, RankEmblem } from '../../art/Art';
 import { BotBadge, En, He } from '../../design';
 import { useT } from '../../i18n';
-import { sfx } from '../../audio/sfx';
+import { sfx, type SfxName } from '../../audio/sfx';
 import { effectiveExplanations, useSettings } from '../../state/settings';
 
 /** Renders a prompt, turning "___" into a styled gap (filled after reveal). */
@@ -222,26 +222,62 @@ export function MatchIntro({ players, selfId, modeLabel }: { players: PublicPlay
   );
 }
 
-/** Small visual indicator for audio events (accessibility alternative to sound). */
-export function VisualCue() {
+/**
+ * Sounds that also get a visual cue (accessibility alternative to audio). Each cue pairs an icon
+ * with a colour, so the meaning never depends on colour alone. Pure UI clicks are left out.
+ */
+export const CUE_ICONS: Partial<Record<SfxName, { icon: IconName; tone: 'good' | 'bad' | 'gold' | 'info' }>> = {
+  correct: { icon: 'check', tone: 'good' },
+  wrong: { icon: 'x', tone: 'bad' },
+  hit: { icon: 'sword', tone: 'info' },
+  shield: { icon: 'shield', tone: 'info' },
+  charge: { icon: 'bolt', tone: 'gold' },
+  turbo: { icon: 'bolt', tone: 'gold' },
+  victory: { icon: 'trophy', tone: 'gold' },
+  defeat: { icon: 'flag', tone: 'info' },
+  unlock: { icon: 'lock', tone: 'good' },
+  capture: { icon: 'castle', tone: 'gold' },
+  combo: { icon: 'sparkle', tone: 'gold' },
+  milestone: { icon: 'star', tone: 'gold' },
+  reward: { icon: 'gem', tone: 'gold' },
+  clue: { icon: 'search', tone: 'info' },
+  advance: { icon: 'crown', tone: 'gold' },
+};
+
+/** Stage-anchored cues currently mounted; while any exist, the screen-level cue stays quiet. */
+let stageCues = 0;
+
+/**
+ * Small visual indicator for audio events. `stage` (default) sits in the corner of a game stage;
+ * `screen` is the app-wide fallback for every other screen.
+ */
+export function VisualCue({ placement = 'stage' }: { placement?: 'stage' | 'screen' }) {
   const enabled = useSettings((s) => s.visualCues);
-  const [cue, setCue] = useState<{ name: string; at: number } | null>(null);
+  const [cue, setCue] = useState<{ name: SfxName; at: number } | null>(null);
+  useEffect(() => {
+    if (placement !== 'stage') return;
+    stageCues++;
+    return () => {
+      stageCues--;
+    };
+  }, [placement]);
   useEffect(() => {
     if (!enabled) return;
     return sfx.onPlay((name) => {
-      if (['correct', 'wrong', 'hit', 'shield', 'turbo', 'charge', 'victory', 'defeat'].includes(name)) setCue({ name, at: Date.now() });
+      if (placement === 'screen' && stageCues > 0) return;
+      if (CUE_ICONS[name]) setCue({ name, at: Date.now() });
     });
-  }, [enabled]);
+  }, [enabled, placement]);
   useEffect(() => {
     if (!cue) return;
     const id = setTimeout(() => setCue(null), 900);
     return () => clearTimeout(id);
   }, [cue]);
-  if (!enabled || !cue) return null;
-  const icon = cue.name === 'correct' ? 'check' : cue.name === 'wrong' ? 'x' : cue.name === 'shield' ? 'shield' : cue.name === 'turbo' || cue.name === 'charge' ? 'bolt' : cue.name === 'victory' ? 'trophy' : 'sparkle';
+  const def = cue ? CUE_ICONS[cue.name] : undefined;
+  if (!enabled || !cue || !def) return null;
   return (
-    <div className={`vcue vcue--${cue.name}`} aria-hidden="true" key={cue.at}>
-      <Icon name={icon} />
+    <div className={`vcue vcue--${def.tone} ${placement === 'screen' ? 'vcue--screen' : ''}`} aria-hidden="true" key={cue.at} data-cue={cue.name}>
+      <Icon name={def.icon} />
     </div>
   );
 }

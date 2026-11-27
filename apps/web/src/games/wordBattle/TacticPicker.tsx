@@ -2,6 +2,7 @@
 import { TACTIC_IDS, type TacticId } from '@lingua/shared';
 import { Icon, type IconName } from '../../art/icons';
 import { useT, type MessageKey } from '../../i18n';
+import { sfx } from '../../audio/sfx';
 
 const ICON: Record<TacticId, IconName> = { balanced: 'sword', guardian: 'shield', striker: 'bolt', scholar: 'brain' };
 
@@ -10,7 +11,10 @@ export function TacticPicker({ value, onChange, compact }: { value: TacticId; on
   return (
     <div className={`tactics ${compact ? 'tactics--compact' : ''}`} role="radiogroup" aria-label={t('tactic.title')}>
       {TACTIC_IDS.map((id) => (
-        <button key={id} type="button" role="radio" aria-checked={value === id} className={`tactic ${value === id ? 'tactic--on' : ''}`} onClick={() => onChange(id)} data-testid={`tactic-${id}`}>
+        <button key={id} type="button" role="radio" aria-checked={value === id} className={`tactic ${value === id ? 'tactic--on' : ''}`} onClick={() => {
+            if (id !== value) sfx.play('select');
+            onChange(id);
+          }} data-testid={`tactic-${id}`}>
           <Icon name={ICON[id]} />
           <strong className="small">{t(`tactic.${id}` as MessageKey)}</strong>
           {!compact && <span className="tiny muted">{t(`tactic.${id}.desc` as MessageKey)}</span>}

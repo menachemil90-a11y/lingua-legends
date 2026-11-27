@@ -98,6 +98,8 @@ test('Escape Room: open a puzzle, solve it and see the lock open', async ({ page
   await page.getByRole('button', { name: puzzle.title }).click();
   await page.locator('.answer', { hasText: puzzle.options[puzzle.answer]! }).click();
   await expect(page.locator('.answer--correct')).toBeVisible();
+  // The unlock sound has a visual twin (icon + colour) for players who cannot hear it.
+  await expect(page.locator('.vcue--screen[data-cue="unlock"]')).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(page.locator('.lock--open')).toHaveCount(1);
 });

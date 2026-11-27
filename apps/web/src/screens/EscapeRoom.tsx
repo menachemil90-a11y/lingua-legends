@@ -8,6 +8,7 @@ import { Icon, type IconName } from '../art/icons';
 import { Button, Chip, Dialog, En, Panel, Segmented } from '../design';
 import { useT, useLang } from '../i18n';
 import { sfx } from '../audio/sfx';
+import { useMusic } from '../audio/useMusic';
 import { usePlayer } from '../state/player';
 import { useNav } from '../state/nav';
 import { uid } from '../state/storage';
@@ -162,7 +163,7 @@ function PuzzlePanel({ room, puzzle, onSolved }: { room: Room; puzzle: EscapePuz
     setAttempts(n);
     if (ok) {
       setSolved(true);
-      sfx.play('correct');
+      sfx.play('unlock');
       recordLearning([puzzleEvent(room, puzzle, n === 1 && !hint, n, hint)]);
       onSolved(n, hint);
     } else {
@@ -176,6 +177,7 @@ function PuzzlePanel({ room, puzzle, onSolved }: { room: Room; puzzle: EscapePuz
 }
 
 function RoomPlay({ room }: { room: Room }) {
+  useMusic('mystery');
   const t = useT();
   const lang = useLang();
   const back = useNav((s) => s.back);
@@ -296,7 +298,6 @@ function RoomPlay({ room }: { room: Room }) {
             puzzle={open}
             onSolved={(attempts, hint) => {
               setSolved((s) => ({ ...s, [open.id]: { attempts, hint } }));
-              sfx.play('shield');
             }}
           />
         )}

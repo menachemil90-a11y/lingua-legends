@@ -120,7 +120,7 @@ function Game({ bots, tier, bracket }: { bots: number; tier: BotTier; bracket: B
     }
     if (a.type === 'attack') {
       const captured = r.state.territories[a.to]!.owner === cur.id;
-      sfx.play(captured ? 'hit' : 'shield');
+      sfx.play(captured ? 'capture' : 'shield');
     } else if (a.type === 'recruit' || a.type === 'fortify') sfx.play('tile');
     setS(r.state);
   };
@@ -143,7 +143,7 @@ function Game({ bots, tier, bracket }: { bots: number; tier: BotTier; bracket: B
       const a = botNextAction(s, Math.random);
       const r = applyAction(s, a);
       if (r.ok) {
-        if (a.type === 'attack') sfx.play(r.state.territories[a.to]!.owner === cur.id ? 'hit' : 'shield');
+        if (a.type === 'attack') sfx.play(r.state.territories[a.to]!.owner === cur.id ? 'capture' : 'shield');
         setS(r.state);
       } else setS(endTurn(s));
     }, s.phase === 'question' ? 700 : 850);

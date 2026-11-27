@@ -51,6 +51,8 @@ export function PostMatch({
     sfx.play(summary.result === 'win' ? 'victory' : summary.result === 'loss' ? 'defeat' : 'heal');
     if (end.ratingChange?.promoted) setTimeout(() => sfx.play('promote'), 1400);
     else if (summary.levelAfter > summary.levelBefore) setTimeout(() => sfx.play('levelup'), 1400);
+    else if (summary.shards > 0) setTimeout(() => sfx.play('reward'), 1400);
+    if (summary.unlocked.length > 0) setTimeout(() => sfx.play('milestone'), 2600);
   }, [summary, end.ratingChange]);
 
   const word = summary.result === 'win' ? t('result.victory') : summary.result === 'loss' ? t('result.defeat') : t('result.draw');

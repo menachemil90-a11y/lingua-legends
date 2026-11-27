@@ -35,7 +35,7 @@ export function EscapeCoopScreen({ transport, onEnd, onExit }: { transport: Matc
       const last = st.last;
       if (!last || last.seq === lastSeq.current) return;
       lastSeq.current = last.seq;
-      sfx.play(last.correct ? 'shield' : 'wrong');
+      sfx.play(last.correct ? 'unlock' : 'wrong');
       // Learning evidence: my first attempt on each lock (like solo play).
       if (last.by === selfId && !recorded.current.has(last.puzzleId)) {
         const room = ESCAPE_ROOMS.find((r) => r.id === st.roomId);

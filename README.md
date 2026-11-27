@@ -25,6 +25,7 @@ CEFR A1–C2, Israeli 5-unit Bagrut preparation, and real authoritative multipla
 | **Real Life** — 8 branching text conversations A2–C1 (airport, hotel, shop return, restaurant, support call, job interview, university office hours, tech stand-up) | ✅ text mode (speech recognition not enabled) |
 | **English Detective** — 4 cases (A2, B1, B2, C1): read evidence, answer shuffled questions, name who is responsible | ✅ |
 | **Tournaments** — offline Champion's Cup (3 knockout rounds vs labelled bots of rising strength) and friends' knockouts online (3–8 players, byes, automatic rounds, explainable tie-breaks, walkovers, server rewards) | ✅ cup offline, ✅ online locally (unranked) |
+| **Sound** — original procedural audio (Web Audio, no sound files): 29 cues incl. mode-specific ones (lock opening, island captured, rising combo, tournament advance, detective clue, milestone), three generative music themes (lobby, battle, mystery for Escape Room/Detective), a limiter against clipping; every important cue has a visual twin (icon + colour) and audio pauses while the app is in the background | ✅ |
 | Authoritative WebSocket server — auth, rooms, queues, ready check, reconnection, rematch, Elo ranking, friends, block/report, rate limits, replay protection, **server-computed XP/shards/achievements persisted per player** (`/api/me/wallet`) | ✅ locally (not deployed) |
 | Supabase schema + RLS | ✅ tested on local PostgreSQL; 🟡 not yet applied to a real project |
 | Registered accounts / cloud sync / AI / speech | 🟡 / ⛔ — see `HANDOFF.md` |

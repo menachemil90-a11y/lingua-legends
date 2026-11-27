@@ -6,6 +6,8 @@ import { useSettings } from './state/settings';
 import { useNav, installHistoryBridge, type Screen } from './state/nav';
 import { connection, useConnection } from './net/connection';
 import { sfx } from './audio/sfx';
+import { VisualCue } from './games/shared/components';
+import { usePlayer } from './state/player';
 import { Lobby } from './screens/Lobby';
 
 /*
@@ -144,6 +146,32 @@ function ScreenFor({ s }: { s: Screen }) {
 }
 
 /** Routes MATCH_FOUND (queue, room, invite or rematch) to the match screen. */
+/** Screens that present new achievements themselves (post-match summary, Bagrut task results). */
+const SELF_PRESENTING: ReadonlySet<Screen['id']> = new Set(['match', 'bagrut', 'bagrut-task', 'bagrut-mock']);
+/** Screens that already play a bigger sting when an achievement unlocks there. */
+const SELF_SCORED: ReadonlySet<Screen['id']> = new Set(['match', 'tournament']);
+
+/**
+ * Achievements and Learning Journey milestones can unlock during solo practice (Escape Rooms,
+ * Detective, Debate, reading…), where no post-match screen exists. Announce them once, gently.
+ */
+function AchievementWatcher() {
+  const t = useT();
+  useEffect(
+    () =>
+      usePlayer.subscribe((s, prev) => {
+        if (s.achievements.length <= prev.achievements.length) return;
+        const fresh = s.achievements.filter((a) => !prev.achievements.includes(a));
+        if (fresh.length === 0) return;
+        const screen = useNav.getState().current.id;
+        if (!SELF_SCORED.has(screen)) setTimeout(() => sfx.play('milestone'), 350);
+        if (!SELF_PRESENTING.has(screen)) toast(`${t('result.unlocked')}: ${fresh.map((a) => t(`achievement.${a}` as MessageKey)).join(' · ')}`, 'good');
+      }),
+    [t],
+  );
+  return null;
+}
+
 function OnlineMatchRouter() {
   useEffect(
     () =>
@@ -246,6 +274,8 @@ export function App() {
       <OnlineMatchRouter />
       <InviteDialog />
       <ToastHost />
+      <AchievementWatcher />
+      <VisualCue placement="screen" />
     </>
   );
 }

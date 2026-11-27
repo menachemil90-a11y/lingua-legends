@@ -22,6 +22,14 @@ function roundLabel(t: ReturnType<typeof useT>, roundIndex: number, totalRounds:
   return t(fromEnd === 0 ? 'tournament.round.final' : fromEnd === 1 ? 'tournament.round.semi' : 'tournament.round.quarter');
 }
 
+/*
+ * "You advanced" cues. Players leave this screen to play each round, so the last state they heard
+ * is kept at module level: coming back after a win plays the fanfare once; re-opening the tab or
+ * reloading the app does not.
+ */
+let cupHeard: string | null = null;
+const friendsWinsHeard = new Map<string, number>();
+
 function Cup() {
   const t = useT();
   const go = useNav((s) => s.go);
@@ -32,6 +40,14 @@ function Cup() {
   const [mode, setMode] = useState<QueueModeId>('word-battle');
   const [bracket, setBracket] = useState<Bracket>(bracketForLevel(recommendedLevel(learner)));
   const [difficulty, setDifficulty] = useState<'standard' | 'hard'>('standard');
+  const heardKey = cup ? `${cup.startedAt}:${cup.results.length}` : null;
+  const advanced = !!cup && cupStatus(cup) === 'playing' && cup.results[cup.results.length - 1] === 'win';
+  useEffect(() => {
+    if (!heardKey || cupHeard === heardKey) return;
+    const sameRun = cupHeard?.split(':')[0] === heardKey.split(':')[0];
+    cupHeard = heardKey;
+    if (advanced && sameRun) sfx.play('advance');
+  }, [heardKey, advanced]);
 
   if (!cup) {
     return (
@@ -148,6 +164,15 @@ function Friends({ initialCode }: { initialCode?: string }) {
   useEffect(() => {
     if (tour?.status === 'finished' && tour.championId && tour.championId === me && unlockAchievement('tournament-champion')) sfx.play('victory');
   }, [tour?.status, tour?.championId, me, unlockAchievement]);
+
+  const myWins = tour && me ? tour.rounds.flat().filter((m) => m.status === 'done' && m.winnerId === me).length : 0;
+  useEffect(() => {
+    if (!tour || !me) return;
+    const heard = friendsWinsHeard.get(tour.code);
+    friendsWinsHeard.set(tour.code, myWins);
+    // The champion already hears the victory sting; earlier wins get the "advance" fanfare.
+    if (heard !== undefined && myWins > heard && tour.status === 'running') sfx.play('advance');
+  }, [tour, me, myWins]);
 
   if (status === 'unavailable') {
     return (
