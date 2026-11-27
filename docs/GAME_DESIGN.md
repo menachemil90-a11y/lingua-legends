@@ -6,7 +6,9 @@ Players can always stop after a match. Nothing punishes missing a day.
 ## Universe
 Original "Lingua Legends" realm: deep-navy skies, cyan glyph energy, purple arcane light, gold accents.
 Heroes (original): **Vexa** (Glyph Duelist, hooded mage with a crystal blade), **Kael** (Rune Warden, armoured knight
-with a rune shield), **Nyra** (Storm Archer, crescent energy bow), **Torque** (Clockwork Sentinel, gear-core robot).
+with a rune shield), **Nyra** (Storm Archer, crescent energy bow), **Torque** (Clockwork Sentinel, gear-core robot),
+**Liora** (Tide Sage, crescent staff and orbiting water orb — unlocked by the *Explorer* journey milestone) and **Brann**
+(Ember Cartographer, goggles, glowing map and compass — unlocked at level 8).
 Vehicles: Comet GT, Viper X, Aurum Royale, Ember Nova. All art is code-generated SVG (`apps/web/src/art`).
 
 ## Word Battle (1v1)

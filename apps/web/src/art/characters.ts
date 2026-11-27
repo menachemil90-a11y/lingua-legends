@@ -289,11 +289,103 @@ ${motes(u, c.glow)}`;
   return wrap(u, body, defs, o);
 }
 
+/** Liora — Tide Sage: flowing robes with a wave hem, crescent staff, orbiting water orb. */
+function liora(u: string, c: CharacterDef['palette'], o: HeroOptions): string {
+  const defs = `
+  <linearGradient id="${u}-robe" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${shade(c.primary, 0.25)}"/><stop offset="1" stop-color="${shade(c.primary, -0.4)}"/></linearGradient>
+  <linearGradient id="${u}-sash" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${c.accent}"/><stop offset="1" stop-color="${shade(c.accent, -0.35)}"/></linearGradient>
+  <linearGradient id="${u}-hair" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${shade(c.secondary, 0.35)}"/><stop offset="1" stop-color="${shade(c.secondary, -0.2)}"/></linearGradient>
+  <radialGradient id="${u}-orb"><stop offset="0" stop-color="#ffffff" stop-opacity=".95"/><stop offset=".45" stop-color="${c.glow}" stop-opacity=".9"/><stop offset="1" stop-color="${c.accent}" stop-opacity=".1"/></radialGradient>
+  <linearGradient id="${u}-staff" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${shade(c.glow, -0.1)}"/><stop offset="1" stop-color="${shade(c.secondary, 0.1)}"/></linearGradient>`;
+  const body = `
+<g class="${u}-sway">
+  <path d="M84 124 C70 170 60 220 50 268 Q85 276 120 270 Q155 276 190 268 C180 220 170 170 156 124 Z" fill="url(#${u}-robe)"/>
+  <path d="M50 268 Q62 258 74 268 T98 268 T122 268 T146 268 T170 268 T190 268" stroke="${c.accent}" stroke-width="3" fill="none" opacity=".85"/>
+  <path d="M60 248 Q72 240 84 248 T108 248 T132 248 T156 248 T180 248" stroke="${c.glow}" stroke-width="1.6" fill="none" opacity=".5"/>
+</g>
+<path d="M96 132 Q120 146 144 132 L140 200 Q120 210 100 200 Z" fill="${shade(c.primary, 0.12)}"/>
+<path d="M92 176 Q120 190 148 176 L146 190 Q120 204 94 190 Z" fill="url(#${u}-sash)"/>
+<path d="M120 186 m-7 0 a7 7 0 1 0 14 0 a7 7 0 1 0 -14 0" fill="${c.glow}" class="${u}-pulse"/>
+<path d="M92 136 C76 150 66 168 60 186 L72 192 C78 176 88 162 100 152 Z" fill="url(#${u}-robe)"/>
+<circle cx="64" cy="192" r="7" fill="${shade(c.glow, -0.25)}"/>
+<g class="${u}-spin">
+  <circle cx="52" cy="196" r="20" fill="none" stroke="${c.accent}" stroke-width="1.6" stroke-dasharray="3 5" opacity=".9"/>
+</g>
+<circle cx="52" cy="196" r="11" fill="url(#${u}-orb)" class="${u}-pulse"/>
+<path d="M148 136 C164 150 172 166 176 182 L164 188 C160 174 154 162 142 152 Z" fill="url(#${u}-robe)"/>
+<circle cx="170" cy="188" r="7" fill="${shade(c.glow, -0.25)}"/>
+<g class="${u}-float">
+  <rect x="173" y="70" width="6" height="200" rx="3" fill="url(#${u}-staff)"/>
+  <path d="M176 70 C156 62 152 36 168 22 C162 40 170 54 188 56 C184 64 180 68 176 70 Z" fill="${c.accent}" stroke="${c.glow}" stroke-width="1.5"/>
+  <circle cx="176" cy="54" r="7" fill="url(#${u}-orb)" class="${u}-pulse"/>
+</g>
+<path d="M88 112 C84 76 98 50 120 44 C142 50 156 76 152 112 C156 140 150 160 144 170 L138 120 L102 120 L96 170 C90 160 84 140 88 112 Z" fill="url(#${u}-hair)"/>
+<path d="M100 92 C100 74 108 64 120 62 C132 64 140 74 140 92 C140 108 132 120 120 122 C108 120 100 108 100 92 Z" fill="${shade('#c99b7a', -0.05)}"/>
+<path d="M98 80 C104 62 118 56 132 60 C124 64 114 70 108 84 Z" fill="url(#${u}-hair)"/>
+<path d="M102 74 Q120 66 138 74" stroke="${c.glow}" stroke-width="2.2" fill="none"/>
+<path d="M120 64 l5 7 -5 7 -5 -7z" fill="${c.accent}" class="${u}-pulse"/>
+<path d="M108 94 q4 -3 8 0 M124 94 q4 -3 8 0" stroke="#1b2a3a" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+<path d="M114 108 Q120 112 126 108" stroke="#7a3f36" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+${motes(u, c.glow)}`;
+  return wrap(u, body, defs, o);
+}
+
+/** Brann — Ember Cartographer: explorer's coat, goggles, scarf, a glowing map and a compass. */
+function brann(u: string, c: CharacterDef['palette'], o: HeroOptions): string {
+  const defs = `
+  <linearGradient id="${u}-coat" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${shade(c.primary, 0.2)}"/><stop offset="1" stop-color="${shade(c.primary, -0.38)}"/></linearGradient>
+  <linearGradient id="${u}-scarf" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${c.accent}"/><stop offset="1" stop-color="${shade(c.accent, -0.3)}"/></linearGradient>
+  <linearGradient id="${u}-map" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f3e2bd"/><stop offset="1" stop-color="#d2b98a"/></linearGradient>
+  <radialGradient id="${u}-glow"><stop offset="0" stop-color="${c.glow}" stop-opacity=".9"/><stop offset="1" stop-color="${c.accent}" stop-opacity="0"/></radialGradient>`;
+  const body = `
+<path d="M86 128 C76 176 70 224 64 262 L112 264 L120 206 L128 264 L176 262 C170 224 164 176 154 128 Z" fill="url(#${u}-coat)"/>
+<path d="M120 140 L120 204" stroke="${shade(c.secondary, 0.2)}" stroke-width="3"/>
+<path d="M88 196 L152 196 L150 208 L90 208 Z" fill="${shade(c.secondary, 0.15)}"/>
+<rect x="94" y="200" width="16" height="14" rx="3" fill="${shade(c.primary, -0.1)}" stroke="${c.accent}" stroke-width="1.4"/>
+<rect x="130" y="200" width="16" height="14" rx="3" fill="${shade(c.primary, -0.1)}" stroke="${c.accent}" stroke-width="1.4"/>
+<rect x="114" y="198" width="12" height="12" rx="2" fill="${c.accent}"/>
+<path d="M98 262 L96 282 Q108 288 118 282 L116 262 Z" fill="${shade(c.secondary, 0.1)}"/>
+<path d="M142 262 L144 282 Q132 288 122 282 L124 262 Z" fill="${shade(c.secondary, 0.05)}"/>
+<g class="${u}-sway">
+  <path d="M96 128 Q120 140 144 128 L140 146 Q120 156 100 146 Z" fill="url(#${u}-scarf)"/>
+  <path d="M138 140 C160 146 176 158 190 176 C176 172 164 168 150 160 Z" fill="url(#${u}-scarf)" opacity=".9"/>
+</g>
+<path d="M90 140 C74 152 64 170 58 188 L70 194 C76 178 86 164 98 156 Z" fill="url(#${u}-coat)"/>
+<g class="${u}-float">
+  <g transform="translate(40 190) rotate(-12)">
+    <rect x="-26" y="-20" width="52" height="40" rx="3" fill="url(#${u}-map)" stroke="#8a6a3a" stroke-width="2"/>
+    <path d="M-18 8 C-8 -8 4 10 16 -6" stroke="${c.accent}" stroke-width="2.4" fill="none" stroke-dasharray="4 3"/>
+    <path d="M16 -6 l4 -4 m-4 4 l4 4" stroke="#7a2e2e" stroke-width="2"/>
+    <circle cx="-18" cy="8" r="3" fill="#2f6b4f"/>
+  </g>
+  <circle cx="40" cy="190" r="34" fill="url(#${u}-glow)" opacity=".45" class="${u}-pulse"/>
+</g>
+<path d="M150 140 C166 152 174 168 178 184 L166 190 C162 176 156 164 144 154 Z" fill="url(#${u}-coat)"/>
+<g transform="translate(176 194)">
+  <circle r="13" fill="#d9c79a" stroke="#6b4a2a" stroke-width="3"/>
+  <g class="${u}-spin"><path d="M0 -9 L3 0 L0 9 L-3 0 Z" fill="${c.accent}"/></g>
+  <circle r="2" fill="#2a160c"/>
+</g>
+<path d="M96 94 C96 70 106 56 120 54 C134 56 144 70 144 94 C144 112 134 124 120 126 C106 124 96 112 96 94 Z" fill="${shade('#b07a55', 0.02)}"/>
+<path d="M92 82 C94 56 108 44 122 44 C138 44 150 56 150 80 C140 70 128 66 116 68 C106 70 98 74 92 82 Z" fill="${shade(c.secondary, 0.3)}"/>
+<rect x="96" y="70" width="48" height="12" rx="6" fill="#2a160c"/>
+<circle cx="108" cy="76" r="8" fill="${shade(c.glow, -0.15)}" stroke="#6b4a2a" stroke-width="2.5"/>
+<circle cx="132" cy="76" r="8" fill="${shade(c.glow, -0.15)}" stroke="#6b4a2a" stroke-width="2.5"/>
+<circle cx="106" cy="74" r="2.5" fill="#ffffff" opacity=".8"/>
+<circle cx="130" cy="74" r="2.5" fill="#ffffff" opacity=".8"/>
+<path d="M108 98 q4 -3 8 0 M124 98 q4 -3 8 0" stroke="#2a160c" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+<path d="M112 112 Q120 117 128 112" stroke="#6b2e1e" stroke-width="2" fill="none" stroke-linecap="round"/>
+${motes(u, c.glow)}`;
+  return wrap(u, body, defs, o);
+}
+
 const BUILDERS: Record<string, (u: string, c: CharacterDef['palette'], o: HeroOptions) => string> = {
   vexa,
   kael,
   nyra,
   torque,
+  liora,
+  brann,
 };
 
 export function heroSvg(characterId: string, u: string, opts: HeroOptions = {}): string {

@@ -46,6 +46,20 @@ export const CHARACTERS: CharacterDef[] = [
     palette: { primary: '#3a3f4f', secondary: '#1d2130', accent: '#ff8a3d', glow: '#ffc79e' },
     unlock: { kind: 'achievement', achievementId: 'first-victory' },
   },
+  {
+    id: 'liora',
+    name: 'Liora',
+    title: 'Tide Sage',
+    palette: { primary: '#0f4a5c', secondary: '#08202b', accent: '#2fd6c8', glow: '#a6fff5' },
+    unlock: { kind: 'achievement', achievementId: 'explorer-5' },
+  },
+  {
+    id: 'brann',
+    name: 'Brann',
+    title: 'Ember Cartographer',
+    palette: { primary: '#5a3420', secondary: '#2a160c', accent: '#ffb347', glow: '#ffe2b0' },
+    unlock: { kind: 'level', level: 8 },
+  },
 ];
 
 export const BOT_CHARACTER_IDS = CHARACTERS.map((c) => c.id);
