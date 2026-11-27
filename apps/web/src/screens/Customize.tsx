@@ -4,6 +4,7 @@ import { Hero, Vehicle } from '../art/Art';
 import { Icon } from '../art/icons';
 import { Button, Chip, Panel, Segmented } from '../design';
 import { useT, type MessageKey } from '../i18n';
+import { VictoryEffect } from '../art/effects';
 import { unlockedCharacters, unlockedCosmetics, unlockedVehicles, usePlayer } from '../state/player';
 import { useNav } from '../state/nav';
 
@@ -91,6 +92,8 @@ export function Customize() {
                   <span className={`avatar-frame avatar-frame--lg avatar-frame--${c.id}`}>
                     <Hero id={p.loadout.characterId} className="avatar-frame__hero" />
                   </span>
+                ) : tab === 'effects' ? (
+                  <VictoryEffect id={c.id} preview />
                 ) : (
                   <Icon name={tab === 'titles' ? 'crown' : tab === 'arenas' ? 'castle' : 'sparkle'} style={{ width: 48, height: 48, color: 'var(--c-gold)' }} />
                 )}

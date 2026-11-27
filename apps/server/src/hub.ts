@@ -1,6 +1,6 @@
 /** Tracks authenticated sessions and delivers server messages to players. */
 import type { WebSocket } from 'ws';
-import type { PublicPlayer, ServerMessage } from '@lingua/shared';
+import { CHARACTERS, COSMETICS, VEHICLES, type PublicPlayer, type ServerMessage } from '@lingua/shared';
 import type { RecentIds, TokenBucket } from './rateLimit';
 
 export interface Session {
@@ -16,8 +16,32 @@ export interface Session {
   seen: RecentIds;
 }
 
-const ALLOWED_CHARACTERS = new Set(['vexa', 'kael', 'nyra', 'torque']);
-const ALLOWED_VEHICLES = new Set(['comet', 'viper', 'aurum', 'ember']);
+// Derived from the shared catalog so new heroes and vehicles work online automatically.
+const ALLOWED_CHARACTERS = new Set(CHARACTERS.map((c) => c.id));
+const ALLOWED_VEHICLES = new Set(VEHICLES.map((v) => v.id));
+
+/** Achievements the server itself awards and stores, so it can vouch for the cosmetics they unlock. */
+export const SERVER_VERIFIED_ACHIEVEMENTS = new Set(['first-victory', 'race-winner', 'combo-master', 'tournament-champion']);
+
+/**
+ * Titles and frames are status signals other players see. The server only passes on those it can
+ * verify: default items, or items unlocked by an achievement it has recorded for this player.
+ * Anything else stays visible to the player locally but is not shown to others.
+ */
+export function verifiedCosmetics(c: Session['cosmetics'], achievements: readonly string[]): Session['cosmetics'] {
+  const ok = (id: string | undefined) => {
+    const def = id ? COSMETICS.find((x) => x.id === id) : undefined;
+    if (!def) return false;
+    if (def.unlock.kind === 'default') return true;
+    return def.unlock.kind === 'achievement' && SERVER_VERIFIED_ACHIEVEMENTS.has(def.unlock.achievementId) && achievements.includes(def.unlock.achievementId);
+  };
+  return {
+    characterId: c.characterId,
+    vehicleId: c.vehicleId,
+    ...(ok(c.titleId) ? { titleId: c.titleId } : {}),
+    ...(ok(c.frameId) ? { frameId: c.frameId } : {}),
+  };
+}
 
 export function sanitizeCosmetics(c: Partial<Session['cosmetics']> | undefined): Session['cosmetics'] {
   return {

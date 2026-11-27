@@ -8,6 +8,7 @@ import { useT, type MessageKey } from '../i18n';
 import { ACHIEVEMENTS, journeyMetrics, playerLevel, usePlayer } from '../state/player';
 import { useNav } from '../state/nav';
 import { useConnection } from '../net/connection';
+import { TitleBadge } from '../games/shared/components';
 import { fetchMyRatings, fetchMyWallet, type RemoteRating, type RemoteWallet } from '../net/api';
 
 function humanTag(tag: string): string {
@@ -79,6 +80,7 @@ export function Profile() {
               {t('profile.level')} {lvl.level}
             </Chip>
             <Chip>{t('common.guest')}</Chip>
+            <TitleBadge id={p.loadout.titleId} />
             {p.learner.placement && <Chip tone="good">{t('profile.placementDone')}</Chip>}
           </div>
           <ProgressBar value={lvl.progress} tone="gold" label={t('profile.level')} />

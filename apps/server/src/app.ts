@@ -20,7 +20,7 @@ import {
 } from '@lingua/shared';
 import type { Config } from './config';
 import { Auth, sanitizeNickname } from './auth';
-import { Hub, sanitizeCosmetics, type Session } from './hub';
+import { Hub, sanitizeCosmetics, verifiedCosmetics, type Session } from './hub';
 import { KeyedLimiter, RecentIds, TokenBucket } from './rateLimit';
 import { MatchManager } from './matches';
 import { Matchmaker, Rooms } from './lobby';
@@ -294,7 +294,7 @@ export async function startServer(cfg: Config, store: ServerStore, port = cfg.PO
       s.playerId = record.id;
       s.kind = identity.kind;
       s.nickname = record.nickname;
-      s.cosmetics = sanitizeCosmetics(msg.cosmetics);
+      s.cosmetics = verifiedCosmetics(sanitizeCosmetics(msg.cosmetics), await store.listAchievements(record.id).catch(() => []));
       const replaced = hub.bind(s);
       if (replaced) {
         hub.sendSession(replaced, { type: 'ERROR', code: ERROR_CODES.SESSION_REPLACED, message: 'Signed in from another tab or device' });

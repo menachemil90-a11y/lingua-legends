@@ -68,7 +68,10 @@ Rematches are unranked to prevent rating farming. No outcome manipulation of any
 
 ## Progression & rewards
 XP per match = 20 participation + 4 × correct + outcome (25/15/8) + combo (≤ 15) — losing still earns XP.
-Shards (cosmetic currency) are earned only by playing; nothing is for sale. Cosmetics are deterministic unlocks
+Shards (cosmetic currency) are earned only by playing; nothing is for sale. Victory effects (Starburst, Aurora Cascade)
+play behind the result banner after a win; titles appear on the lobby chip (wide screens), the profile and next to the
+name in matches. **Online, the server only shows other players' titles and frames it can verify** (defaults, or items
+unlocked by achievements the server itself recorded); locally earned items stay visible to their owner. Cosmetics are deterministic unlocks
 (level or achievement) and never affect gameplay. Weekly Momentum shows active days this week (Sunday-first) and never removes progress.
 Achievements: First Victory, Podium Finish, Architect, Wordsmith, Combo Master, On Fire, Scholar, Know Thyself, Memory Keeper,
 Cup Champion, Tournament Champion.

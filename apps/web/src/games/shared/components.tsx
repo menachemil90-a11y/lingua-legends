@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import type { PublicPlayer, PublicQuestion, ServerMessageOf } from '@lingua/shared';
+import { COSMETICS, type PublicPlayer, type PublicQuestion, type ServerMessageOf } from '@lingua/shared';
 import { Icon } from '../../art/icons';
 import { Hero, RankEmblem } from '../../art/Art';
 import { BotBadge, En, He } from '../../design';
@@ -187,6 +187,7 @@ export function PlayerTag({ player, side, extra }: { player: PublicPlayer; side:
         {player.isBot && <BotBadge tier={player.botTier ? t(`bot.${player.botTier}` as 'bot.adept') : undefined} />}
         {player.rankTier && !player.isBot && <RankEmblem tier={player.rankTier} division={null} size={22} />}
       </div>
+      {player.titleId && <TitleBadge id={player.titleId} />}
       {extra}
     </div>
   );
@@ -244,3 +245,15 @@ export function VisualCue() {
     </div>
   );
 }
+
+/** An earned title (cosmetic). Titles are English names, so they always render LTR. */
+export function TitleBadge({ id }: { id: string }) {
+  const def = COSMETICS.find((c) => c.id === id && c.kind === 'title');
+  if (!def || def.id === 'title-newcomer') return null;
+  return (
+    <span className="title-badge en" dir="ltr" data-testid="title-badge">
+      {def.name}
+    </span>
+  );
+}
+

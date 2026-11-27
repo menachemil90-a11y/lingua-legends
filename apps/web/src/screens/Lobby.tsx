@@ -9,6 +9,7 @@ import { playerLevel, usePlayer, weeklyMomentum } from '../state/player';
 import { useNav } from '../state/nav';
 import { useSettings } from '../state/settings';
 import { useConnection } from '../net/connection';
+import { TitleBadge } from '../games/shared/components';
 import { fetchMyRatings, type RemoteRating } from '../net/api';
 import { suggestBotTier } from '@lingua/shared';
 
@@ -110,6 +111,7 @@ export function Lobby() {
           </span>
           <span className="profile-chip__info">
             <span className="profile-chip__name">{p.nickname}</span>
+            <TitleBadge id={p.loadout.titleId} />
             <span className="profile-chip__level">
               <span className="lvl-badge num">{lvl.level}</span>
               <ProgressBar value={lvl.progress} tone="gold" label={t('profile.level')} height={8} />

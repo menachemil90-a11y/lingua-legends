@@ -6,7 +6,7 @@ All commands were executed in the development container (Node 22, pnpm 10, Postg
 | --- | --- | --- |
 | Lint | `pnpm lint` | ✅ 0 problems |
 | Type checking | `pnpm typecheck` | ✅ all 5 packages |
-| Unit + integration tests | `pnpm test` | ✅ 17 files, 95 tests |
+| Unit + integration tests | `pnpm test` | ✅ 18 files, 97 tests |
 | Content validation | `pnpm content:validate` | ✅ 228 public items (A1 25, A2 24, B1 24, B2 24, C1 25, C2 20 general; 22 sentence; 32 race; 20 reading; 12 listening; 10 sets; 15 open tasks; 3 escape rooms) + 120-item ranked **development sample** (public; 34/35/30 option items + 21 sentence puzzles). The 99-item private pool is validated with `pnpm ranked:validate` outside git |
 | Production build | `pnpm build` | ✅ web (`apps/web/dist`) + server (`apps/server/dist/index.js`) |
 | Database migrations + RLS | `pnpm db:test` | ✅ "ALL RLS TESTS PASSED"; seed of 228 public items applied |
@@ -15,6 +15,7 @@ All commands were executed in the development container (Node 22, pnpm 10, Postg
 ## What the automated tests cover
 - **Rules/hosts** (`packages/shared/test`): damage formula, hidden answer keys in `ROUND_START`, duplicate/stale/unauthorised answers, ability charge after 3 correct, shield blocking, KO, timeout draw, disconnect forfeit, reconnect within grace, full bot match; race physics (careful player beats fast guesser), race positions, duplicate race answers; sentence grading with multiple valid orders and diagnostics; sentence duel scoring with second attempts; ranking tiers/Elo/placement; protocol validation strips client-sent `damage`.
 - **English Conquest rules**: setup (capitals, income, question phase), gold + focus from correct answers, invalid actions rejected, deterministic attacks whose preview matches the result, full bot-vs-bot games always terminate with a consistent state. (Victory conditions are exercised by those full games but not asserted individually.)
+- **Cosmetics shown online**: every catalog hero/vehicle (incl. new ones) is accepted, unknown ids fall back; titles/frames pass only when default or backed by a server-recorded achievement; made-up ids never pass.
 - **Word Battle tactics**: each tactic applied server-side and visible to both players; Striker's self-damage only on wrong answers (not timeouts); a bot-vs-bot simulation keeps every tactic within a fair win-rate band vs Balanced for rookie, adept and champion bots. Online: tactics chosen in READY reach the host, invalid tactics are rejected.
 - **Tournament brackets**: 3 players → 4-bracket with a bye for seed 1; 6 players → 8-bracket with byes for seeds 1–2; winners advance to a champion with correct placements; impossible results rejected; draws decided by correct answers, then speed, then seed; 3–8 players enforced.
 - **EscapeCoopHost** (FakeClock): answers checked server-side and shared (last attempt, who opened a lock); opened locks cannot be re-solved; outsiders, unknown locks and early answers rejected; shared hints; brute-force limit; text answers normalised; the team wins together; timeout is a shared draw and leavers do not stop the team; protocol limits.

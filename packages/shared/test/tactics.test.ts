@@ -82,7 +82,7 @@ describe('Word Battle tactics', () => {
         score += r === 'win' ? 1 : r === 'draw' ? 0.5 : 0;
       }
       rates[t] = score / N;
-      if (process.env.PRINT_RATES) console.log(`TACTIC ${t} vs balanced: ${(rates[t] * 100).toFixed(1)}%`);
+      if (process.env.PRINT_RATES) console.info(`TACTIC ${t} vs balanced: ${(rates[t] * 100).toFixed(1)}%`);
     }
     for (const [t, rate] of Object.entries(rates)) {
       expect(rate, `${t} vs balanced win rate ${rate.toFixed(2)}`).toBeGreaterThanOrEqual(0.35);
@@ -101,7 +101,7 @@ describe('Word Battle tactics across skill levels', () => {
           const r = i % 2 === 0 ? play(t, 'balanced', 5000 + i, tier) : invert(play('balanced', t, 5000 + i, tier));
           score += r === 'win' ? 1 : r === 'draw' ? 0.5 : 0;
         }
-        if (process.env.PRINT_RATES) console.log(`TACTIC ${tier} ${t} vs balanced: ${((score / N) * 100).toFixed(1)}%`);
+        if (process.env.PRINT_RATES) console.info(`TACTIC ${tier} ${t} vs balanced: ${((score / N) * 100).toFixed(1)}%`);
         expect(score / N, `${tier}: ${t}`).toBeGreaterThanOrEqual(0.3);
         expect(score / N, `${tier}: ${t}`).toBeLessThanOrEqual(0.7);
       }

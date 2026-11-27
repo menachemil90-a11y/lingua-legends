@@ -8,6 +8,7 @@ import { sfx } from '../../audio/sfx';
 import { playerLevel, usePlayer } from '../../state/player';
 import { useNav } from '../../state/nav';
 import { Explanation } from './components';
+import { VictoryEffect } from '../../art/effects';
 import type { MatchSummary } from './finalize';
 import type { Mistake } from './useMatch';
 
@@ -60,6 +61,7 @@ export function PostMatch({
   return (
     <div className="post">
       <div className={`result-banner result-banner--${summary.result === 'win' ? 'win' : summary.result === 'loss' ? 'loss' : 'draw'}`}>
+        {summary.result === 'win' && <VictoryEffect id={loadout.effectId} />}
         {summary.result === 'win' && <div className="post__rays" aria-hidden="true" />}
         <div className="post__heroes">
           <Hero id={me?.characterId ?? loadout.characterId} className={`post__hero ${summary.result === 'win' ? 'post__hero--win' : ''}`} />
