@@ -151,10 +151,35 @@ function checkReferences(issues: ValidationIssue[], ids: Set<string>, passageIds
     for (const id of m.taskIds) if (!taskIds.has(id)) issues.push({ severity: 'error', ref: m.id, message: `unknown task ${id}` });
     for (const id of m.passageIds) if (!passageIds.has(id)) issues.push({ severity: 'error', ref: m.id, message: `unknown passage ${id}` });
   }
+  const scenarioIds = new Set<string>();
   for (const s of REAL_LIFE_SCENARIOS) {
+    if (scenarioIds.has(s.id)) issues.push({ severity: 'error', ref: s.id, message: 'duplicate scenario id' });
+    scenarioIds.add(s.id);
+    if (!HEBREW.test(s.titleHe)) issues.push({ severity: 'error', ref: s.id, message: 'missing Hebrew title' });
     const nodeIds = new Set(s.nodes.map((n) => n.id));
+    if (nodeIds.size !== s.nodes.length) issues.push({ severity: 'error', ref: s.id, message: 'duplicate node ids' });
     if (!nodeIds.has(s.start)) issues.push({ severity: 'error', ref: s.id, message: 'missing start node' });
-    for (const n of s.nodes) for (const c of n.choices ?? []) if (!nodeIds.has(c.next)) issues.push({ severity: 'error', ref: `${s.id}/${n.id}`, message: `unknown next ${c.next}` });
+    for (const n of s.nodes) {
+      if (!n.end && (!n.choices || n.choices.length < 2)) issues.push({ severity: 'error', ref: `${s.id}/${n.id}`, message: 'a non-final node needs at least 2 choices' });
+      if (n.end && !HEBREW.test(n.end.he)) issues.push({ severity: 'error', ref: `${s.id}/${n.id}`, message: 'end summary lacks Hebrew' });
+      if (n.choices && !n.choices.some((c) => c.quality === 'best')) issues.push({ severity: 'error', ref: `${s.id}/${n.id}`, message: 'every node needs at least one best choice' });
+      for (const c of n.choices ?? []) {
+        if (!nodeIds.has(c.next)) issues.push({ severity: 'error', ref: `${s.id}/${n.id}`, message: `unknown next ${c.next}` });
+        if (!HEBREW.test(c.feedback.he)) issues.push({ severity: 'error', ref: `${s.id}/${n.id}`, message: 'choice feedback lacks Hebrew' });
+      }
+    }
+    // Every path must reach an end node (no dead ends, no cycles without an exit).
+    const canEnd = new Map<string, boolean>();
+    const reaches = (id: string, seen: Set<string>): boolean => {
+      if (canEnd.has(id)) return canEnd.get(id)!;
+      const n = s.nodes.find((x) => x.id === id);
+      if (!n || seen.has(id)) return false;
+      seen.add(id);
+      const ok = !!n.end || (n.choices ?? []).every((c) => reaches(c.next, seen));
+      canEnd.set(id, ok);
+      return ok;
+    };
+    if (nodeIds.has(s.start) && !reaches(s.start, new Set())) issues.push({ severity: 'error', ref: s.id, message: 'some path never reaches an end node' });
   }
   const puzzleIds = new Set<string>();
   for (const room of ESCAPE_ROOMS) {

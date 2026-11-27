@@ -117,6 +117,18 @@ test('Listening lab starts a session with a play control', async ({ page }) => {
   await expect(page.locator('.answer').first()).toBeVisible();
 });
 
+test('Real Life: open a scenario from the list and get feedback on a reply (regression: stale route state)', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await skipOnboarding(page);
+  await pickMode(page, 'Real Life');
+  await page.locator('.tile', { hasText: 'ישיבת הבוקר' }).click();
+  await expect(page.locator('.bubble-npc').first()).toContainText('Morning, everyone');
+  await page.locator('.answer').first().click();
+  await expect(page.locator('.convo .chip--good').first()).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
 test('two browsers play English Conquest online: question for the active player, turn passes', async ({ browser }) => {
   const ctxA = await browser.newContext();
   const ctxB = await browser.newContext();

@@ -46,8 +46,8 @@ Status as of development session 2 (2026-11-27).
 - [ ] 2v2 / 4-player online modes using the existing multi-player host abstraction
 
 ## Phase 6 — Advanced learning
-- [x] Real Life — four scripted text scenarios (airport A2, hotel A2, restaurant B1, job interview B2)
-- [ ] More scenarios (university, customer service, business meeting, shopping, tech workplace, travel)
+- [x] Real Life — eight scripted text scenarios (airport A2, hotel A2, shop return A2, restaurant B1, support call B1, job interview B2, university office hours B2, tech stand-up C1)
+- [ ] More scenarios (business meeting, medical appointment, travel problems) and teacher review of all dialogue
 - [x] Debate Arena private practice with a rule-based writing check (4 topics)
 - [ ] Debate Arena AI evaluation (only after approval + moderation)
 - [x] Listening lab with on-device text-to-speech (12 items)

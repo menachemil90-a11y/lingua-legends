@@ -22,7 +22,7 @@ CEFR A1–C2, Israeli 5-unit Bagrut preparation, and real authoritative multipla
 | **English Conquest** — 12-island strategy map, 4 factions, answer questions for gold, recruit/fortify/attack/move | ✅ vs 1–3 labelled bots, ✅ online private rooms for 2–4 friends (authoritative server host, unranked) |
 | **Debate Arena** — private written practice: opening → opposing view → rebuttal, rule-based structure/grammar check (not AI) | ✅ practice (AI feedback ⛔ needs approval) |
 | Listening lab — 12 listening items using free on-device browser text-to-speech; transcript hidden until answered | ✅ (falls back to reading when TTS is unavailable, and is then not counted as listening evidence) |
-| Real Life (4 scripted text scenarios: airport A2, hotel A2, restaurant B1, job interview B2), English Detective (2 cases) | ✅ preview |
+| Real Life (8 scripted, branching text scenarios A2–C1: airport, hotel, shop return, restaurant, support call, job interview, university office hours, tech stand-up), English Detective (2 cases) | ✅ preview |
 | Authoritative WebSocket server — auth, rooms, queues, ready check, reconnection, rematch, Elo ranking, friends, block/report, rate limits, replay protection, **server-computed XP/shards/achievements persisted per player** (`/api/me/wallet`) | ✅ locally (not deployed) |
 | Supabase schema + RLS | ✅ tested on local PostgreSQL; 🟡 not yet applied to a real project |
 | Registered accounts / cloud sync / AI / speech | 🟡 / ⛔ — see `HANDOFF.md` |

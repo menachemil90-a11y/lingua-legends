@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { Button, Dialog, ToastHost, toast } from './design';
 import { applyDocumentSettings, useT, type MessageKey } from './i18n';
 import { useSettings } from './state/settings';
-import { useNav, installHistoryBridge } from './state/nav';
+import { useNav, installHistoryBridge, type Screen } from './state/nav';
 import { connection, useConnection } from './net/connection';
 import { sfx } from './audio/sfx';
 import { Lobby } from './screens/Lobby';
@@ -21,8 +21,16 @@ import { ConquestScreen } from './screens/Conquest';
 import { DebateScreen } from './screens/Debate';
 import { SentencePracticeScreen } from './games/sentenceMaster/SentencePracticeScreen';
 
+/**
+ * Each route gets its own component instance, so moving between two screens of the same kind
+ * (a scenario list → a scenario, one case → another) never carries stale state across.
+ */
 function Router() {
   const s = useNav((n) => n.current);
+  return <ScreenFor key={JSON.stringify(s)} s={s} />;
+}
+
+function ScreenFor({ s }: { s: Screen }) {
   switch (s.id) {
     case 'lobby':
       return <Lobby />;

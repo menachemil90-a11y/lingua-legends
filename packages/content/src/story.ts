@@ -2,7 +2,7 @@
  * Preview content for Real Life (text conversation simulator) and English Detective.
  * Fully deterministic: no AI, no speech recognition.
  */
-import type { CefrLevel } from '@lingua/shared';
+import type { CefrLevel, ReviewStatus } from '@lingua/shared';
 
 export interface DialogueChoice {
   text: string;
@@ -23,6 +23,8 @@ export interface DialogueScenario {
   title: string;
   titleHe: string;
   level: CefrLevel;
+  /** Original, AI-drafted dialogue until a teacher reviews it. */
+  reviewStatus: ReviewStatus;
   setting: string;
   character: { name: string; role: string };
   start: string;
@@ -35,6 +37,7 @@ export const REAL_LIFE_SCENARIOS: DialogueScenario[] = [
     title: 'Airport check-in',
     titleHe: "צ'ק-אין בשדה התעופה",
     level: 'A2',
+    reviewStatus: 'ai-drafted',
     setting: 'Terminal 3, check-in desk 12',
     character: { name: 'Dana', role: 'Check-in agent' },
     start: 'n1',
@@ -91,6 +94,7 @@ export const REAL_LIFE_SCENARIOS: DialogueScenario[] = [
     title: 'Job interview: café supervisor',
     titleHe: 'ראיון עבודה: אחראי משמרת בבית קפה',
     level: 'B2',
+    reviewStatus: 'ai-drafted',
     setting: 'A busy café, Tuesday afternoon',
     character: { name: 'Mr. Levi', role: 'Café manager' },
     start: 'i1',
@@ -130,6 +134,7 @@ export const REAL_LIFE_SCENARIOS: DialogueScenario[] = [
     title: 'Hotel check-in',
     titleHe: "צ'ק-אין במלון",
     level: 'A2',
+    reviewStatus: 'ai-drafted',
     setting: 'Seaview Hotel reception, 9 p.m.',
     character: { name: 'Maya', role: 'Receptionist' },
     start: 'h1',
@@ -169,6 +174,7 @@ export const REAL_LIFE_SCENARIOS: DialogueScenario[] = [
     title: 'Restaurant: a polite complaint',
     titleHe: 'מסעדה: תלונה מנומסת',
     level: 'B1',
+    reviewStatus: 'ai-drafted',
     setting: 'A busy Italian restaurant',
     character: { name: 'Luca', role: 'Waiter' },
     start: 'r1',
@@ -200,6 +206,226 @@ export const REAL_LIFE_SCENARIOS: DialogueScenario[] = [
         ],
       },
       { id: 'rend', line: 'Here is your fresh pasta. Enjoy!', end: { en: 'You solved a problem politely and got what you wanted.', he: 'פתרתם בעיה בנימוס וקיבלתם את מה שרציתם.' } },
+    ],
+  },
+  {
+    id: 'rl-shopping',
+    title: 'Returning a jacket',
+    titleHe: 'החזרת מעיל בחנות',
+    level: 'A2',
+    reviewStatus: 'ai-drafted',
+    setting: 'A clothes shop in the city centre, Saturday morning',
+    character: { name: 'Maya', role: 'Sales assistant' },
+    start: 's1',
+    nodes: [
+      {
+        id: 's1',
+        line: 'Hi there! Can I help you?',
+        choices: [
+          { text: "Hi. I'd like to return this jacket, please.", next: 's2', quality: 'best', feedback: { en: "'I'd like to…' is a polite way to ask for something.", he: "I'd like to… היא דרך מנומסת לבקש משהו." } },
+          { text: 'Yes, this jacket is bad.', next: 's2', quality: 'ok', feedback: { en: 'Understandable, but say what you want to do: return or exchange it.', he: 'מובן, אבל כדאי לומר מה אתם רוצים: להחזיר או להחליף.' } },
+          { text: 'I want return this.', next: 's2', quality: 'poor', feedback: { en: "After 'want' we need 'to': 'I want to return this.'", he: "אחרי want צריך to: I want to return this." } },
+        ],
+      },
+      {
+        id: 's2',
+        line: "Of course. What's wrong with it?",
+        choices: [
+          { text: "It's too small for me. I need a bigger size.", next: 's3', quality: 'best', feedback: { en: "'Too + adjective' explains the problem clearly.", he: 'too + שם תואר מסביר את הבעיה בבירור.' } },
+          { text: 'The size.', next: 's3', quality: 'ok', feedback: { en: 'Try a full sentence: what is the problem with the size?', he: 'נסו משפט שלם: מה הבעיה עם המידה?' } },
+          { text: "It's more small than I thought.", next: 's3', quality: 'poor', feedback: { en: "Short adjectives take -er: 'smaller', not 'more small'.", he: 'שמות תואר קצרים מקבלים er: אומרים smaller ולא more small.' } },
+        ],
+      },
+      {
+        id: 's3',
+        line: 'Do you have the receipt?',
+        choices: [
+          { text: 'Yes, here it is. I bought it last Friday.', next: 's4', quality: 'best', feedback: { en: "'Bought' is the past of 'buy', and 'last Friday' needs no preposition.", he: 'bought היא צורת העבר של buy, ואחרי last Friday לא צריך מילת יחס.' } },
+          { text: 'Hmm… I think so. Let me check my bag.', next: 's4', quality: 'ok', feedback: { en: "Natural! 'Let me check' buys you a moment politely.", he: 'טבעי! Let me check נותן לכם רגע בנימוס.' } },
+          { text: 'Yes, I buyed it Friday.', next: 's4', quality: 'poor', feedback: { en: "'Buy' is irregular: 'I bought it last Friday' (or 'on Friday').", he: "buy הוא פועל חריג: I bought it last Friday (או on Friday)." } },
+        ],
+      },
+      {
+        id: 's4',
+        line: 'Would you like a refund, or would you like to exchange it for a larger size?',
+        choices: [
+          { text: "I'd like to exchange it for a medium, please.", next: 's5a', quality: 'best', feedback: { en: "'Exchange it for' + the new item — exactly right.", he: 'exchange it for + הפריט החדש — בדיוק נכון.' } },
+          { text: 'Could I have a refund, please?', next: 's5b', quality: 'best', feedback: { en: "'Could I have…, please?' is polite and clear.", he: 'Could I have…, please? מנומס וברור.' } },
+          { text: 'Give me the money.', next: 's5b', quality: 'poor', feedback: { en: "This sounds rude. Try: 'Could I have a refund, please?'", he: 'זה נשמע גס. נסו: Could I have a refund, please?' } },
+        ],
+      },
+      {
+        id: 's5a',
+        line: "Here's a medium. The fitting rooms are on your left.",
+        choices: [
+          { text: "Thanks! I'll try it on.", next: 'send', quality: 'best', feedback: { en: "With a pronoun, the phrasal verb splits: 'try it on'.", he: 'עם כינוי גוף הפועל המורכב מתפצל: try it on.' } },
+          { text: "Thanks, I'll try on it.", next: 'send', quality: 'poor', feedback: { en: "Put the pronoun in the middle: 'try it on', not 'try on it'.", he: 'הכינוי בא באמצע: try it on, ולא try on it.' } },
+        ],
+      },
+      {
+        id: 's5b',
+        line: 'No problem. The money will be back on your card in three to five days.',
+        choices: [
+          { text: 'Great, thank you for your help.', next: 'send', quality: 'best', feedback: { en: "'Thank you for + noun' — a warm, polite ending.", he: 'Thank you for + שם עצם — סיום חם ומנומס.' } },
+          { text: 'Three to five days? Is that normal?', next: 'send', quality: 'ok', feedback: { en: 'A fair question — checking information is a useful skill.', he: 'שאלה הוגנת — לבדוק מידע זו מיומנות שימושית.' } },
+        ],
+      },
+      { id: 'send', line: 'You leave the shop with everything sorted.', end: { en: 'You returned an item politely in English.', he: 'החזרתם מוצר בחנות באנגלית ובנימוס.' } },
+    ],
+  },
+  {
+    id: 'rl-support-call',
+    title: 'Phone call: the internet is down',
+    titleHe: 'שיחת טלפון: האינטרנט לא עובד',
+    level: 'B1',
+    reviewStatus: 'ai-drafted',
+    setting: 'A phone call to an internet provider’s support line',
+    character: { name: 'Ravi', role: 'Customer support agent' },
+    start: 'c1',
+    nodes: [
+      {
+        id: 'c1',
+        line: 'Thank you for calling customer support, this is Ravi. How can I help you today?',
+        choices: [
+          { text: "Hi Ravi. My internet hasn't been working since this morning.", next: 'c2', quality: 'best', feedback: { en: "Present perfect + 'since' for a problem that started in the past and continues now.", he: 'Present Perfect עם since לבעיה שהתחילה בעבר ונמשכת עכשיו.' } },
+          { text: 'Hello, I have a problem with my internet.', next: 'c2', quality: 'ok', feedback: { en: 'Polite, but add details: what exactly is happening, and since when?', he: 'מנומס, אבל הוסיפו פרטים: מה בדיוק קורה ומאיזה זמן?' } },
+          { text: "My internet doesn't work from this morning.", next: 'c2', quality: 'poor', feedback: { en: "Use 'hasn't been working since', not 'doesn't work from'.", he: "אומרים hasn't been working since, ולא doesn't work from." } },
+        ],
+      },
+      {
+        id: 'c2',
+        line: "I'm sorry to hear that. Could you tell me what the lights on your router are doing?",
+        choices: [
+          { text: 'The power light is green, but the internet light is flashing red.', next: 'c3', quality: 'best', feedback: { en: "Precise details help support find the problem quickly. 'But' contrasts the two lights.", he: 'פרטים מדויקים עוזרים לתמיכה למצוא את הבעיה מהר. but מנגיד בין שתי הנורות.' } },
+          { text: 'There are some lights. Red, I think.', next: 'c3', quality: 'ok', feedback: { en: 'Try to describe which light and what it is doing.', he: 'נסו לתאר איזו נורה ומה היא עושה.' } },
+          { text: "I don't know what is a router.", next: 'c3', quality: 'poor', feedback: { en: "In an embedded question, the verb goes last: 'I don't know what a router is.'", he: "בשאלה משובצת הפועל בא בסוף: I don't know what a router is." } },
+        ],
+      },
+      {
+        id: 'c3',
+        line: 'Okay. Have you tried restarting the router?',
+        choices: [
+          { text: "Yes, I've already restarted it twice, but nothing has changed.", next: 'c4', quality: 'best', feedback: { en: "'Already' fits naturally with the present perfect.", he: 'already מתאים באופן טבעי ל-Present Perfect.' } },
+          { text: "No, I haven't. Should I do it now?", next: 'c3b', quality: 'best', feedback: { en: 'An honest answer and a helpful follow-up question.', he: 'תשובה כנה ושאלת המשך מועילה.' } },
+          { text: 'Yes, I restarted it before two hours.', next: 'c4', quality: 'poor', feedback: { en: "In English the time comes first: 'two hours ago', not 'before two hours'.", he: "באנגלית אומרים two hours ago ולא before two hours (תרגום ישיר של 'לפני שעתיים')." } },
+        ],
+      },
+      {
+        id: 'c3b',
+        line: "Yes, please. Unplug it, wait thirty seconds and plug it back in… Is it working now?",
+        choices: [
+          { text: "No, the light is still red, I'm afraid.", next: 'c4', quality: 'best', feedback: { en: "'I'm afraid' softens bad news politely.", he: "I'm afraid מרכך בנימוס חדשות לא טובות." } },
+          { text: 'Still not.', next: 'c4', quality: 'ok', feedback: { en: 'Understandable, but a full sentence sounds friendlier on the phone.', he: 'מובן, אבל בטלפון משפט שלם נשמע ידידותי יותר.' } },
+        ],
+      },
+      {
+        id: 'c4',
+        line: 'It looks like there is a problem with the line in your area. A technician can visit tomorrow between 9 and 12. Would that suit you?',
+        choices: [
+          { text: 'That works for me. Could you send me a text message to confirm?', next: 'cend', quality: 'best', feedback: { en: 'You accept clearly and ask for written confirmation — very practical.', he: 'אתם מסכימים בבירור ומבקשים אישור בכתב — מעשי מאוד.' } },
+          { text: "I won't be at home tomorrow. Is Thursday possible?", next: 'cend', quality: 'best', feedback: { en: "'I won't be…' + an alternative is a polite way to say no.", he: "I won't be… + הצעה חלופית היא דרך מנומסת לסרב." } },
+          { text: 'Why it takes so long?', next: 'cend', quality: 'poor', feedback: { en: "Questions need 'do/does': 'Why does it take so long?'", he: 'בשאלה צריך do/does: Why does it take so long?' } },
+        ],
+      },
+      { id: 'cend', line: 'Ravi books the visit and sends a confirmation.', end: { en: 'You reported a problem and arranged a solution by phone.', he: 'דיווחתם על תקלה ותיאמתם פתרון בטלפון.' } },
+    ],
+  },
+  {
+    id: 'rl-university',
+    title: 'Office hours: asking for an extension',
+    titleHe: 'שעת קבלה: בקשת הארכה',
+    level: 'B2',
+    reviewStatus: 'ai-drafted',
+    setting: "A lecturer's office at the university, Tuesday afternoon",
+    character: { name: 'Dr. Amari', role: 'Lecturer' },
+    start: 'u1',
+    nodes: [
+      {
+        id: 'u1',
+        line: 'Come in! You wanted to talk about the research essay?',
+        choices: [
+          { text: "Yes, thank you for seeing me. I'm having some difficulty meeting the deadline, and I wanted to ask about my options.", next: 'u2', quality: 'best', feedback: { en: "Thanks first, then a soft, indirect request ('I wanted to ask…').", he: 'קודם תודה, ואחר כך בקשה רכה ועקיפה (I wanted to ask…).' } },
+          { text: 'Yes. I need more time.', next: 'u2', quality: 'ok', feedback: { en: 'Clear, but very direct for a lecturer. Soften it and give context.', he: 'ברור, אבל ישיר מדי מול מרצה. רככו והוסיפו הקשר.' } },
+          { text: 'Yes, the deadline is impossible, everyone says so.', next: 'u2', quality: 'poor', feedback: { en: 'Blaming the deadline (or others) weakens your request. Focus on your situation.', he: 'האשמת הדדליין (או אחרים) מחלישה את הבקשה. התמקדו במצב שלכם.' } },
+        ],
+      },
+      {
+        id: 'u2',
+        line: "I see. Can you tell me what's been happening?",
+        choices: [
+          { text: "I was ill for most of last week, and I have a doctor's note. I've finished the research, but I haven't written the discussion yet.", next: 'u3', quality: 'best', feedback: { en: 'A reason, evidence and your progress — and correct present perfect with "yet".', he: 'סיבה, הוכחה והתקדמות — ו-Present Perfect נכון עם yet.' } },
+          { text: 'I had a lot of things to do.', next: 'u3', quality: 'ok', feedback: { en: 'Too vague to be convincing. What exactly happened?', he: 'כללי מדי כדי לשכנע. מה בדיוק קרה?' } },
+          { text: "I didn't started yet.", next: 'u3', quality: 'poor', feedback: { en: "After 'didn't' use the base form — and with 'yet' we prefer: 'I haven't started yet.'", he: "אחרי didn't בא הפועל בצורת המקור, ועם yet עדיף: I haven't started yet." } },
+        ],
+      },
+      {
+        id: 'u3',
+        line: "Thanks for being honest. How much extra time do you think you'd need?",
+        choices: [
+          { text: 'Would it be possible to submit it by next Wednesday? That would give me five more days.', next: 'u4', quality: 'best', feedback: { en: "'Would it be possible to…?' + a specific, reasonable date.", he: 'Would it be possible to…? + תאריך מוגדר וסביר.' } },
+          { text: 'Maybe one more month?', next: 'u4', quality: 'ok', feedback: { en: 'A month is unrealistic for one essay. Propose a specific, modest date.', he: 'חודש זה לא מציאותי לעבודה אחת. הציעו תאריך מוגדר וצנוע.' } },
+          { text: 'As much as you can give me.', next: 'u4', quality: 'poor', feedback: { en: 'This shows no plan. Lecturers respond better to a concrete proposal.', he: 'זה מראה שאין תוכנית. מרצים מגיבים טוב יותר להצעה קונקרטית.' } },
+        ],
+      },
+      {
+        id: 'u4',
+        line: 'Wednesday is fine, as long as you send me your outline by Friday. Does that sound fair?',
+        choices: [
+          { text: "Absolutely. I'll email you the outline by Friday afternoon. Thank you for understanding.", next: 'uend', quality: 'best', feedback: { en: "A clear commitment with 'will' and a gracious thank-you.", he: 'התחייבות ברורה עם will ותודה אדיבה.' } },
+          { text: "That's fair. Should I attach the doctor's note to the email?", next: 'uend', quality: 'best', feedback: { en: 'Agreeing and asking a practical follow-up question.', he: 'הסכמה ושאלת המשך מעשית.' } },
+          { text: 'Okay, if I remember.', next: 'uend', quality: 'poor', feedback: { en: 'This sounds unreliable right after receiving help.', he: 'זה נשמע לא אמין, דווקא אחרי שקיבלתם עזרה.' } },
+        ],
+      },
+      { id: 'uend', line: 'Dr. Amari notes the new deadline in her calendar.', end: { en: 'You negotiated an extension politely and professionally.', he: 'ניהלתם משא ומתן על הארכה בנימוס ובמקצועיות.' } },
+    ],
+  },
+  {
+    id: 'rl-standup',
+    title: 'Tech workplace: the daily stand-up',
+    titleHe: 'סביבת הייטק: ישיבת הבוקר',
+    level: 'C1',
+    reviewStatus: 'ai-drafted',
+    setting: 'A software team’s morning stand-up meeting (video call)',
+    character: { name: 'Tamar', role: 'Engineering lead' },
+    start: 't1',
+    nodes: [
+      {
+        id: 't1',
+        line: "Morning, everyone. Let's go round: what did you work on yesterday, and is anything blocking you?",
+        choices: [
+          { text: "Yesterday I finished refactoring the login page. Today I'm writing the tests, and I'm blocked on access to the staging server.", next: 't2', quality: 'best', feedback: { en: 'Yesterday / today / blocker — the ideal stand-up structure, short and specific.', he: 'אתמול / היום / חסם — המבנה האידיאלי לסטנד-אפ, קצר וספציפי.' } },
+          { text: 'I worked on some stuff. Everything is fine.', next: 't2', quality: 'ok', feedback: { en: 'Too vague for a stand-up: the team needs to know what changed.', he: 'כללי מדי לסטנד-אפ: הצוות צריך לדעת מה השתנה.' } },
+          { text: 'Yesterday I have finished the refactor.', next: 't2', quality: 'poor', feedback: { en: "With a finished time like 'yesterday', use the past simple: 'Yesterday I finished…'", he: "עם זמן סגור כמו yesterday משתמשים ב-Past Simple: Yesterday I finished…" } },
+        ],
+      },
+      {
+        id: 't2',
+        line: 'Thanks. About the staging access — who can help with that?',
+        choices: [
+          { text: 'I think Omer has admin rights. Omer, would you mind giving me access after the meeting?', next: 't3', quality: 'best', feedback: { en: "'Would you mind + -ing' is a polite, natural request at work.", he: 'Would you mind + ing היא בקשה מנומסת וטבעית בעבודה.' } },
+          { text: 'Omer, give me access.', next: 't3', quality: 'ok', feedback: { en: 'Clear, but an imperative can sound bossy in front of the team.', he: 'ברור, אבל ציווי עלול להישמע שתלטני מול הצוות.' } },
+          { text: 'Would you mind to give me access?', next: 't3', quality: 'poor', feedback: { en: "'Mind' is followed by -ing: 'Would you mind giving me access?'", he: 'אחרי mind בא ing: Would you mind giving me access?' } },
+        ],
+      },
+      {
+        id: 't3',
+        line: 'Also, Omer commented on your pull request that the new function is too complex. How would you like to handle that?',
+        choices: [
+          { text: "That's a fair point. I'll split it into two smaller functions, although I'd like to keep the caching as it is, since it cuts load time by about 30%.", next: 't4', quality: 'best', feedback: { en: 'You concede, propose a fix and defend one decision with evidence — a mature response.', he: 'אתם מודים, מציעים תיקון ומגנים על החלטה אחת עם נתונים — תגובה בוגרת.' } },
+          { text: "I'll change everything he said.", next: 't4', quality: 'ok', feedback: { en: 'Cooperative, but you can also explain your reasoning where you disagree.', he: 'משתף פעולה, אבל אפשר גם להסביר את השיקולים שלכם היכן שאתם לא מסכימים.' } },
+          { text: "He's wrong. My code is fine.", next: 't4', quality: 'poor', feedback: { en: 'Sounds defensive. Acknowledge the feedback first, then give reasons.', he: 'נשמע מתגונן. קודם הכירו במשוב, ואז תנו נימוקים.' } },
+        ],
+      },
+      {
+        id: 't4',
+        line: 'Sounds reasonable. Can you have the changes ready for review by tomorrow?',
+        choices: [
+          { text: "Provided I get access this morning, yes — I'll update the pull request by the end of the day.", next: 'tend', quality: 'best', feedback: { en: "'Provided (that)…' states a condition precisely; then a clear commitment.", he: 'Provided (that)… מציין תנאי במדויק, ואחריו התחייבות ברורה.' } },
+          { text: "I'll try, but I can't promise anything.", next: 'tend', quality: 'ok', feedback: { en: 'Honest, but say what the outcome depends on and give a time.', he: 'כן, אבל אמרו במה זה תלוי ותנו זמן.' } },
+          { text: 'If I will get access, I finish tomorrow.', next: 'tend', quality: 'poor', feedback: { en: "First conditional: 'If I get access, I'll finish tomorrow.'", he: "תנאי מסוג ראשון: If I get access, I'll finish tomorrow." } },
+        ],
+      },
+      { id: 'tend', line: 'Tamar moves on to the next person. Omer sends you the access link.', end: { en: 'You gave a clear update, asked for help and handled feedback professionally.', he: 'נתתם עדכון ברור, ביקשתם עזרה והתמודדתם עם משוב במקצועיות.' } },
     ],
   },
 ];
