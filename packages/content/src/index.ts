@@ -15,6 +15,7 @@ import { SENTENCE_ITEMS } from './items/sentences';
 import { PASSAGES, READING_ITEMS } from './reading';
 import { BAGRUT_ITEMS, LITERARY_TEXTS } from './bagrut';
 import { LISTENING_ITEMS } from './items/listening';
+import { EXTRA_ITEMS } from './items/extra';
 
 export * from './bagrut';
 export * from './sets';
@@ -35,6 +36,7 @@ export const RAW_ITEMS: ContentItemInput[] = [
   ...READING_ITEMS,
   ...BAGRUT_ITEMS,
   ...LISTENING_ITEMS,
+  ...EXTRA_ITEMS,
 ];
 
 export const RAW_PASSAGES = [...PASSAGES, ...LITERARY_TEXTS];

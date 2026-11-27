@@ -219,7 +219,42 @@ export function Detective({ caseId }: { caseId?: string }) {
   const t = useT();
   const lang = useLang();
   const back = useNav((s) => s.back);
-  const c = DETECTIVE_CASES.find((x) => x.id === caseId) ?? DETECTIVE_CASES[0]!;
+  const go = useNav((s) => s.go);
+  const c = DETECTIVE_CASES.find((x) => x.id === caseId);
+  if (!c) {
+    return (
+      <div className="page">
+        <div className="page__head">
+          <Button variant="ghost" icon="back" aria-label={t('common.back')} onClick={back} />
+          <h1 className="page__title">{t('detective.title')}</h1>
+          <Chip tone="purple">{t('common.preview')}</Chip>
+        </div>
+        <div className="grid-auto">
+          {DETECTIVE_CASES.map((d) => (
+            <button key={d.id} type="button" className="tile" onClick={() => go({ id: 'detective', caseId: d.id })}>
+              <span className="row">
+                <Chip tone="purple">{d.level}</Chip>
+                <Chip icon="search">{d.evidence.length}</Chip>
+              </span>
+              <span className="tile__title" style={{ maxWidth: '100%' }}>
+                {lang === 'he' ? d.titleHe : d.title}
+              </span>
+              <span className="tile__sub" style={{ maxWidth: '100%' }}>
+                {lang === 'he' ? d.briefingHe : d.briefing}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+  return <DetectiveCaseView key={c.id} c={c} />;
+}
+
+function DetectiveCaseView({ c }: { c: (typeof DETECTIVE_CASES)[number] }) {
+  const t = useT();
+  const lang = useLang();
+  const back = useNav((s) => s.back);
   const [qi, setQi] = useState(0);
   const [picked, setPicked] = useState<number | null>(null);
   const [accused, setAccused] = useState<string | null>(null);

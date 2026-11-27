@@ -125,6 +125,83 @@ export const REAL_LIFE_SCENARIOS: DialogueScenario[] = [
       { id: 'iend', line: "Thank you — we'll be in touch soon.", end: { en: 'Interview complete. Review your choices below.', he: 'הראיון הסתיים. עברו על הבחירות שלכם למטה.' } },
     ],
   },
+  {
+    id: 'rl-hotel',
+    title: 'Hotel check-in',
+    titleHe: "צ'ק-אין במלון",
+    level: 'A2',
+    setting: 'Seaview Hotel reception, 9 p.m.',
+    character: { name: 'Maya', role: 'Receptionist' },
+    start: 'h1',
+    nodes: [
+      {
+        id: 'h1',
+        line: 'Good evening! Welcome to the Seaview Hotel. Do you have a reservation?',
+        choices: [
+          { text: 'Good evening. Yes, I booked a double room for three nights.', next: 'h2', quality: 'best', feedback: { en: 'Clear: booking, room type and length of stay.', he: 'ברור: הזמנה, סוג חדר ומשך השהייה.' } },
+          { text: 'Yes. Room.', next: 'h2', quality: 'ok', feedback: { en: 'Understandable, but full sentences sound more polite.', he: 'מובן, אבל משפטים מלאים נשמעים מנומסים יותר.' } },
+          { text: 'I am reserve a room.', next: 'h2', quality: 'poor', feedback: { en: "Say 'I have a reservation' or 'I reserved a room'.", he: 'אומרים I have a reservation או I reserved a room.' } },
+        ],
+      },
+      {
+        id: 'h2',
+        line: 'Perfect, I found it. Breakfast is from seven to ten. Would you like a room with a sea view? It is twenty euros extra per night.',
+        choices: [
+          { text: 'No, thank you. The standard room is fine.', next: 'h3', quality: 'best', feedback: { en: "A polite way to refuse: 'No, thank you…'.", he: 'דרך מנומסת לסרב: No, thank you…' } },
+          { text: 'Yes, please — that sounds lovely.', next: 'h3', quality: 'best', feedback: { en: 'Polite and natural acceptance.', he: 'הסכמה מנומסת וטבעית.' } },
+          { text: 'Why I must pay more?', next: 'h3', quality: 'poor', feedback: { en: "Question order: 'Why do I have to pay more?' — but a sea view is an optional upgrade.", he: 'סדר מילים בשאלה: Why do I have to pay more? — וחוץ מזה זו תוספת אופציונלית.' } },
+        ],
+      },
+      {
+        id: 'h3',
+        line: 'Here is your key card. Your room is on the fourth floor. Is there anything else I can help you with?',
+        choices: [
+          { text: 'Yes, could you tell me the Wi-Fi password, please?', next: 'hend', quality: 'best', feedback: { en: "'Could you…, please?' is a polite request.", he: 'Could you…, please? היא בקשה מנומסת.' } },
+          { text: 'What time is breakfast again?', next: 'hend', quality: 'ok', feedback: { en: "Fine — but she already said 7–10. Listening carefully saves time!", he: 'בסדר — אבל היא כבר אמרה 7–10. הקשבה טובה חוסכת זמן!' } },
+          { text: 'No.', next: 'hend', quality: 'poor', feedback: { en: "Add 'thank you': 'No, that's all, thank you.'", he: "הוסיפו תודה: No, that's all, thank you." } },
+        ],
+      },
+      { id: 'hend', line: 'Enjoy your stay!', end: { en: 'You checked in smoothly and politely.', he: "השלמתם צ'ק-אין בצורה חלקה ומנומסת." } },
+    ],
+  },
+  {
+    id: 'rl-restaurant',
+    title: 'Restaurant: a polite complaint',
+    titleHe: 'מסעדה: תלונה מנומסת',
+    level: 'B1',
+    setting: 'A busy Italian restaurant',
+    character: { name: 'Luca', role: 'Waiter' },
+    start: 'r1',
+    nodes: [
+      {
+        id: 'r1',
+        line: 'How is everything with your meal?',
+        choices: [
+          { text: "It looks great, but I'm afraid my pasta is cold.", next: 'r2', quality: 'best', feedback: { en: "'I'm afraid…' softens a complaint politely.", he: "I'm afraid… מרכך תלונה בצורה מנומסת." } },
+          { text: 'The pasta is cold.', next: 'r2', quality: 'ok', feedback: { en: 'Clear, but a softener sounds friendlier.', he: 'ברור, אבל ריכוך נשמע ידידותי יותר.' } },
+          { text: 'This food is terrible!', next: 'r2', quality: 'poor', feedback: { en: 'Too aggressive — describe the problem calmly.', he: 'תוקפני מדי — תארו את הבעיה ברוגע.' } },
+        ],
+      },
+      {
+        id: 'r2',
+        line: "I'm so sorry about that. Would you like me to heat it up, or would you prefer something else?",
+        choices: [
+          { text: "Could you bring a fresh one, please? I'd rather not wait too long.", next: 'r3', quality: 'best', feedback: { en: "'I'd rather…' expresses a preference politely.", he: "I'd rather… מביע העדפה בצורה מנומסת." } },
+          { text: 'Heat it, please.', next: 'r3', quality: 'ok', feedback: { en: "Fine. 'Could you heat it up, please?' is more natural.", he: 'בסדר. Could you heat it up, please? טבעי יותר.' } },
+          { text: 'I want my money back now.', next: 'r3', quality: 'poor', feedback: { en: 'The waiter offered a solution — respond to it first.', he: 'המלצר הציע פתרון — כדאי להגיב לו קודם.' } },
+        ],
+      },
+      {
+        id: 'r3',
+        line: "Of course. It'll be about five minutes. Can I get you anything while you wait?",
+        choices: [
+          { text: "Just some water, thanks. And thank you for sorting this out so quickly.", next: 'rend', quality: 'best', feedback: { en: 'Thanking staff ends the complaint on a positive note.', he: 'תודה לצוות מסיימת את התלונה בטון חיובי.' } },
+          { text: "No, it's fine.", next: 'rend', quality: 'ok', feedback: { en: 'Polite enough.', he: 'מנומס מספיק.' } },
+        ],
+      },
+      { id: 'rend', line: 'Here is your fresh pasta. Enjoy!', end: { en: 'You solved a problem politely and got what you wanted.', he: 'פתרתם בעיה בנימוס וקיבלתם את מה שרציתם.' } },
+    ],
+  },
 ];
 
 export interface CaseEvidence {
@@ -188,6 +265,37 @@ export const DETECTIVE_CASES: DetectiveCase[] = [
     solution: {
       en: "Shira borrowed the trophy to photograph it for Monday's front page and planned to return it. Borrowing without permission is still not OK — but it wasn't a theft for profit.",
       he: 'שירה שאלה את הגביע כדי לצלם אותו לעמוד הראשון של יום שני ותכננה להחזיר אותו. לקחת בלי רשות זה עדיין לא בסדר — אבל זו לא הייתה גניבה.',
+    },
+  },
+  {
+    id: 'case-silent-lab',
+    title: 'The Silent Lab',
+    titleHe: 'המעבדה השקטה',
+    level: 'B2',
+    briefing: "On Monday morning, the robotics club's competition robot would not start. Someone removed its control chip over the weekend. Study the evidence and identify who did it.",
+    briefingHe: 'ביום שני בבוקר רובוט התחרות של מועדון הרובוטיקה לא הופעל. מישהו הוציא את שבב הבקרה שלו בסוף השבוע. עיינו בראיות וזהו מי עשה זאת.',
+    suspects: [
+      { id: 'yael', name: 'Yael', role: 'Club captain' },
+      { id: 'ben', name: 'Ben', role: 'New club member' },
+      { id: 'ms-katz', name: 'Ms. Katz', role: 'Science teacher' },
+    ],
+    evidence: [
+      { id: 'sl-log', kind: 'document', title: 'Lab door access log', body: 'Saturday 10:02 — card: Y. Mizrahi (captain)\nSaturday 10:47 — card: Y. Mizrahi (captain)\nSunday — no entries' },
+      { id: 'sl-yael', kind: 'statement', title: "Yael's statement", from: 'Yael', body: 'I came in on Saturday only to collect my laptop. I was in and out in less than five minutes, and the robot was working when I left.' },
+      { id: 'sl-msg', kind: 'message', title: 'Message in the club group (Saturday 10:40)', from: 'Ben', body: "Yael, I left my water bottle in the lab yesterday — could you let me in for a sec? I'm outside the door." },
+      { id: 'sl-katz', kind: 'statement', title: "Ms. Katz's statement", from: 'Ms. Katz', body: 'I was at a conference in Tel Aviv all weekend. I only have a key for the main building, not for the lab.' },
+      { id: 'sl-receipt', kind: 'document', title: 'Online order (Sunday evening)', body: 'Customer: B. Levi — Item: "Control chip, model RX-7 (same as competition robots)" — Express delivery.' },
+    ],
+    questions: [
+      { id: 'sq1', prompt: 'What does the access log show about Saturday?', options: ["Yael's card opened the door twice, 45 minutes apart.", 'Nobody entered the lab on Saturday.', 'Ms. Katz entered the lab on Saturday.'], answer: 0, explanation: { en: 'The log shows two entries with Yael\'s card at 10:02 and 10:47.', he: 'ביומן יש שתי כניסות עם הכרטיס של יעל, ב-10:02 וב-10:47.' }, evidenceIds: ['sl-log'] },
+      { id: 'sq2', prompt: 'Which statement contradicts the access log?', options: ['"I was in and out in less than five minutes."', '"I only have a key for the main building."', '"I left my water bottle in the lab."'], answer: 0, explanation: { en: 'Yael says she stayed under five minutes, yet her card was used again 45 minutes later — the second entry needs an explanation.', he: 'יעל אומרת שהייתה פחות מחמש דקות, אבל הכרטיס שלה שימש שוב 45 דקות אחר כך — הכניסה השנייה דורשת הסבר.' }, evidenceIds: ['sl-yael', 'sl-log'] },
+      { id: 'sq3', prompt: 'What is the most likely explanation of the second entry?', options: ['Yael let Ben into the lab after his message.', 'Ms. Katz borrowed Yael\'s card.', 'The log made a mistake.'], answer: 0, explanation: { en: "Ben asked to be let in at 10:40 while standing outside; the card was used at 10:47.", he: 'בן ביקש שיכניסו אותו ב-10:40 כשעמד בחוץ; הכרטיס שימש ב-10:47.' }, evidenceIds: ['sl-msg', 'sl-log'] },
+      { id: 'sq4', prompt: 'Why is the Sunday order suspicious?', options: ['Ben bought an identical chip — possibly to replace the one he took or damaged.', 'Ms. Katz ordered it for the conference.', 'It proves Yael removed the chip.'], answer: 0, explanation: { en: "Buying the exact same model right after the incident suggests Ben was trying to put things right quietly.", he: 'רכישת אותו דגם בדיוק מיד אחרי המקרה מרמזת שבן ניסה לתקן את המצב בשקט.' }, evidenceIds: ['sl-receipt'] },
+    ],
+    culpritId: 'ben',
+    solution: {
+      en: 'Ben, curious about the robot, removed the chip to study it after Yael let him in for his bottle — and broke a pin. He ordered a replacement and hoped nobody would notice. Yael simplified her story because she was not supposed to let non-members in alone.',
+      he: 'בן, שהסתקרן מהרובוט, הוציא את השבב כדי לחקור אותו אחרי שיעל הכניסה אותו לקחת את הבקבוק — ושבר פין. הוא הזמין שבב חלופי וקיווה שאיש לא ישים לב. יעל פישטה את הסיפור שלה כי לא הייתה אמורה להכניס חברים חדשים לבד.',
     },
   },
 ];
