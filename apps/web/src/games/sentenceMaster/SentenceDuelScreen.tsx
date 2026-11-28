@@ -56,6 +56,8 @@ export function SentenceDuelScreen({ transport, onEnd, onExit }: { transport: Ma
   const q = view.round?.question;
   const revealed = !!view.result && view.result.roundId === view.round?.roundId;
   const done = !!meS?.done || revealed;
+  const myCorrect = !!view.result?.results.find((r) => r.playerId === selfId)?.correct;
+  const foeCorrect = !!view.result?.results.find((r) => r.playerId === foe.playerId)?.correct;
   const showIntro = view.phase === 'waiting' || (view.phase === 'countdown' && (view.startsAt ?? 0) - Date.now() > 2200);
 
   const submit = () => {
@@ -89,6 +91,23 @@ export function SentenceDuelScreen({ transport, onEnd, onExit }: { transport: Ma
         <Countdown startsAt={view.phase === 'countdown' ? view.startsAt : null} goLabel={t('match.go')} />
         {showIntro && <MatchIntro players={view.players} selfId={selfId} modeLabel={t('mode.sentence-master')} />}
         <VisualCue />
+        {view.round && (
+          <div className="sm-duel" aria-hidden="true">
+            <div className={`sm-duel__side ${meS?.done ? 'is-done' : ''} ${revealed && myCorrect ? 'is-win' : ''}`}>
+              <span className="sm-duel__podium" />
+              <Hero id={me.characterId} animated className="sm-duel__hero" />
+            </div>
+            <div className="sm-duel__scroll">
+              {Array.from({ length: rounds }, (_, i) => (
+                <span key={i} className={`sm-duel__pip ${i < view.round!.index ? 'is-past' : i === view.round!.index ? 'is-now' : ''}`} />
+              ))}
+            </div>
+            <div className={`sm-duel__side sm-duel__side--foe ${foeS?.done ? 'is-done' : ''} ${revealed && foeCorrect ? 'is-win' : ''}`}>
+              <span className="sm-duel__podium" />
+              <Hero id={foe.characterId} flip animated className="sm-duel__hero" />
+            </div>
+          </div>
+        )}
         {view.round && q?.tiles && (
           <div className="sm__board panel">
             <div className="qhead">

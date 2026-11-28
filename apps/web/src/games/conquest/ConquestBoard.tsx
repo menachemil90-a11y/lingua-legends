@@ -66,7 +66,7 @@ export function ConquestMap({ s, selected, targets, onPick }: { s: ConquestState
             </text>
             {st.fort && <path d={`M${t.x + 26} ${t.y - 4} h18 v-14 h-4 v5 h-3 v-5 h-4 v5 h-3 v-5 h-4 z`} fill="#c8d3ea" stroke="#04091a" strokeWidth="1.5" />}
             {isCapital && <path d={`M${t.x - 46} ${t.y - 2} l5 -12 6 7 5 -10 5 10 6 -7 5 12 z`} fill="#f5c451" stroke="#6c4508" strokeWidth="1.5" />}
-            <text x={t.x} y={t.y + 46} textAnchor="middle" className="cq-yield">
+            <text x={t.x} y={t.y + 46} textAnchor="middle" className="cq-yield" direction="ltr">
               +{t.yield}
             </text>
           </g>
@@ -183,7 +183,9 @@ export function ConquestBoard({
                 {t('conquest.focus')} {me.focus}
               </Chip>
               <Chip>{t('conquest.actions', { n: s.actionsLeft })}</Chip>
-              <Chip>+{income(s, selfId)}/{t('conquest.turn')}</Chip>
+              <Chip>
+                <bdi dir="ltr">+{income(s, selfId)}</bdi>/{t('conquest.turn')}
+              </Chip>
               {turnExtra}
             </div>
             <p className="tiny muted" style={{ margin: '8px 0' }}>

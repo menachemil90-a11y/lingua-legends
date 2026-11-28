@@ -51,6 +51,9 @@
   inset: auto 0 0 0;
   width: 100%;
   height: 62%;
+  /* Distant shapes dissolve into haze at the top instead of ending in hard edges. */
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 34%);
+  mask-image: linear-gradient(180deg, transparent 0%, #000 34%);
 }
 .backdrop__far {
   fill: var(--bd-far);

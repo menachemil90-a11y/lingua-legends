@@ -7,6 +7,7 @@ import { create } from 'zustand';
 import { Icon, ShardIcon, type IconName } from '../art/icons';
 import { sfx } from '../audio/sfx';
 import { useT } from '../i18n';
+import { useSettings } from '../state/settings';
 
 type Variant = 'primary' | 'secondary' | 'arcane' | 'ghost' | 'danger' | 'default';
 
@@ -329,6 +330,46 @@ export function ToastHost() {
           {t.text}
         </div>
       ))}
+    </div>
+  );
+}
+
+/**
+ * Counts a number up from 0 to `target` (rewards reveal). Shows the final value at once with
+ * reduced motion, and always ends exactly on the target.
+ */
+export function useCountUp(target: number, ms = 900): number {
+  const reduced = useSettings((s) => s.reducedMotion);
+  const [value, setValue] = useState(reduced ? target : 0);
+  useEffect(() => {
+    if (reduced || target <= 0 || typeof requestAnimationFrame === 'undefined') {
+      setValue(target);
+      return;
+    }
+    const start = performance.now();
+    let id = 0;
+    const step = (now: number) => {
+      const k = Math.min(1, (now - start) / ms);
+      const eased = 1 - Math.pow(1 - k, 3);
+      setValue(Math.round(target * eased));
+      if (k < 1) id = requestAnimationFrame(step);
+    };
+    id = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(id);
+  }, [target, ms, reduced]);
+  return value;
+}
+
+/** A reward revealed after a match: big icon, a number that counts up, and a label. */
+export function RewardTile({ icon, amount, label, tone }: { icon: IconName | 'shard'; amount: number; label: string; tone: 'gold' | 'purple' }) {
+  const shown = useCountUp(amount);
+  return (
+    <div className={`reward reward--${tone}`}>
+      <span className="reward__icon">{icon === 'shard' ? <ShardIcon /> : <Icon name={icon} filled />}</span>
+      <span className="reward__num num" dir="ltr">
+        +{shown}
+      </span>
+      <span className="reward__label">{label}</span>
     </div>
   );
 }

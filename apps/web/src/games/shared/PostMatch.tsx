@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { PublicPlayer, ServerMessageOf } from '@lingua/shared';
 import { Hero, RankEmblem } from '../../art/Art';
 import { Icon } from '../../art/icons';
-import { BotBadge, Button, Chip, En, Panel, ProgressBar, Stat } from '../../design';
+import { BotBadge, Button, Chip, En, Panel, ProgressBar, RewardTile, Stat } from '../../design';
 import { useT, type MessageKey } from '../../i18n';
 import { sfx } from '../../audio/sfx';
 import { playerLevel, usePlayer } from '../../state/player';
@@ -60,12 +60,15 @@ export function PostMatch({
   const avg = mine?.avgResponseMs ? `${(mine.avgResponseMs / 1000).toFixed(1)}s` : '—';
   const rc = end.ratingChange;
 
+  const tone = summary.result === 'win' ? 'win' : summary.result === 'loss' ? 'loss' : 'draw';
   return (
     <div className="post">
-      <div className={`result-banner result-banner--${summary.result === 'win' ? 'win' : summary.result === 'loss' ? 'loss' : 'draw'}`}>
+      <div className={`result-banner result-banner--${tone}`}>
         {summary.result === 'win' && <VictoryEffect id={loadout.effectId} />}
         {summary.result === 'win' && <div className="post__rays" aria-hidden="true" />}
-        <div className="post__heroes">
+        <div className={`post__stage post__stage--${tone}`}>
+          <span className="post__halo" aria-hidden="true" />
+          <span className="post__dais" aria-hidden="true" />
           <Hero id={me?.characterId ?? loadout.characterId} className={`post__hero ${summary.result === 'win' ? 'post__hero--win' : ''}`} />
         </div>
         <h1 className="result-banner__word">{word}</h1>
@@ -98,13 +101,9 @@ export function PostMatch({
 
         <Panel title={t('result.xp')} gold>
           <div className="stack">
-            <div className="row" style={{ justifyContent: 'space-between' }}>
-              <Chip tone="gold" icon="star">
-                +{summary.xp} XP
-              </Chip>
-              <Chip tone="purple" icon="gem">
-                +{summary.shards} {t('result.shards')}
-              </Chip>
+            <div className="rewards">
+              <RewardTile icon="star" amount={summary.xp} label="XP" tone="gold" />
+              <RewardTile icon="shard" amount={summary.shards} label={t('result.shards')} tone="purple" />
             </div>
             <div className="row tiny muted" style={{ justifyContent: 'space-between' }}>
               <span>
@@ -142,10 +141,12 @@ export function PostMatch({
         {rc && (
           <Panel title={t('result.rankChange')}>
             <div className="row">
-              <RankEmblem tier={rc.rankAfter.tier} division={rc.rankAfter.division} size={72} />
+              <span className={`post__emblem ${rc.promoted ? 'post__emblem--promoted' : ''}`}>
+                <RankEmblem tier={rc.rankAfter.tier} division={rc.rankAfter.division} size={72} />
+              </span>
               <div className="stack" style={{ gap: 4 }}>
                 <strong>{rc.rankAfter.label}</strong>
-                <span className={`num ${rc.delta >= 0 ? 'text-good' : 'text-bad'}`}>
+                <span className={`num ${rc.delta >= 0 ? 'text-good' : 'text-bad'}`} dir="ltr">
                   {rc.delta >= 0 ? '+' : ''}
                   {rc.delta} MMR ({rc.after})
                 </span>

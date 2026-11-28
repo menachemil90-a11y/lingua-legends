@@ -123,7 +123,12 @@ export function Lobby() {
             <Logo />
           </div>
           <div className="lobby__stage">
+            <div className="halo" aria-hidden="true">
+              <span className="halo__rays" />
+              <RuneRing className="halo__runes" />
+            </div>
             <div className="pedestal" aria-hidden="true">
+              <span className="pedestal__base" />
               <span className="pedestal__ring" />
               <span className="pedestal__ring pedestal__ring--2" />
               <span className="pedestal__beam" />
@@ -314,5 +319,21 @@ function Onboarding() {
         </div>
       </div>
     </Dialog>
+  );
+}
+
+/** Original decorative ring of abstract glyphs (not a real alphabet) that turns slowly behind the hero. */
+const GLYPHS = ['M-3 -5L0 5L3 -5', 'M-4 -4H4M0 -4V5', 'M-3 5V-5L3 0L-3 5', 'M-4 0H4M-2 -5L2 5', 'M0 -5V5M-4 -1L0 -5L4 -1', 'M-3 -5H3L-3 5H3'];
+function RuneRing({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="-100 -100 200 200">
+      <circle r="94" className="halo__line" />
+      <circle r="82" className="halo__line halo__line--dots" />
+      {Array.from({ length: 18 }, (_, i) => (
+        <g key={i} transform={`rotate(${i * 20}) translate(0 -88)`}>
+          <path d={GLYPHS[i % GLYPHS.length]} className="halo__glyph" />
+        </g>
+      ))}
+    </svg>
   );
 }
