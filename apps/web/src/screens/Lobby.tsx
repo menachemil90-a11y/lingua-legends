@@ -82,28 +82,6 @@ export function Lobby() {
 
   return (
     <div className="lobby">
-      <div className="lobby-bg" aria-hidden="true">
-        <div className="lobby-bg__nebula" />
-        <div className="lobby-bg__stars" />
-        <svg className="lobby-bg__islands" viewBox="0 0 1600 600" preserveAspectRatio="xMidYMax slice">
-          <defs>
-            <linearGradient id="isl" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stopColor="#1b3a7a" />
-              <stop offset="1" stopColor="#060d24" />
-            </linearGradient>
-          </defs>
-          <path d="M80 330 C140 300 260 300 320 330 L260 420 L200 470 L150 410 Z" fill="url(#isl)" opacity=".55" />
-          <path d="M1230 260 C1300 230 1440 236 1500 268 L1440 352 L1380 400 L1320 340 Z" fill="url(#isl)" opacity=".5" />
-          <path d="M1060 380 C1100 364 1170 366 1200 382 L1160 430 L1120 452 Z" fill="url(#isl)" opacity=".4" />
-          <path d="M0 600 L0 520 C200 480 400 500 600 470 C800 440 1000 470 1200 455 C1400 440 1500 470 1600 460 L1600 600 Z" fill="#050b20" />
-        </svg>
-        <div className="lobby-bg__motes">
-          {Array.from({ length: 14 }, (_, i) => (
-            <span key={i} style={{ ['--i' as string]: i }} />
-          ))}
-        </div>
-      </div>
-
       <header className="lobby__top">
         <button type="button" className="profile-chip" onClick={() => go({ id: 'profile' })} aria-label={t('nav.profile')}>
           <span className={`avatar-frame avatar-frame--${p.loadout.frameId}`}>

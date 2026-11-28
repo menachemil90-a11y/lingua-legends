@@ -102,6 +102,121 @@
   color-scheme: dark;
 }
 
+/*
+ * Scene themes for the app-wide backdrop (art/Backdrop.tsx). Each mode has its own place in the
+ * same world: base sky, three nebula glows, two silhouette depths, a mote colour and an accent.
+ */
+.backdrop--sky {
+  --bd-top: #071233;
+  --bd-bottom: #050b20;
+  --bd-glow-1: rgba(56, 225, 255, 0.22);
+  --bd-glow-2: rgba(139, 77, 255, 0.35);
+  --bd-glow-3: rgba(245, 196, 81, 0.16);
+  --bd-far: #17336f;
+  --bd-near: #050b20;
+  --bd-mote: #bff7ff;
+  --bd-accent: #7ff3ff;
+}
+.backdrop--arena {
+  --bd-top: #120a35;
+  --bd-bottom: #05061a;
+  --bd-glow-1: rgba(178, 107, 255, 0.34);
+  --bd-glow-2: rgba(56, 225, 255, 0.2);
+  --bd-glow-3: rgba(255, 111, 142, 0.14);
+  --bd-far: #2a1a66;
+  --bd-near: #07061c;
+  --bd-mote: #e0c2ff;
+  --bd-accent: #b26bff;
+}
+.backdrop--race {
+  --bd-top: #1a0b3a;
+  --bd-bottom: #04071a;
+  --bd-glow-1: rgba(255, 111, 142, 0.26);
+  --bd-glow-2: rgba(56, 225, 255, 0.24);
+  --bd-glow-3: rgba(178, 107, 255, 0.28);
+  --bd-far: #241a55;
+  --bd-near: #070a22;
+  --bd-mote: #7ff3ff;
+  --bd-accent: #ff6f8e;
+}
+.backdrop--library {
+  --bd-top: #1b1230;
+  --bd-bottom: #07060f;
+  --bd-glow-1: rgba(245, 196, 81, 0.24);
+  --bd-glow-2: rgba(178, 107, 255, 0.2);
+  --bd-glow-3: rgba(255, 179, 71, 0.16);
+  --bd-far: #2a1d3f;
+  --bd-near: #0c0814;
+  --bd-mote: #ffe7a3;
+  --bd-accent: #f5c451;
+}
+.backdrop--sea {
+  --bd-top: #06233f;
+  --bd-bottom: #031020;
+  --bd-glow-1: rgba(54, 224, 176, 0.22);
+  --bd-glow-2: rgba(56, 225, 255, 0.26);
+  --bd-glow-3: rgba(245, 196, 81, 0.12);
+  --bd-far: #0d3a5e;
+  --bd-near: #041a30;
+  --bd-mote: #bfffee;
+  --bd-accent: #36e0b0;
+}
+.backdrop--noir {
+  --bd-top: #0b1428;
+  --bd-bottom: #03060e;
+  --bd-glow-1: rgba(127, 243, 255, 0.12);
+  --bd-glow-2: rgba(245, 196, 81, 0.18);
+  --bd-glow-3: rgba(111, 132, 173, 0.18);
+  --bd-far: #142240;
+  --bd-near: #04070f;
+  --bd-mote: #a8bce3;
+  --bd-accent: #ffe7a3;
+}
+.backdrop--escape {
+  --bd-top: #08202a;
+  --bd-bottom: #030b10;
+  --bd-glow-1: rgba(56, 225, 255, 0.2);
+  --bd-glow-2: rgba(245, 196, 81, 0.2);
+  --bd-glow-3: rgba(54, 224, 176, 0.14);
+  --bd-far: #0f3340;
+  --bd-near: #041218;
+  --bd-mote: #ffe7a3;
+  --bd-accent: #c98d22;
+}
+.backdrop--forum {
+  --bd-top: #2a0d22;
+  --bd-bottom: #0a0410;
+  --bd-glow-1: rgba(245, 196, 81, 0.26);
+  --bd-glow-2: rgba(255, 111, 142, 0.22);
+  --bd-glow-3: rgba(178, 107, 255, 0.16);
+  --bd-far: #3a1736;
+  --bd-near: #100614;
+  --bd-mote: #ffe7a3;
+  --bd-accent: #f5c451;
+}
+.backdrop--city {
+  --bd-top: #2b1b4a;
+  --bd-bottom: #0a0b20;
+  --bd-glow-1: rgba(255, 179, 71, 0.3);
+  --bd-glow-2: rgba(255, 111, 142, 0.2);
+  --bd-glow-3: rgba(56, 225, 255, 0.16);
+  --bd-far: #33295e;
+  --bd-near: #0b0c22;
+  --bd-mote: #ffd9a8;
+  --bd-accent: #ffb347;
+}
+.backdrop--tournament {
+  --bd-top: #1d1638;
+  --bd-bottom: #07050f;
+  --bd-glow-1: rgba(245, 196, 81, 0.34);
+  --bd-glow-2: rgba(139, 77, 255, 0.24);
+  --bd-glow-3: rgba(56, 225, 255, 0.14);
+  --bd-far: #2d2452;
+  --bd-near: #0b0816;
+  --bd-mote: #ffe7a3;
+  --bd-accent: #f5c451;
+}
+
 :root[data-contrast='high'] {
   --c-panel: rgba(4, 10, 28, 0.96);
   --c-line: rgba(255, 255, 255, 0.5);

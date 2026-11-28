@@ -4,7 +4,8 @@ import { BRACKET_LEVELS, bracketForLevel, modeDef, shuffle, type GameModeId } fr
 import { ADVENTURE_REGIONS, DETECTIVE_CASES, REAL_LIFE_SCENARIOS, type DialogueChoice } from '@lingua/content';
 import { Hero } from '../art/Art';
 import { Icon } from '../art/icons';
-import { Button, Chip, En, Panel, StateMessage } from '../design';
+import { Button, Chip, En, Panel, StateMessage, TileArt } from '../design';
+import { SCENE_ICON } from '../art/sceneIcons';
 import { useT, useLang, type MessageKey } from '../i18n';
 import { sfx } from '../audio/sfx';
 import { useMusic } from '../audio/useMusic';
@@ -157,8 +158,9 @@ export function RealLife({ scenarioId }: { scenarioId?: string }) {
         <div className="grid-auto">
           {REAL_LIFE_SCENARIOS.map((s) => (
             <button key={s.id} type="button" className="tile" onClick={() => go({ id: 'real-life', scenarioId: s.id })}>
+              <TileArt icon={SCENE_ICON[s.id] ?? 'chat'} tone="gold" />
               <Chip tone="purple">{s.level}</Chip>
-              <span className="tile__title" style={{ maxWidth: '100%' }}>
+              <span className="tile__title">
                 {lang === 'he' ? s.titleHe : s.title}
               </span>
               <span className="tile__sub">
@@ -264,14 +266,15 @@ export function Detective({ caseId }: { caseId?: string }) {
         <div className="grid-auto">
           {DETECTIVE_CASES.map((d) => (
             <button key={d.id} type="button" className="tile" onClick={() => go({ id: 'detective', caseId: d.id })}>
+              <TileArt icon={SCENE_ICON[d.id] ?? 'search'} tone="cyan" />
               <span className="row">
                 <Chip tone="purple">{d.level}</Chip>
                 <Chip icon="search">{d.evidence.length}</Chip>
               </span>
-              <span className="tile__title" style={{ maxWidth: '100%' }}>
+              <span className="tile__title">
                 {lang === 'he' ? d.titleHe : d.title}
               </span>
-              <span className="tile__sub" style={{ maxWidth: '100%' }}>
+              <span className="tile__sub">
                 {lang === 'he' ? d.briefingHe : d.briefing}
               </span>
             </button>

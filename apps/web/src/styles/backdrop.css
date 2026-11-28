@@ -1,0 +1,165 @@
+/* ===================== App-wide scene backdrop (art/Backdrop.tsx) ===================== */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  background: linear-gradient(180deg, var(--bd-top) 0%, var(--bd-bottom) 100%);
+  animation: backdrop-in var(--t-slow) ease-out both;
+}
+@keyframes backdrop-in {
+  from {
+    opacity: 0;
+  }
+}
+.backdrop__nebula {
+  position: absolute;
+  inset: -12%;
+  background:
+    radial-gradient(40% 35% at 50% 36%, var(--bd-glow-1), transparent 70%),
+    radial-gradient(35% 30% at 18% 24%, var(--bd-glow-2), transparent 70%),
+    radial-gradient(30% 30% at 84% 28%, var(--bd-glow-3), transparent 70%);
+  animation: nebula-drift 26s ease-in-out infinite alternate;
+  will-change: transform;
+}
+@keyframes nebula-drift {
+  to {
+    transform: scale(1.07) translate3d(-1.5%, -1.5%, 0);
+  }
+}
+.backdrop__stars {
+  position: absolute;
+  inset: 0 0 35% 0;
+  background-image:
+    radial-gradient(1.5px 1.5px at 12% 18%, var(--c-text), transparent),
+    radial-gradient(1px 1px at 28% 8%, var(--bd-mote), transparent),
+    radial-gradient(1.5px 1.5px at 46% 22%, var(--c-text), transparent),
+    radial-gradient(1px 1px at 63% 12%, var(--c-text), transparent),
+    radial-gradient(1.5px 1.5px at 78% 26%, var(--bd-mote), transparent),
+    radial-gradient(1px 1px at 88% 6%, var(--c-text), transparent),
+    radial-gradient(1px 1px at 6% 40%, var(--c-text), transparent),
+    radial-gradient(1.5px 1.5px at 94% 44%, var(--bd-mote), transparent),
+    radial-gradient(1px 1px at 38% 36%, var(--c-text), transparent),
+    radial-gradient(1px 1px at 70% 40%, var(--c-text), transparent),
+    radial-gradient(1px 1px at 55% 4%, var(--c-text), transparent),
+    radial-gradient(1px 1px at 20% 52%, var(--bd-mote), transparent);
+  animation: twinkle 6s ease-in-out infinite alternate;
+}
+.backdrop__scene {
+  position: absolute;
+  inset: auto 0 0 0;
+  width: 100%;
+  height: 62%;
+}
+.backdrop__far {
+  fill: var(--bd-far);
+  opacity: 0.55;
+}
+.backdrop__near {
+  fill: var(--bd-near);
+}
+.backdrop__moon {
+  fill: var(--bd-accent);
+  opacity: 0.55;
+  filter: drop-shadow(0 0 30px var(--bd-accent));
+}
+.backdrop__clock {
+  fill: none;
+  stroke: var(--bd-accent);
+  stroke-width: 6;
+  opacity: 0.5;
+}
+.backdrop__gear {
+  fill: var(--bd-far);
+  opacity: 0.5;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: gear-turn 60s linear infinite;
+}
+.backdrop__gear--rev {
+  animation-direction: reverse;
+  animation-duration: 48s;
+}
+@keyframes gear-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.backdrop__swell {
+  fill: var(--bd-far);
+  opacity: 0.7;
+  animation: swell 9s ease-in-out infinite alternate;
+}
+@keyframes swell {
+  to {
+    transform: translateX(-60px);
+  }
+}
+.backdrop__motes span {
+  position: absolute;
+  bottom: -10px;
+  inset-inline-start: calc(var(--i) * 7.1% + 2%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--bd-mote), transparent 70%);
+  opacity: 0.7;
+  animation: mote calc(9s + var(--i) * 0.7s) linear infinite;
+  animation-delay: calc(var(--i) * -1.1s);
+}
+/* Rain over the detective's city instead of rising motes. */
+.backdrop--noir .backdrop__motes span {
+  top: -40px;
+  bottom: auto;
+  width: 1.5px;
+  height: 26px;
+  border-radius: 1px;
+  background: linear-gradient(180deg, transparent, var(--bd-mote));
+  opacity: 0.35;
+  animation: rain calc(1.1s + var(--i) * 0.07s) linear infinite;
+  animation-delay: calc(var(--i) * -0.23s);
+}
+@keyframes rain {
+  to {
+    transform: translate3d(-40px, 110dvh, 0);
+  }
+}
+.backdrop__vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(130% 90% at 50% 30%, transparent 55%, rgba(0, 0, 0, 0.55) 100%);
+}
+
+/* Weak devices, Save-Data and reduced motion: a still picture, nothing animating behind the UI. */
+:root[data-perf='lite'] .backdrop__motes,
+:root[data-motion='reduced'] .backdrop__motes {
+  display: none;
+}
+:root[data-perf='lite'] .backdrop *,
+:root[data-motion='reduced'] .backdrop * {
+  animation: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .backdrop__motes {
+    display: none;
+  }
+  .backdrop * {
+    animation: none !important;
+  }
+}
+
+@keyframes twinkle {
+  to {
+    opacity: 0.55;
+  }
+}
+@keyframes mote {
+  to {
+    transform: translateY(-100dvh) translateX(20px);
+    opacity: 0;
+  }
+}
+:root[data-perf='lite'] .dialog-backdrop {
+  backdrop-filter: none;
+}

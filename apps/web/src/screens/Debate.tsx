@@ -3,7 +3,8 @@ import { useMemo, useState } from 'react';
 import { DEBATE_TOPICS, type DebateTopic } from '@lingua/content';
 import { checkWriting, debateChecklist, type WritingReport } from '@lingua/learning';
 import { Icon } from '../art/icons';
-import { Button, Chip, En, He, Panel, ProgressBar, Segmented, toast } from '../design';
+import { Button, Chip, En, He, Panel, ProgressBar, Segmented, TileArt, toast } from '../design';
+import { SCENE_ICON } from '../art/sceneIcons';
 import { useT, useLang, type MessageKey } from '../i18n';
 import { usePlayer } from '../state/player';
 import { useNav } from '../state/nav';
@@ -240,6 +241,7 @@ export function DebateScreen({ topicId }: { topicId?: string }) {
           const b = best(d.id);
           return (
             <button key={d.id} type="button" className="tile" onClick={() => go({ id: 'debate', topicId: d.id })} data-testid={`debate-topic-${d.id}`}>
+              <TileArt icon={SCENE_ICON[d.id] ?? 'chat'} tone="purple" />
               <span className="row">
                 <Chip tone="purple">{d.level}</Chip>
                 {b && (

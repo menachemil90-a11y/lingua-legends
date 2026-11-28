@@ -19,8 +19,12 @@ body {
   overflow-x: hidden;
 }
 
-body {
+/* The sky lives on <html> so the fixed scene backdrop (z-index -1) can paint above it. */
+html {
   background: var(--g-sky) fixed, var(--c-bg-0);
+}
+body {
+  background: transparent;
 }
 
 #root {

@@ -72,6 +72,15 @@ export function Panel({ title, children, className, gold, flush, as: As = 'secti
   );
 }
 
+/** Decorative scene medallion in the corner of a list card (icon + glow; never the only label). */
+export function TileArt({ icon, tone = 'cyan' }: { icon: IconName; tone?: 'cyan' | 'gold' | 'purple' | 'good' }) {
+  return (
+    <span className={`tile-art tile-art--${tone}`} aria-hidden="true">
+      <Icon name={icon} />
+    </span>
+  );
+}
+
 export function Chip({ children, tone, icon, title }: { children: ReactNode; tone?: 'gold' | 'purple' | 'good' | 'bad' | 'bot'; icon?: IconName; title?: string }) {
   return (
     <span className={`chip ${tone ? `chip--${tone}` : ''}`} title={title}>

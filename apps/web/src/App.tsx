@@ -7,6 +7,7 @@ import { useNav, installHistoryBridge, type Screen } from './state/nav';
 import { connection, useConnection } from './net/connection';
 import { sfx } from './audio/sfx';
 import { VisualCue } from './games/shared/components';
+import { Backdrop, type BackdropTheme } from './art/Backdrop';
 import { usePlayer } from './state/player';
 import { Lobby } from './screens/Lobby';
 
@@ -146,6 +147,53 @@ function ScreenFor({ s }: { s: Screen }) {
 }
 
 /** Routes MATCH_FOUND (queue, room, invite or rematch) to the match screen. */
+const MODE_THEME: Record<GameModeId, BackdropTheme> = {
+  'word-battle': 'arena',
+  'grammar-race': 'race',
+  'sentence-master': 'library',
+  'english-conquest': 'sea',
+  'english-detective': 'noir',
+  'escape-room': 'escape',
+  'debate-arena': 'forum',
+  'real-life': 'city',
+};
+
+/** Each screen lives in one place of the same world (see art/Backdrop.tsx). */
+export function backdropFor(s: Screen): BackdropTheme {
+  switch (s.id) {
+    case 'match':
+      return MODE_THEME[s.params.mode];
+    case 'conquest':
+      return 'sea';
+    case 'detective':
+      return 'noir';
+    case 'escape-room':
+      return 'escape';
+    case 'debate':
+      return 'forum';
+    case 'real-life':
+      return 'city';
+    case 'tournament':
+      return 'tournament';
+    case 'practice':
+    case 'sentence-practice':
+    case 'reading':
+    case 'bagrut':
+    case 'bagrut-task':
+    case 'bagrut-mock':
+      return 'library';
+    case 'mode-info':
+      return MODE_THEME[s.mode];
+    default:
+      return 'sky';
+  }
+}
+
+function SceneBackdrop() {
+  const theme = useNav((s) => backdropFor(s.current));
+  return <Backdrop key={theme} theme={theme} />;
+}
+
 /** Screens that present new achievements themselves (post-match summary, Bagrut task results). */
 const SELF_PRESENTING: ReadonlySet<Screen['id']> = new Set(['match', 'bagrut', 'bagrut-task', 'bagrut-mock']);
 /** Screens that already play a bigger sting when an achievement unlocks there. */
@@ -270,6 +318,7 @@ export function App() {
 
   return (
     <>
+      <SceneBackdrop />
       <Router />
       <OnlineMatchRouter />
       <InviteDialog />
