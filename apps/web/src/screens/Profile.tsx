@@ -100,23 +100,26 @@ export function Profile() {
         <ul className="journey">
           {journeyProgress(journeyMetrics(p)).map(({ milestone, value, done }) => {
             const reward = COSMETICS.find((c) => c.unlock.kind === 'achievement' && c.unlock.achievementId === milestone.id);
+            const share = Math.min(1, value / milestone.target);
             return (
               <li key={milestone.id} className={`journey__item ${done ? 'journey__item--done' : ''}`}>
-                <span className="journey__icon">
+                <span className="journey__ring" style={{ ['--p' as string]: share }} role="img" aria-label={`${Math.round(share * 100)}%`}>
                   <Icon name={done ? 'check' : milestone.metric === 'words' ? 'book' : milestone.metric === 'grammar' ? 'brain' : milestone.metric === 'modes' ? 'map' : 'star'} />
                 </span>
-                <span className="stack" style={{ gap: 4 }}>
-                  <span className="row small" style={{ justifyContent: 'space-between' }}>
-                    <strong>{t(`achievement.${milestone.id}` as MessageKey)}</strong>
-                    <span className="num tiny muted">
-                      {done ? t('journey.done') : `${value}/${milestone.target}`}
+                <span className="journey__body">
+                  <strong className="small">{t(`achievement.${milestone.id}` as MessageKey)}</strong>
+                  <span className="num tiny muted" dir="ltr">
+                    {done ? t('journey.done') : `${value}/${milestone.target}`}
+                  </span>
+                  <span className="tiny muted">{t(`achievement.${milestone.id}.desc` as MessageKey)}</span>
+                  {reward && (
+                    <span className={`journey__reward ${done ? 'is-earned' : ''}`}>
+                      <Icon name={reward.kind === 'title' ? 'crown' : 'sparkle'} />
+                      <span className="en" dir="ltr">
+                        {reward.name}
+                      </span>
                     </span>
-                  </span>
-                  <ProgressBar value={value / milestone.target} tone={done ? 'good' : 'gold'} label={t(`achievement.${milestone.id}.desc` as MessageKey)} height={6} />
-                  <span className="tiny muted">
-                    {t(`achievement.${milestone.id}.desc` as MessageKey)}
-                    {reward ? ` · ${t('journey.reward', { name: reward.name })}` : ''}
-                  </span>
+                  )}
                 </span>
               </li>
             );

@@ -96,6 +96,12 @@ function Cup() {
             </li>
           );
         })}
+        <li className={`cup-node cup-node--trophy ${status === 'champion' ? 'cup-node--won' : ''}`} data-testid="cup-trophy">
+          <span className="cup-trophy" aria-hidden="true">
+            <Icon name="trophy" filled />
+          </span>
+          <strong className="small">{t('tournament.trophy')}</strong>
+        </li>
       </ol>
       {status === 'playing' && (
         <>

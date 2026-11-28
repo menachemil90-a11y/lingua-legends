@@ -636,6 +636,7 @@ export const he: Record<MessageKey, string> = {
   'tournament.needPlayers': 'צריך לפחות 3 שחקנים',
   'tournament.start': 'מתחילים את הטורניר',
   'tournament.waitingHost': 'ממתינים שהמארח/ת יתחיל/תתחיל…',
+  'tournament.trophy': 'אליפות',
   'tournament.champion': '{name} אלופ/ת הטורניר!',
   'tournament.bye': 'עולה ישירות',
   'tournament.advances': 'עולה שלב',

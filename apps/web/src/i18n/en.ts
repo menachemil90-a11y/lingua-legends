@@ -634,6 +634,7 @@ export const en = {
   'tournament.needPlayers': 'Needs at least 3 players',
   'tournament.start': 'Start the tournament',
   'tournament.waitingHost': 'Waiting for the host to start…',
+  'tournament.trophy': 'Champion',
   'tournament.champion': '{name} is the champion!',
   'tournament.bye': 'Bye',
   'tournament.advances': 'advances',
