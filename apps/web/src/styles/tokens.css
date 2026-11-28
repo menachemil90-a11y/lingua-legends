@@ -217,6 +217,26 @@
   --bd-accent: #f5c451;
 }
 
+/* Word Battle arena previews (mirror the Phaser arena palettes in phaser/ArenaScene.ts). */
+.arena-swatch--skyforge {
+  --sw-sky: #0d2a6b;
+  --sw-top: #071a46;
+  --sw-ring: #38e1ff;
+  --sw-light: rgba(56, 225, 255, 0.35);
+}
+.arena-swatch--nightbloom {
+  --sw-sky: #2a0f55;
+  --sw-top: #12052e;
+  --sw-ring: #b26bff;
+  --sw-light: rgba(255, 111, 216, 0.35);
+}
+.arena-swatch--tidewell {
+  --sw-sky: #0f5f6e;
+  --sw-top: #06283f;
+  --sw-ring: #2fd6c8;
+  --sw-light: rgba(255, 179, 71, 0.55);
+}
+
 :root[data-contrast='high'] {
   --c-panel: rgba(4, 10, 28, 0.96);
   --c-line: rgba(255, 255, 255, 0.5);

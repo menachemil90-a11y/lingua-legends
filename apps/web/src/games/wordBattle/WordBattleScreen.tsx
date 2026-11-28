@@ -7,11 +7,17 @@ import { useT, useLang } from '../../i18n';
 import { sfx } from '../../audio/sfx';
 import { usePlayer } from '../../state/player';
 import type { MatchTransport } from '../../net/transport';
-import type { ArenaApi, Side } from '../../phaser/ArenaScene';
+import type { ArenaApi, ArenaTheme, Side } from '../../phaser/ArenaScene';
 import { Countdown, MatchIntro, PlayerTag, QuestionCard, RoundFeedback, VisualCue } from '../shared/components';
 import { TacticChip } from './TacticPicker';
 import { useMatch, type MatchView } from '../shared/useMatch';
 import { MatchClock, ReadyCheck } from '../shared/MatchChrome';
+
+const ARENA_THEMES: Record<string, ArenaTheme> = { 'arena-skyforge': 'skyforge', 'arena-nightbloom': 'nightbloom', 'arena-tidewell': 'tidewell' };
+/** The equipped arena cosmetic chosen by this player (purely visual; each player sees their own). */
+function arenaThemeFor(id: string | undefined): ArenaTheme {
+  return (id && ARENA_THEMES[id]) || 'skyforge';
+}
 
 export function WordBattleScreen({ transport, onEnd, onExit }: { transport: MatchTransport; onEnd: (view: MatchView) => void; onExit: () => void }) {
   const t = useT();
@@ -98,7 +104,7 @@ export function WordBattleScreen({ transport, onEnd, onExit }: { transport: Matc
       void bootArena(arenaRef.current, {
         left: { characterId: me.characterId },
         right: { characterId: foe.characterId },
-        theme: arenaTheme === 'arena-nightbloom' ? 'nightbloom' : 'skyforge',
+        theme: arenaThemeFor(arenaTheme),
       }).then((api) => {
         if (disposed) api.destroy();
         else {

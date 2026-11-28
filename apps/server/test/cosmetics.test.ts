@@ -5,6 +5,7 @@ describe('cosmetics shown to other players', () => {
   it('accepts every catalog hero and vehicle (including new ones) and rejects unknown ids', () => {
     expect(sanitizeCosmetics({ characterId: 'liora', vehicleId: 'aurum' })).toMatchObject({ characterId: 'liora', vehicleId: 'aurum' });
     expect(sanitizeCosmetics({ characterId: 'brann', vehicleId: 'ember' }).characterId).toBe('brann');
+    expect(sanitizeCosmetics({ characterId: 'mira', vehicleId: 'comet' }).characterId).toBe('mira');
     expect(sanitizeCosmetics({ characterId: 'not-a-hero', vehicleId: 'x' })).toMatchObject({ characterId: 'vexa', vehicleId: 'comet' });
   });
 

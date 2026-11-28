@@ -10,11 +10,19 @@ import { hexToNumber } from '../art/color';
 import { prefersReducedMotion, radialCanvas, svgToImage } from './textures';
 
 export type Side = 'left' | 'right';
+export type ArenaTheme = 'skyforge' | 'nightbloom' | 'tidewell';
+
+/** Colour scripts for each original arena (cosmetic only; gameplay is identical in all of them). */
+const THEMES: Record<ArenaTheme, { sky: [string, string]; spires: [string, string]; aurora: [number, number]; ring: number; crystal: number; mote: number }> = {
+  skyforge: { sky: ['#071a46', '#0d2a6b'], spires: ['#0b1f4d', '#08173a'], aurora: [0x38e1ff, 0x8b4dff], ring: 0x38e1ff, crystal: 0x7ff3ff, mote: 0x9ff6ff },
+  nightbloom: { sky: ['#12052e', '#2a0f55'], spires: ['#1d0b3f', '#140830'], aurora: [0xb26bff, 0xff6fd8], ring: 0xb26bff, crystal: 0xff6fd8, mote: 0xe0c2ff },
+  tidewell: { sky: ['#06283f', '#0f5f6e'], spires: ['#0a3a4c', '#062a38'], aurora: [0x2fd6c8, 0xffb347], ring: 0x2fd6c8, crystal: 0xa6fff5, mote: 0xa6fff5 },
+};
 
 export interface ArenaConfig {
   left: { characterId: string };
   right: { characterId: string };
-  theme: 'skyforge' | 'nightbloom';
+  theme: ArenaTheme;
 }
 
 export interface ArenaApi {
@@ -109,14 +117,14 @@ class ArenaScene extends Phaser.Scene {
   }
 
   private drawBackground(): void {
-    const night = this.cfg.theme === 'nightbloom';
+    const th = THEMES[this.cfg.theme] ?? THEMES.skyforge;
     const sky = document.createElement('canvas');
     sky.width = W;
     sky.height = H;
     const ctx = sky.getContext('2d')!;
     const g = ctx.createLinearGradient(0, 0, 0, H);
-    g.addColorStop(0, night ? '#12052e' : '#071a46');
-    g.addColorStop(0.5, night ? '#2a0f55' : '#0d2a6b');
+    g.addColorStop(0, th.sky[0]);
+    g.addColorStop(0.5, th.sky[1]);
     g.addColorStop(1, '#040918');
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, W, H);
@@ -144,13 +152,37 @@ class ArenaScene extends Phaser.Scene {
         ctx.fill();
       }
     };
-    drawSpires(470, night ? '#1d0b3f' : '#0b1f4d', 16, 230);
-    drawSpires(500, night ? '#140830' : '#08173a', 12, 160);
+    if (this.cfg.theme === 'tidewell') {
+      // A low sun over the sea, its reflection and slow shimmer lines on the water.
+      const sun = ctx.createRadialGradient(W * 0.72, 300, 10, W * 0.72, 300, 170);
+      sun.addColorStop(0, 'rgba(255,226,176,0.95)');
+      sun.addColorStop(0.25, 'rgba(255,179,71,0.55)');
+      sun.addColorStop(1, 'rgba(255,179,71,0)');
+      ctx.fillStyle = sun;
+      ctx.fillRect(0, 100, W, 400);
+      const sea = ctx.createLinearGradient(0, 330, 0, H);
+      sea.addColorStop(0, '#0d6b78');
+      sea.addColorStop(1, '#031a26');
+      ctx.fillStyle = sea;
+      ctx.fillRect(0, 330, W, H - 330);
+      ctx.strokeStyle = 'rgba(255,214,150,0.35)';
+      ctx.lineWidth = 2;
+      for (let i = 0; i < 26; i++) {
+        const y = 340 + Math.random() * 140;
+        const x = W * 0.72 + (Math.random() - 0.5) * (y - 300) * 1.4;
+        ctx.beginPath();
+        ctx.moveTo(x - 18, y);
+        ctx.lineTo(x + 18, y);
+        ctx.stroke();
+      }
+    }
+    drawSpires(470, th.spires[0], 16, this.cfg.theme === 'tidewell' ? 120 : 230);
+    drawSpires(500, th.spires[1], 12, this.cfg.theme === 'tidewell' ? 90 : 160);
     this.textures.addCanvas('arena-sky', sky);
     this.add.image(0, 0, 'arena-sky').setOrigin(0);
 
     // Aurora bands
-    const aurora = night ? [0xb26bff, 0xff6fd8] : [0x38e1ff, 0x8b4dff];
+    const aurora = th.aurora;
     aurora.forEach((col, i) => {
       const band = this.add.image(W / 2 + (i ? 220 : -200), 150 + i * 40, 'glow').setScale(9, 1.4).setTint(col).setAlpha(0.22).setBlendMode('ADD');
       if (!this.reduced) this.tweens.add({ targets: band, x: band.x + (i ? -160 : 160), alpha: 0.32, duration: 7000 + i * 1500, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
@@ -164,7 +196,7 @@ class ArenaScene extends Phaser.Scene {
     plat.fillEllipse(W / 2, 498, 1140, 140);
     plat.fillStyle(0x1b3778, 1);
     plat.fillEllipse(W / 2, 490, 1080, 110);
-    plat.lineStyle(3, night ? 0xb26bff : 0x38e1ff, 0.75);
+    plat.lineStyle(3, th.ring, 0.75);
     plat.strokeEllipse(W / 2, 490, 960, 86);
     plat.lineStyle(1.5, 0xffffff, 0.25);
     plat.strokeEllipse(W / 2, 490, 760, 62);
@@ -184,7 +216,7 @@ class ArenaScene extends Phaser.Scene {
     if (!this.reduced) this.tweens.add({ targets: rune, angle: 360, duration: 24000, repeat: -1 });
 
     // Crystals
-    const crystalCol = night ? 0xff6fd8 : 0x7ff3ff;
+    const crystalCol = th.crystal;
     [
       [150, 330, 1],
       [1130, 300, 1.2],
@@ -214,7 +246,7 @@ class ArenaScene extends Phaser.Scene {
       scale: { start: 0.8, end: 0.2 },
       frequency: this.reduced ? 1000 : 160,
       blendMode: 'ADD',
-      tint: night ? 0xe0c2ff : 0x9ff6ff,
+      tint: th.mote,
     });
   }
 

@@ -99,8 +99,12 @@ export function Customize() {
                   </span>
                 ) : tab === 'effects' ? (
                   <VictoryEffect id={c.id} preview />
+                ) : tab === 'arenas' ? (
+                  <span className={`arena-swatch arena-swatch--${c.id.replace('arena-', '')}`} aria-hidden="true">
+                    <span className="arena-swatch__platform" />
+                  </span>
                 ) : (
-                  <Icon name={tab === 'titles' ? 'crown' : tab === 'arenas' ? 'castle' : 'sparkle'} style={{ width: 48, height: 48, color: 'var(--c-gold)' }} />
+                  <Icon name={tab === 'titles' ? 'crown' : 'sparkle'} style={{ width: 48, height: 48, color: 'var(--c-gold)' }} />
                 )}
                 <strong className="display">{c.name}</strong>
                 {unlocked ? (

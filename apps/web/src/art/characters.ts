@@ -23,11 +23,13 @@ function styleBlock(u: string, animated: boolean): string {
   .${u}-pulse{animation:${u}-pulse 2.4s ease-in-out infinite}
   .${u}-sway{animation:${u}-sway 4.5s ease-in-out infinite;transform-box:fill-box;transform-origin:top center}
   .${u}-mote{animation:${u}-mote 4s ease-in-out infinite}
+  .${u}-wave{animation:${u}-wave 2.6s ease-out infinite;transform-box:fill-box;transform-origin:right center}
   @keyframes ${u}-float{50%{transform:translateY(-7px)}}
   @keyframes ${u}-spin{to{transform:rotate(360deg)}}
   @keyframes ${u}-pulse{50%{opacity:.45}}
   @keyframes ${u}-sway{50%{transform:skewX(2.5deg) scaleX(1.02)}}
   @keyframes ${u}-mote{0%{transform:translateY(8px);opacity:0}40%{opacity:1}100%{transform:translateY(-26px);opacity:0}}
+  @keyframes ${u}-wave{0%{transform:scale(.55);opacity:0}25%{opacity:.9}100%{transform:scale(1.35);opacity:0}}
   @media (prefers-reduced-motion: reduce){[class^="${u}-"]{animation:none!important}}
 </style>`;
 }
@@ -379,6 +381,58 @@ ${motes(u, c.glow)}`;
   return wrap(u, body, defs, o);
 }
 
+/** Mira — Echo Bard: wide-brimmed hat with a swaying feather, short cape, a lyre whose notes ripple outwards. */
+function mira(u: string, c: CharacterDef['palette'], o: HeroOptions): string {
+  const defs = `
+  <linearGradient id="${u}-dress" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${shade(c.primary, 0.28)}"/><stop offset="1" stop-color="${shade(c.primary, -0.38)}"/></linearGradient>
+  <linearGradient id="${u}-cape" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${shade(c.secondary, 0.25)}"/><stop offset="1" stop-color="${shade(c.secondary, -0.3)}"/></linearGradient>
+  <linearGradient id="${u}-hat" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${shade(c.primary, 0.1)}"/><stop offset="1" stop-color="${shade(c.secondary, -0.1)}"/></linearGradient>
+  <linearGradient id="${u}-lyre" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe7a3"/><stop offset="1" stop-color="#b5801f"/></linearGradient>
+  <linearGradient id="${u}-feather" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="${shade(c.accent, -0.25)}"/><stop offset="1" stop-color="${c.glow}"/></linearGradient>`;
+  const waves = [0, 0.85, 1.7]
+    .map((d) => `<path class="${u}-wave" style="animation-delay:${d}s" d="M30 172 Q14 194 30 216" stroke="${c.glow}" stroke-width="2.6" fill="none" stroke-linecap="round"/>`)
+    .join('');
+  const body = `
+<g class="${u}-sway">
+  <path d="M92 130 C74 170 62 222 56 258 Q90 268 120 262 Q150 268 184 258 C178 222 166 170 148 130 Z" fill="url(#${u}-cape)"/>
+</g>
+<path d="M98 132 Q120 144 142 132 L158 256 Q120 268 82 256 Z" fill="url(#${u}-dress)"/>
+<path d="M82 256 Q120 268 158 256" stroke="${c.accent}" stroke-width="3" fill="none"/>
+<path d="M90 230 Q120 240 150 230" stroke="${c.glow}" stroke-width="1.4" fill="none" opacity=".55" stroke-dasharray="2 5"/>
+<path d="M94 184 Q120 194 146 184 L145 196 Q120 206 95 196 Z" fill="${shade(c.secondary, 0.1)}"/>
+<path d="M120 186 l6 5 -6 5 -6 -5z" fill="${c.accent}" class="${u}-pulse"/>
+<path d="M104 258 L102 280 Q112 286 120 280 L118 260 Z" fill="${shade(c.secondary, 0.15)}"/>
+<path d="M136 258 L138 280 Q128 286 120 280 L122 260 Z" fill="${shade(c.secondary, 0.08)}"/>
+<path d="M98 138 C82 150 72 166 66 182 L78 190 C84 176 92 164 104 154 Z" fill="url(#${u}-dress)"/>
+<g class="${u}-float">
+  ${waves}
+  <path d="M48 160 C38 186 46 212 64 218 C82 212 90 186 80 160" stroke="url(#${u}-lyre)" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <path d="M44 166 L84 166" stroke="url(#${u}-lyre)" stroke-width="5" stroke-linecap="round"/>
+  <path d="M56 168 L60 210 M64 168 L64 212 M72 168 L68 210" stroke="${c.glow}" stroke-width="1.4" class="${u}-pulse"/>
+  <circle cx="64" cy="216" r="4" fill="${c.accent}"/>
+</g>
+<circle cx="72" cy="186" r="7" fill="${shade('#e0b090', -0.05)}"/>
+<path d="M142 138 C158 152 166 168 170 186 L158 192 C154 178 148 166 136 156 Z" fill="url(#${u}-dress)"/>
+<circle cx="165" cy="192" r="7" fill="${shade('#e0b090', -0.05)}"/>
+<path d="M98 96 C98 76 108 64 120 62 C132 64 142 76 142 96 C142 112 132 124 120 126 C108 124 98 112 98 96 Z" fill="${shade('#e0b090', -0.04)}"/>
+<path d="M94 92 C92 112 96 132 104 142 L110 118 C104 110 100 100 100 88 Z M146 92 C148 112 144 132 136 142 L130 118 C136 110 140 100 140 88 Z" fill="${shade(c.secondary, 0.35)}"/>
+<path d="M98 84 C108 78 120 80 130 76 C134 82 140 86 142 92 C140 72 130 62 118 62 C106 64 98 72 98 84 Z" fill="${shade(c.secondary, 0.35)}"/>
+<ellipse cx="120" cy="70" rx="56" ry="11" fill="url(#${u}-hat)"/>
+<path d="M92 68 C94 46 106 34 120 34 C136 34 148 46 148 68 Q120 76 92 68 Z" fill="url(#${u}-hat)"/>
+<path d="M93 62 Q120 70 147 62 L148 68 Q120 76 92 68 Z" fill="${c.accent}"/>
+<g class="${u}-sway">
+  <path d="M142 60 C158 40 176 26 196 22 C184 34 170 48 150 66 Z" fill="url(#${u}-feather)"/>
+  <path d="M146 62 C162 46 178 32 194 24" stroke="${shade(c.accent, -0.35)}" stroke-width="1.2" fill="none"/>
+</g>
+<path d="M108 98 q4 -3 8 0 M124 98 q4 -3 8 0" stroke="#3a1428" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+<circle cx="106" cy="106" r="3.2" fill="${c.accent}" opacity=".35"/>
+<circle cx="134" cy="106" r="3.2" fill="${c.accent}" opacity=".35"/>
+<path d="M113 111 Q120 117 127 111" stroke="#7a2e3e" stroke-width="2" fill="none" stroke-linecap="round"/>
+<g class="${u}-float"><path d="M186 120 v-16 l9 -3 v16" stroke="${c.glow}" stroke-width="2.2" fill="none"/><circle cx="183" cy="121" r="3.4" fill="${c.glow}"/><circle cx="192" cy="118" r="3.4" fill="${c.glow}"/></g>
+${motes(u, c.glow)}`;
+  return wrap(u, body, defs, o);
+}
+
 const BUILDERS: Record<string, (u: string, c: CharacterDef['palette'], o: HeroOptions) => string> = {
   vexa,
   kael,
@@ -386,6 +440,7 @@ const BUILDERS: Record<string, (u: string, c: CharacterDef['palette'], o: HeroOp
   torque,
   liora,
   brann,
+  mira,
 };
 
 export function heroSvg(characterId: string, u: string, opts: HeroOptions = {}): string {

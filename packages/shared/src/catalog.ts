@@ -60,6 +60,13 @@ export const CHARACTERS: CharacterDef[] = [
     palette: { primary: '#5a3420', secondary: '#2a160c', accent: '#ffb347', glow: '#ffe2b0' },
     unlock: { kind: 'level', level: 8 },
   },
+  {
+    id: 'mira',
+    name: 'Mira',
+    title: 'Echo Bard',
+    palette: { primary: '#5b1f4a', secondary: '#2a0d22', accent: '#ff6fae', glow: '#ffc2e0' },
+    unlock: { kind: 'level', level: 10 },
+  },
 ];
 
 export const BOT_CHARACTER_IDS = CHARACTERS.map((c) => c.id);
@@ -108,6 +115,7 @@ export const COSMETICS: CosmeticDef[] = [
   { id: 'frame-prism', kind: 'frame', name: 'Prism Halo', unlock: { kind: 'achievement', achievementId: 'explorer-8' } },
   { id: 'arena-skyforge', kind: 'arena-theme', name: 'Skyforge Arena', unlock: { kind: 'default' } },
   { id: 'arena-nightbloom', kind: 'arena-theme', name: 'Nightbloom Court', unlock: { kind: 'level', level: 6 } },
+  { id: 'arena-tidewell', kind: 'arena-theme', name: 'Tidewell Grotto', unlock: { kind: 'achievement', achievementId: 'combo-master' } },
   { id: 'fx-starburst', kind: 'victory-effect', name: 'Starburst', unlock: { kind: 'default' } },
   { id: 'fx-aurora', kind: 'victory-effect', name: 'Aurora Cascade', unlock: { kind: 'achievement', achievementId: 'win-streak-3' } },
 ];
